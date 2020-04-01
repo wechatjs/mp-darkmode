@@ -1,0 +1,53 @@
+English | [简体中文](../cn/API.md)
+
+API
+==============================
+
+### `Darkmode.run(nodes[, options])`
+
+- `nodes` &lt;DOM Object Array&gt; The DOM to be converted.
+- `options` &lt;Object&gt; Configuration.
+  - `options.error` &lt;Function&gt; Callback triggered when an error occurs.
+    - `err` &lt;Error&gt; Error object.
+  - `options.mode` &lt;string&gt; The specified color mode (dark | light), if specified, the system color will not be monitored.
+  - `options.whitelist` &lt;Object&gt; The DOM in whitelist will not be processed.
+    - `options.whitelist.tagName` &lt;string Array&gt; The whitelist for tag name.
+  - `options.needJudgeFirstPage` &lt;boolean&gt; Whether to judge the first screen. Default `true`.
+  - `options.delayBgJudge` &lt;boolean&gt; Whether to delay background judgment. Default `false`.
+  - `options.container` &lt;DOM Object&gt; The container to use when delaying running js. Default `null`.
+  - `options.cssSelectorsPrefix` &lt;string&gt; Css selector prefix. Default `''`.
+
+Run Dark Mode conversion algorithm. **Note: The conversion can be run multiple times, but the configuration can only be set once.**
+
+```javascript
+Darkmode.run(document.body.querySelectorAll('*'), {
+  mode: 'dark' // force dark mode
+});
+```
+
+### `Darkmode.init(options)`
+
+- `options` Same as the `options` parameter in `Darkmode.run`.
+
+Initialize Dark Mode configuration. **Note: The configuration can only be set once.**
+
+```javascript
+Darkmode.init({
+  error: e => { // an error occurred
+    console.log(e);
+  },
+  whitelist: {
+    tagName: ['a'] // ignore <a>
+  }
+});
+```
+
+### `Darkmode.convertBg(nodes)`
+
+- `nodes` &lt;DOM Object Array&gt; List of background nodes to be processed (may contain non-background nodes).
+
+Processing background. When `delayBgJudge = true` in the configuration item, you can manually specify the timing to run the background judgment.
+
+```javascript
+Darkmode.convertBg(document.body.querySelectorAll('*'));
+```
