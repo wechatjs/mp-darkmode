@@ -6,14 +6,18 @@
  * @param {Object}           opt   Dark Mode配置，详见init配置说明
  *
  * @function init 初始化Dark Mode配置
- * @param {Function}   opt.error              发生error时触发的回调
- * @param {String}     opt.mode               强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
- * @param {Object}     opt.whitelist          节点白名单
- * @param {Array}      opt.whitelist.tagName  标签名列表
- * @param {Boolean}    opt.needJudgeFirstPage 是否需要判断首屏
- * @param {Boolean}    opt.delayBgJudge       是否延迟背景判断
- * @param {DOM Object} opt.container          延迟运行js时使用的容器
- * @param {String}     opt.cssSelectorsPrefix css选择器前缀
+ * @param {Function}   opt.error                 发生error时触发的回调
+ * @param {String}     opt.mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
+ * @param {Object}     opt.whitelist             节点白名单
+ * @param {Array}      opt.whitelist.tagName     标签名列表
+ * @param {Boolean}    opt.needJudgeFirstPage    是否需要判断首屏
+ * @param {Boolean}    opt.delayBgJudge          是否延迟背景判断
+ * @param {DOM Object} opt.container             延迟运行js时使用的容器
+ * @param {String}     opt.cssSelectorsPrefix    css选择器前缀
+ * @param {String}     opt.defaultLightTextColor 非Dark Mode下字体颜色
+ * @param {String}     opt.defaultLightBgColor   非Dark Mode下背景颜色
+ * @param {String}     opt.defaultDarkTextColor  Dark Mode下字体颜色
+ * @param {String}     opt.defaultDarkBgColor    Dark Mode下背景颜色
  *
  * @function convertBg 处理背景
  * @param {Dom Object Array} nodes 要处理的节点列表
@@ -24,7 +28,11 @@ import {
   MEDIA_QUERY,
   CLASS_PREFIX,
   HTML_CLASS,
-  PAGE_HEIGHT
+  PAGE_HEIGHT,
+  DEFAULT_LIGHT_TEXTCOLOR,
+  DEFAULT_LIGHT_BGCOLOR,
+  DEFAULT_DARK_TEXTCOLOR,
+  DEFAULT_DARK_BGCOLOR
 } from './modules/constant';
 const classReg = new RegExp(`${CLASS_PREFIX}[^ ]+`, 'g');
 
@@ -40,7 +48,11 @@ const config = {
   needJudgeFirstPage: true, // 需要判断首屏
   delayBgJudge: false, // 是否延迟背景判断
   container: null, // 延迟运行js时使用的容器
-  cssSelectorsPrefix: '' // css选择器前缀
+  cssSelectorsPrefix: '', // css选择器前缀
+  defaultLightTextColor: DEFAULT_LIGHT_TEXTCOLOR, // 非Dark Mode下字体颜色
+  defaultLightBgColor: DEFAULT_LIGHT_BGCOLOR, // 非Dark Mode下背景颜色
+  defaultDarkTextColor: DEFAULT_DARK_TEXTCOLOR, // Dark Mode下字体颜色
+  defaultDarkBgColor: DEFAULT_DARK_BGCOLOR // Dark Mode下背景颜色
 };
 
 // 文本节点队列
@@ -163,6 +175,10 @@ export function init(opt = {}) {
   typeof opt.delayBgJudge === 'boolean' && (config.delayBgJudge = opt.delayBgJudge);
   opt.container instanceof HTMLElement && (config.container = opt.container);
   typeof opt.cssSelectorsPrefix === 'string' && (config.cssSelectorsPrefix = opt.cssSelectorsPrefix);
+  typeof opt.defaultLightTextColor === 'string' && opt.defaultLightTextColor !== '' && (config.defaultLightTextColor = opt.defaultLightTextColor);
+  typeof opt.defaultLightBgColor === 'string' && opt.defaultLightBgColor !== '' && (config.defaultLightBgColor = opt.defaultLightBgColor);
+  typeof opt.defaultDarkTextColor === 'string' && opt.defaultDarkTextColor !== '' && (config.defaultDarkTextColor = opt.defaultDarkTextColor);
+  typeof opt.defaultDarkBgColor === 'string' && opt.defaultDarkBgColor !== '' && (config.defaultDarkBgColor = opt.defaultDarkBgColor);
 
   if (!config.mode && mql === null) {
     // 匹配媒体查询

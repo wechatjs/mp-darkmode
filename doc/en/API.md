@@ -16,6 +16,10 @@ API
   - `options.delayBgJudge` &lt;boolean&gt; Whether to delay background judgment. Default `false`.
   - `options.container` &lt;DOM Object&gt; The container to use when delaying running js. Default `null`.
   - `options.cssSelectorsPrefix` &lt;string&gt; Css selector prefix. Default `''`.
+  - `opt.defaultLightTextColor` &lt;string&gt; Font color in non-Dark Mode. Default `#191919`.
+  - `opt.defaultLightBgColor` &lt;string&gt; Background color in non-Dark Mode. Default `#fff`.
+  - `opt.defaultDarkTextColor` &lt;string&gt; Font color in Dark Mode. Default `#a3a3a3`.
+  - `opt.defaultDarkBgColor` &lt;string&gt; Background color in Dark Mode. Default `#191919`.
 
 Run Dark Mode conversion algorithm. **Note: The conversion can be run multiple times, but the configuration can only be set once.**
 

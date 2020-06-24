@@ -16,6 +16,10 @@ API
   - `options.delayBgJudge` &lt;boolean&gt; 是否延迟背景判断，默认 `false`。
   - `options.container` &lt;DOM Object&gt; 延迟运行js时使用的容器，默认 `null`。
   - `options.cssSelectorsPrefix` &lt;string&gt; css选择器前缀，默认 `''`。
+  - `opt.defaultLightTextColor` &lt;string&gt; 非Dark Mode下字体颜色，默认 `#191919`。
+  - `opt.defaultLightBgColor` &lt;string&gt; 非Dark Mode下背景颜色，默认 `#fff`。
+  - `opt.defaultDarkTextColor` &lt;string&gt; Dark Mode下字体颜色，默认 `#a3a3a3`。
+  - `opt.defaultDarkBgColor` &lt;string&gt; Dark Mode下背景颜色，默认 `#191919`。
 
 运行Dark Mode转换算法。**注意：可多次运行转换，但配置只可设置一次。**
 

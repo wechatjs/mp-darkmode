@@ -30,10 +30,6 @@ import {
   ORIGINAL_BGCOLORATTR,
   BGIMAGEATTR,
 
-  DEFAULT_LIGHT_TEXTCOLOR,
-  DEFAULT_LIGHT_BGCOLOR,
-  DEFAULT_DARK_TEXTCOLOR,
-  DEFAULT_DARK_BGCOLOR,
   GRAY_MASK_COLOR,
 
   WHITE_LIKE_COLOR_BRIGHTNESS,
@@ -86,86 +82,6 @@ const parseWebkitFillColorAndStrokeColor = value => {
 
 // 计算感知亮度
 const getColorPerceivedBrightness = rgb => (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
-const defaultDarkTextColorRgb = Color(DEFAULT_DARK_TEXTCOLOR).rgb().array();
-const defaultDarkBgColorRgb = Color(DEFAULT_DARK_BGCOLOR).rgb().array();
-const defaultDarkBgColorHSL = Color(DEFAULT_DARK_BGCOLOR).hsl().array();
-const DEFAULT_DARK_TEXTCOLOR_BRIGHTNESS = getColorPerceivedBrightness(defaultDarkTextColorRgb);
-const DEFAULT_DARK_BGCOLOR_BRIGHTNESS = getColorPerceivedBrightness(defaultDarkBgColorRgb);
-const DEFAULT_DARK_BGCOLOR_HSL_BRIGHTNESS = defaultDarkBgColorHSL[2];
-const MAX_LIMIT_OFFSET_BRIGHTNESS = DEFAULT_DARK_TEXTCOLOR_BRIGHTNESS - DEFAULT_DARK_BGCOLOR_BRIGHTNESS;
-
-const adjustBrightnessByLimit = (limitBright, rgb) => {
-  const relativeBrightnessRatio = limitBright / getColorPerceivedBrightness(rgb);
-  let newTextR = Math.min(255, rgb[0] * relativeBrightnessRatio);
-  let newTextG = Math.min(255, rgb[1] * relativeBrightnessRatio);
-  let newTextB = Math.min(255, rgb[2] * relativeBrightnessRatio);
-  if (newTextG === 0 || newTextR === 255 || newTextB === 255) {
-    newTextG = (limitBright * 1000 - newTextR * 299 - newTextB * 114) / 587;
-  } else if (newTextR === 0) {
-    newTextR = (limitBright * 1000 - newTextG * 587 - newTextB * 114) / 299;
-  } else if (newTextB === 0 || newTextG === 255) {
-    newTextB = (limitBright * 1000 - newTextR * 299 - newTextG * 587) / 114;
-  }
-  return Color.rgb(newTextR, newTextG, newTextB);
-};
-
-const adjustTextBrightness = (textColor, bgColor) => {
-  const bgColorRgb = bgColor.rgb().array();
-  const bgColorAlpha = bgColor.alpha();
-  const bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorRgb);
-  const bgColorWithOpacityPerceivedBrightness = bgColorPerceivedBrightness * bgColorAlpha + DEFAULT_DARK_BGCOLOR_BRIGHTNESS * (1 - bgColorAlpha);
-  const textColorRgb = textColor.rgb().array();
-  const textColorHSL = textColor.hsl().array();
-  const textColorAlpha = textColor.alpha();
-  const textPerceivedBrightness = getColorPerceivedBrightness(textColorRgb);
-  const offsetPerceivedBrightness = Math.abs(bgColorWithOpacityPerceivedBrightness - textPerceivedBrightness);
-
-  // 用户设置为高亮字体颜色（接近白色亮度），不处理，保持高亮
-  if (textPerceivedBrightness >= WHITE_LIKE_COLOR_BRIGHTNESS) return textColor;
-
-  if (offsetPerceivedBrightness > MAX_LIMIT_OFFSET_BRIGHTNESS && bgColorWithOpacityPerceivedBrightness <= DEFAULT_DARK_BGCOLOR_BRIGHTNESS + 2) return adjustBrightnessByLimit(MAX_LIMIT_OFFSET_BRIGHTNESS + bgColorWithOpacityPerceivedBrightness, textColorRgb).alpha(textColorAlpha);
-
-  // 如果感知亮度差大于阈值，无需调整
-  if (offsetPerceivedBrightness >= MIN_LIMIT_OFFSET_BRIGHTNESS) return textColor;
-
-  if (bgColorWithOpacityPerceivedBrightness >= HIGH_BGCOLOR_BRIGHTNESS) { // 亮背景，调暗字体
-    if (textColorHSL[2] > 90 - HIGH_BLACKWHITE_HSL_BRIGHTNESS) { // 优先调字体的亮度已带到降低感知亮度的目的
-      textColorHSL[2] = 90 - textColorHSL[2];
-      let tmpTextColor = Color.hsl(...textColorHSL).alpha(textColorAlpha);
-      return adjustTextBrightness(tmpTextColor, bgColor);
-    }
-    return adjustBrightnessByLimit(Math.min(MAX_LIMIT_OFFSET_BRIGHTNESS, bgColorWithOpacityPerceivedBrightness - MIN_LIMIT_OFFSET_BRIGHTNESS), textColorRgb).alpha(textColorAlpha);
-  } else { // 暗背景，调亮字体
-    if (textColorHSL[2] <= HIGH_BLACKWHITE_HSL_BRIGHTNESS) { // 优先调字体的亮度已带到提高感知亮度的目的
-      textColorHSL[2] = 90 - textColorHSL[2];
-      let tmpTextColor = Color.hsl(...textColorHSL).alpha(textColorAlpha);
-      return adjustTextBrightness(tmpTextColor, bgColor);
-    }
-    return adjustBrightnessByLimit(Math.min(MAX_LIMIT_OFFSET_BRIGHTNESS, bgColorWithOpacityPerceivedBrightness + MIN_LIMIT_OFFSET_BRIGHTNESS), textColorRgb).alpha(textColorAlpha);
-  }
-};
-
-const adjustBackgroundBrightness = bgColor => {
-  const bgColorRgb = bgColor.rgb().array();
-  const bgColorHsl = bgColor.hsl().array();
-  const bgColorAlpha = bgColor.alpha();
-  const bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorRgb);
-  let newColor = bgColor;
-  if ((bgColorHsl[1] === 0 && bgColorHsl[2] > HIGH_BLACKWHITE_HSL_BRIGHTNESS) || bgColorPerceivedBrightness > WHITE_LIKE_COLOR_BRIGHTNESS) {
-    // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
-    newColor = Color.hsl(0, 0, Math.min(100, 100 + DEFAULT_DARK_BGCOLOR_HSL_BRIGHTNESS - bgColorHsl[2]));
-  } else if (bgColorPerceivedBrightness > MAX_LIMIT_BGCOLOR_BRIGHTNESS) {
-    // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
-    newColor = adjustBrightnessByLimit(MAX_LIMIT_BGCOLOR_BRIGHTNESS, bgColorRgb).alpha(bgColorAlpha);
-    // const ratio = (MAX_LIMIT_BGCOLOR_BRIGHTNESS * 1000) / (bgColorRgb[0] * 299 + bgColorRgb[1] * 587 + bgColorRgb[2] * 114);
-    // newColor = Color.rgb(bgColorRgb[0] * ratio, bgColorRgb[1] * ratio, bgColorRgb[2] * ratio);
-  } else if (bgColorHsl[2] < LOW_BLACKWHITE_HSL_BRIGHTNESS) {
-    // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
-    bgColorHsl[2] = LOW_BLACKWHITE_HSL_BRIGHTNESS;
-    newColor = Color.hsl(...bgColorHsl);
-  }
-  return newColor.alpha(bgColorAlpha).rgb();
-};
 
 export default class SDK {
   _idx = 0; // 索引值
@@ -180,6 +96,87 @@ export default class SDK {
     this._tnQueue = tnQueue;
     this._bgStack = bgStack;
     this._cssUtils = cssUtils;
+
+    this._defaultDarkTextColorRgb = Color(this._config.defaultDarkTextColor).rgb().array();
+    this._defaultDarkBgColorRgb = Color(this._config.defaultDarkBgColor).rgb().array();
+    this._defaultDarkBgColorHSL = Color(this._config.defaultDarkBgColor).hsl().array();
+    this._defaultDarkTextColorBrightness = getColorPerceivedBrightness(this._defaultDarkTextColorRgb);
+    this._defaultDarkBgColorBrightness = getColorPerceivedBrightness(this._defaultDarkBgColorRgb);
+    this._defaultDarkBgColorHslBrightness = this._defaultDarkBgColorHSL[2];
+    this._maxLimitOffsetBrightness = this._defaultDarkTextColorBrightness - this._defaultDarkBgColorBrightness;
+  }
+
+  _adjustBrightnessByLimit(limitBright, rgb) {
+    const relativeBrightnessRatio = limitBright / getColorPerceivedBrightness(rgb);
+    let newTextR = Math.min(255, rgb[0] * relativeBrightnessRatio);
+    let newTextG = Math.min(255, rgb[1] * relativeBrightnessRatio);
+    let newTextB = Math.min(255, rgb[2] * relativeBrightnessRatio);
+    if (newTextG === 0 || newTextR === 255 || newTextB === 255) {
+      newTextG = (limitBright * 1000 - newTextR * 299 - newTextB * 114) / 587;
+    } else if (newTextR === 0) {
+      newTextR = (limitBright * 1000 - newTextG * 587 - newTextB * 114) / 299;
+    } else if (newTextB === 0 || newTextG === 255) {
+      newTextB = (limitBright * 1000 - newTextR * 299 - newTextG * 587) / 114;
+    }
+    return Color.rgb(newTextR, newTextG, newTextB);
+  }
+
+  _adjustTextBrightness(textColor, bgColor) {
+    const bgColorRgb = bgColor.rgb().array();
+    const bgColorAlpha = bgColor.alpha();
+    const bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorRgb);
+    const bgColorWithOpacityPerceivedBrightness = bgColorPerceivedBrightness * bgColorAlpha + this._defaultDarkBgColorBrightness * (1 - bgColorAlpha);
+    const textColorRgb = textColor.rgb().array();
+    const textColorHSL = textColor.hsl().array();
+    const textColorAlpha = textColor.alpha();
+    const textPerceivedBrightness = getColorPerceivedBrightness(textColorRgb);
+    const offsetPerceivedBrightness = Math.abs(bgColorWithOpacityPerceivedBrightness - textPerceivedBrightness);
+
+    // 用户设置为高亮字体颜色（接近白色亮度），不处理，保持高亮
+    if (textPerceivedBrightness >= WHITE_LIKE_COLOR_BRIGHTNESS) return textColor;
+
+    if (offsetPerceivedBrightness > this._maxLimitOffsetBrightness && bgColorWithOpacityPerceivedBrightness <= this._defaultDarkBgColorBrightness + 2) return this._adjustBrightnessByLimit(this._maxLimitOffsetBrightness + bgColorWithOpacityPerceivedBrightness, textColorRgb).alpha(textColorAlpha);
+
+    // 如果感知亮度差大于阈值，无需调整
+    if (offsetPerceivedBrightness >= MIN_LIMIT_OFFSET_BRIGHTNESS) return textColor;
+
+    if (bgColorWithOpacityPerceivedBrightness >= HIGH_BGCOLOR_BRIGHTNESS) { // 亮背景，调暗字体
+      if (textColorHSL[2] > 90 - HIGH_BLACKWHITE_HSL_BRIGHTNESS) { // 优先调字体的亮度已带到降低感知亮度的目的
+        textColorHSL[2] = 90 - textColorHSL[2];
+        let tmpTextColor = Color.hsl(...textColorHSL).alpha(textColorAlpha);
+        return this._adjustTextBrightness(tmpTextColor, bgColor);
+      }
+      return this._adjustBrightnessByLimit(Math.min(this._maxLimitOffsetBrightness, bgColorWithOpacityPerceivedBrightness - MIN_LIMIT_OFFSET_BRIGHTNESS), textColorRgb).alpha(textColorAlpha);
+    } else { // 暗背景，调亮字体
+      if (textColorHSL[2] <= HIGH_BLACKWHITE_HSL_BRIGHTNESS) { // 优先调字体的亮度已带到提高感知亮度的目的
+        textColorHSL[2] = 90 - textColorHSL[2];
+        let tmpTextColor = Color.hsl(...textColorHSL).alpha(textColorAlpha);
+        return this._adjustTextBrightness(tmpTextColor, bgColor);
+      }
+      return this._adjustBrightnessByLimit(Math.min(this._maxLimitOffsetBrightness, bgColorWithOpacityPerceivedBrightness + MIN_LIMIT_OFFSET_BRIGHTNESS), textColorRgb).alpha(textColorAlpha);
+    }
+  }
+
+  _adjustBackgroundBrightness(bgColor) {
+    const bgColorRgb = bgColor.rgb().array();
+    const bgColorHsl = bgColor.hsl().array();
+    const bgColorAlpha = bgColor.alpha();
+    const bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorRgb);
+    let newColor = bgColor;
+    if ((bgColorHsl[1] === 0 && bgColorHsl[2] > HIGH_BLACKWHITE_HSL_BRIGHTNESS) || bgColorPerceivedBrightness > WHITE_LIKE_COLOR_BRIGHTNESS) {
+      // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
+      newColor = Color.hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - bgColorHsl[2]));
+    } else if (bgColorPerceivedBrightness > MAX_LIMIT_BGCOLOR_BRIGHTNESS) {
+      // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
+      newColor = this._adjustBrightnessByLimit(MAX_LIMIT_BGCOLOR_BRIGHTNESS, bgColorRgb).alpha(bgColorAlpha);
+      // const ratio = (MAX_LIMIT_BGCOLOR_BRIGHTNESS * 1000) / (bgColorRgb[0] * 299 + bgColorRgb[1] * 587 + bgColorRgb[2] * 114);
+      // newColor = Color.rgb(bgColorRgb[0] * ratio, bgColorRgb[1] * ratio, bgColorRgb[2] * ratio);
+    } else if (bgColorHsl[2] < LOW_BLACKWHITE_HSL_BRIGHTNESS) {
+      // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
+      bgColorHsl[2] = LOW_BLACKWHITE_HSL_BRIGHTNESS;
+      newColor = Color.hsl(...bgColorHsl);
+    }
+    return newColor.alpha(bgColorAlpha).rgb();
   }
 
   // 调整明度
@@ -205,10 +202,10 @@ export default class SDK {
         el.removeAttribute(BGIMAGEATTR);
       }
 
-      newColor = adjustBackgroundBrightness(color);
+      newColor = this._adjustBackgroundBrightness(color);
 
       if (!options.hasInlineColor) {
-        const parentTextColor = el.getAttribute(COLORATTR) || DEFAULT_LIGHT_TEXTCOLOR;
+        const parentTextColor = el.getAttribute(COLORATTR) || this._config.defaultLightTextColor;
         const parentBgColorStr = newColor || color;
         // el.setAttribute(BGCOLORATTR, newColor || color)
         const ret = this._adjustBrightness(Color(parentTextColor), el, {
@@ -222,15 +219,15 @@ export default class SDK {
         }
       }
     } else if (options.isTextColor || options.isBorderColor) { // 字体色、边框色
-      const parentElementBgColorStr = options.parentElementBgColorStr || (options.isTextColor && el.getAttribute(BGCOLORATTR)) || DEFAULT_DARK_BGCOLOR;
+      const parentElementBgColorStr = options.parentElementBgColorStr || (options.isTextColor && el.getAttribute(BGCOLORATTR)) || this._config.defaultDarkBgColor;
       const parentElementBgColor = Color(parentElementBgColorStr);
 
       // 无背景图片
       if (!el.getAttribute(BGIMAGEATTR)) {
-        newColor = adjustTextBrightness(color, parentElementBgColor);
+        newColor = this._adjustTextBrightness(color, parentElementBgColor);
       }
     } else if (options.isTextShadow) { // 字体阴影
-      newColor = adjustBackgroundBrightness(color); // 按照背景色的方法来处理
+      newColor = this._adjustBackgroundBrightness(color); // 按照背景色的方法来处理
     }
 
     return {
@@ -439,7 +436,7 @@ export default class SDK {
         const isBorderImageAttr = /^(-webkit-)?border-image/.test(key);
         if ((isBackgroundAttr || isBorderImageAttr) && /url\([^\)]*\)/i.test(value)) {
           cssChange = true;
-          let imgBgColor = el.getAttribute(ORIGINAL_BGCOLORATTR) || DEFAULT_LIGHT_BGCOLOR;
+          let imgBgColor = el.getAttribute(ORIGINAL_BGCOLORATTR) || this._config.defaultLightBgColor;
 
           // 在背景图片下加一层原背景颜色：
           // background-image使用多层背景(注意background-position也要多加一层 https://www.w3.org/TR/css-backgrounds-3/#layering)；
@@ -478,7 +475,7 @@ export default class SDK {
 
           // 没有设置自定义字体颜色，则使用非 Dark Mode 下默认字体颜色
           if (!hasInlineColor) {
-            const textColor = el.getAttribute(ORIGINAL_COLORATTR) || DEFAULT_LIGHT_TEXTCOLOR;
+            const textColor = el.getAttribute(ORIGINAL_COLORATTR) || this._config.defaultLightTextColor;
             cssKV += this._cssUtils.genCssKV('color', textColor);
             getChildrenAndIt(el).forEach(dom => dom.setAttribute(COLORATTR, textColor));
           }
