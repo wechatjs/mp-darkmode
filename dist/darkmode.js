@@ -3099,7 +3099,9 @@ color_name__WEBPACK_IMPORTED_MODULE_1___default.a.windowtext = [0, 0, 0]; // 补
  // 节点相关操作工具API
 
 
-var colorNameReg = new RegExp(Object.keys(color_name__WEBPACK_IMPORTED_MODULE_1___default.a).join('|'), 'ig'); // 生成正则表达式来匹配这些colorName
+var colorNameReg = new RegExp(Object.keys(color_name__WEBPACK_IMPORTED_MODULE_1___default.a).map(function (colorName) {
+  return "(^|[\\s,()]+)".concat(colorName, "([\\s,()]+|$)");
+}).join('|'), 'ig'); // 生成正则表达式来匹配这些colorName
 
 var colorReg = /rgba?\([^)]+\)/i;
 var colorRegGlobal = /rgba?\([^)]+\)/ig;
@@ -3111,7 +3113,7 @@ var removeImportant = function removeImportant(value) {
 
 var parseColor = function parseColor(value) {
   return removeImportant(value).replace(colorNameReg, function (match) {
-    return "rgb(".concat(color_name__WEBPACK_IMPORTED_MODULE_1___default.a[match.toLowerCase()].toString(), ")");
+    return "rgb(".concat(color_name__WEBPACK_IMPORTED_MODULE_1___default.a[match.replace(/(^[\s,()]+)|([\s,()]+$)/g, '').toLowerCase()].toString(), ")");
   });
 }; // 处理颜色，包括清除!important和转换英文定义颜色
 // 计算mix颜色

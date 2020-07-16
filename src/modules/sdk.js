@@ -53,11 +53,11 @@ import {
   hasTableClass
 } from './domUtils';
 
-const colorNameReg = new RegExp(Object.keys(ColorName).join('|'), 'ig'); // 生成正则表达式来匹配这些colorName
+const colorNameReg = new RegExp(Object.keys(ColorName).map(colorName => `(^|[\\s,()]+)${colorName}([\\s,()]+|$)`).join('|'), 'ig'); // 生成正则表达式来匹配这些colorName
 const colorReg = /rgba?\([^)]+\)/i;
 const colorRegGlobal = /rgba?\([^)]+\)/ig;
 const removeImportant = value => value.replace(IMPORTANT_REGEXP, ''); // 清除!important
-const parseColor = value => removeImportant(value).replace(colorNameReg, match => `rgb(${ColorName[match.toLowerCase()].toString()})`); // 处理颜色，包括清除!important和转换英文定义颜色
+const parseColor = value => removeImportant(value).replace(colorNameReg, match => `rgb(${ColorName[match.replace(/(^[\s,()]+)|([\s,()]+$)/g, '').toLowerCase()].toString()})`); // 处理颜色，包括清除!important和转换英文定义颜色
 
 // 计算mix颜色
 const mixColor = colors => {
