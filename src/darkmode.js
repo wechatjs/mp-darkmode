@@ -55,6 +55,26 @@ const config = {
   defaultDarkBgColor: DEFAULT_DARK_BGCOLOR // Dark Mode下背景颜色
 };
 
+// 设置配置
+const setConfig = (type, opt, key) => {
+  const value = opt[key];
+  switch (type) {
+    case 'boolean':
+      typeof value === 'boolean' && (config[key] = value);
+      break;
+    case 'string':
+      typeof value === 'string' && value !== '' && (config[key] = value);
+      break;
+    case 'function':
+      typeof value === 'function' && (config[key] = value);
+      break;
+    case 'dom':
+      value instanceof HTMLElement && (config[key] = value);
+      break;
+    default:
+  }
+};
+
 // 文本节点队列
 import TextNodeQueue from './modules/textNodeQueue';
 const tnQueue = new TextNodeQueue(config, `${CLASS_PREFIX}text__`);
@@ -161,24 +181,25 @@ export function init(opt = {}) {
   config.hasInit = true; // 记录为配置已设置
 
   const tagName = config.whitelist.tagName;
-
-  typeof opt.error === 'function' && (config.error = opt.error);
-  if (['dark', 'light'].indexOf(opt.mode) > -1) {
-    config.mode = opt.mode;
-    document.getElementsByTagName('html')[0].classList.add(HTML_CLASS);
-  }
   opt.whitelist && opt.whitelist.tagName instanceof Array && opt.whitelist.tagName.forEach(item => {
     item = item.toUpperCase();
     tagName.indexOf(item) === -1 && tagName.push(item);
   });
-  typeof opt.needJudgeFirstPage === 'boolean' && (config.needJudgeFirstPage = opt.needJudgeFirstPage);
-  typeof opt.delayBgJudge === 'boolean' && (config.delayBgJudge = opt.delayBgJudge);
-  opt.container instanceof HTMLElement && (config.container = opt.container);
-  typeof opt.cssSelectorsPrefix === 'string' && (config.cssSelectorsPrefix = opt.cssSelectorsPrefix);
-  typeof opt.defaultLightTextColor === 'string' && opt.defaultLightTextColor !== '' && (config.defaultLightTextColor = opt.defaultLightTextColor);
-  typeof opt.defaultLightBgColor === 'string' && opt.defaultLightBgColor !== '' && (config.defaultLightBgColor = opt.defaultLightBgColor);
-  typeof opt.defaultDarkTextColor === 'string' && opt.defaultDarkTextColor !== '' && (config.defaultDarkTextColor = opt.defaultDarkTextColor);
-  typeof opt.defaultDarkBgColor === 'string' && opt.defaultDarkBgColor !== '' && (config.defaultDarkBgColor = opt.defaultDarkBgColor);
+
+  if (['dark', 'light'].indexOf(opt.mode) > -1) {
+    setConfig('string', opt, 'mode');
+    document.getElementsByTagName('html')[0].classList.add(HTML_CLASS);
+  }
+
+  setConfig('function', opt, 'error');
+  setConfig('boolean', opt, 'needJudgeFirstPage');
+  setConfig('boolean', opt, 'delayBgJudge');
+  setConfig('dom', opt, 'container');
+  setConfig('string', opt, 'cssSelectorsPrefix');
+  setConfig('string', opt, 'defaultLightTextColor');
+  setConfig('string', opt, 'defaultLightBgColor');
+  setConfig('string', opt, 'defaultDarkTextColor');
+  setConfig('string', opt, 'defaultDarkBgColor');
 
   if (!config.mode && mql === null) {
     // 匹配媒体查询

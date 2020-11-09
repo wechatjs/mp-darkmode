@@ -29,11 +29,14 @@ export const HIGH_BGCOLOR_BRIGHTNESS = 100;
 export const HIGH_BLACKWHITE_HSL_BRIGHTNESS = 40;
 export const LOW_BLACKWHITE_HSL_BRIGHTNESS = 22;
 
-export const PAGE_HEIGHT = (window.getInnerHeight && window.getInnerHeight()) || window.innerHeight || document.documentElement.clientHeight;
+export const PAGE_HEIGHT = (window.getInnerHeight && window.getInnerHeight())
+  || window.innerHeight
+  || document.documentElement.clientHeight;
 
 export const TABLE_NAME = ['TABLE', 'TR', 'TD', 'TH']; // 支持bgcolor属性的table标签列表
 
 const UA = navigator.userAgent;
-export const IS_PC = (/windows\snt/i.test(UA) && !/Windows\sPhone/i.test(UA)) || (/mac\sos/i.test(UA) && !/(iPhone|iPad|iPod|iOS)/i.test(UA));
+export const IS_PC = (/windows\snt/i.test(UA) && !/Windows\sPhone/i.test(UA))
+  || (/mac\sos/i.test(UA) && !/(iPhone|iPad|iPod|iOS)/i.test(UA));
 
 export const IMPORTANT_REGEXP = / !important$/; // !important

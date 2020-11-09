@@ -49,7 +49,12 @@ export default class BgNodeStack {
         if (!item.rect) item.rect = item.el.getBoundingClientRect();
 
         const bgRect = item.rect;
-        if (!(rect.top >= bgRect.bottom || rect.bottom <= bgRect.top || rect.left >= bgRect.right || rect.right <= bgRect.left)) { // 表示节点在背景图内
+        if (!(
+          rect.top >= bgRect.bottom
+          || rect.bottom <= bgRect.top
+          || rect.left >= bgRect.right
+          || rect.right <= bgRect.left
+        )) { // 表示节点在背景图内
           idxStack.unshift(i);
         }
       }

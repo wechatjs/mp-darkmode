@@ -2374,7 +2374,32 @@ var config = {
   // Dark Mode下字体颜色
   defaultDarkBgColor: _modules_constant__WEBPACK_IMPORTED_MODULE_0__["DEFAULT_DARK_BGCOLOR"] // Dark Mode下背景颜色
 
+}; // 设置配置
+
+var setConfig = function setConfig(type, opt, key) {
+  var value = opt[key];
+
+  switch (type) {
+    case 'boolean':
+      typeof value === 'boolean' && (config[key] = value);
+      break;
+
+    case 'string':
+      typeof value === 'string' && value !== '' && (config[key] = value);
+      break;
+
+    case 'function':
+      typeof value === 'function' && (config[key] = value);
+      break;
+
+    case 'dom':
+      value instanceof HTMLElement && (config[key] = value);
+      break;
+
+    default:
+  }
 }; // 文本节点队列
+
 
 
 var tnQueue = new _modules_textNodeQueue__WEBPACK_IMPORTED_MODULE_1__["default"](config, "".concat(_modules_constant__WEBPACK_IMPORTED_MODULE_0__["CLASS_PREFIX"], "text__")); // 需要判断位置的背景节点堆栈
@@ -2488,25 +2513,25 @@ function init() {
   config.hasInit = true; // 记录为配置已设置
 
   var tagName = config.whitelist.tagName;
-  typeof opt.error === 'function' && (config.error = opt.error);
-
-  if (['dark', 'light'].indexOf(opt.mode) > -1) {
-    config.mode = opt.mode;
-    document.getElementsByTagName('html')[0].classList.add(_modules_constant__WEBPACK_IMPORTED_MODULE_0__["HTML_CLASS"]);
-  }
-
   opt.whitelist && opt.whitelist.tagName instanceof Array && opt.whitelist.tagName.forEach(function (item) {
     item = item.toUpperCase();
     tagName.indexOf(item) === -1 && tagName.push(item);
   });
-  typeof opt.needJudgeFirstPage === 'boolean' && (config.needJudgeFirstPage = opt.needJudgeFirstPage);
-  typeof opt.delayBgJudge === 'boolean' && (config.delayBgJudge = opt.delayBgJudge);
-  opt.container instanceof HTMLElement && (config.container = opt.container);
-  typeof opt.cssSelectorsPrefix === 'string' && (config.cssSelectorsPrefix = opt.cssSelectorsPrefix);
-  typeof opt.defaultLightTextColor === 'string' && opt.defaultLightTextColor !== '' && (config.defaultLightTextColor = opt.defaultLightTextColor);
-  typeof opt.defaultLightBgColor === 'string' && opt.defaultLightBgColor !== '' && (config.defaultLightBgColor = opt.defaultLightBgColor);
-  typeof opt.defaultDarkTextColor === 'string' && opt.defaultDarkTextColor !== '' && (config.defaultDarkTextColor = opt.defaultDarkTextColor);
-  typeof opt.defaultDarkBgColor === 'string' && opt.defaultDarkBgColor !== '' && (config.defaultDarkBgColor = opt.defaultDarkBgColor);
+
+  if (['dark', 'light'].indexOf(opt.mode) > -1) {
+    setConfig('string', opt, 'mode');
+    document.getElementsByTagName('html')[0].classList.add(_modules_constant__WEBPACK_IMPORTED_MODULE_0__["HTML_CLASS"]);
+  }
+
+  setConfig('function', opt, 'error');
+  setConfig('boolean', opt, 'needJudgeFirstPage');
+  setConfig('boolean', opt, 'delayBgJudge');
+  setConfig('dom', opt, 'container');
+  setConfig('string', opt, 'cssSelectorsPrefix');
+  setConfig('string', opt, 'defaultLightTextColor');
+  setConfig('string', opt, 'defaultLightBgColor');
+  setConfig('string', opt, 'defaultDarkTextColor');
+  setConfig('string', opt, 'defaultDarkBgColor');
 
   if (!config.mode && mql === null) {
     // 匹配媒体查询
@@ -3201,7 +3226,11 @@ var SDK = /*#__PURE__*/function () {
       var offsetPerceivedBrightness = Math.abs(bgColorWithOpacityPerceivedBrightness - textPerceivedBrightness); // 用户设置为高亮字体颜色（接近白色亮度），不处理，保持高亮
 
       if (textPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_2__["WHITE_LIKE_COLOR_BRIGHTNESS"]) return textColor;
-      if (offsetPerceivedBrightness > this._maxLimitOffsetBrightness && bgColorWithOpacityPerceivedBrightness <= this._defaultDarkBgColorBrightness + 2) return this._adjustBrightnessByLimit(this._maxLimitOffsetBrightness + bgColorWithOpacityPerceivedBrightness, textColorRgb).alpha(textColorAlpha); // 如果感知亮度差大于阈值，无需调整
+
+      if (offsetPerceivedBrightness > this._maxLimitOffsetBrightness && bgColorWithOpacityPerceivedBrightness <= this._defaultDarkBgColorBrightness + 2) {
+        return this._adjustBrightnessByLimit(this._maxLimitOffsetBrightness + bgColorWithOpacityPerceivedBrightness, textColorRgb).alpha(textColorAlpha);
+      } // 如果感知亮度差大于阈值，无需调整
+
 
       if (offsetPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_2__["MIN_LIMIT_OFFSET_BRIGHTNESS"]) return textColor;
 
@@ -3243,7 +3272,8 @@ var SDK = /*#__PURE__*/function () {
         newColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - bgColorHsl[2]));
       } else if (bgColorPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_2__["MAX_LIMIT_BGCOLOR_BRIGHTNESS"]) {
         // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
-        newColor = this._adjustBrightnessByLimit(_constant__WEBPACK_IMPORTED_MODULE_2__["MAX_LIMIT_BGCOLOR_BRIGHTNESS"], bgColorRgb).alpha(bgColorAlpha); // const ratio = (MAX_LIMIT_BGCOLOR_BRIGHTNESS * 1000) / (bgColorRgb[0] * 299 + bgColorRgb[1] * 587 + bgColorRgb[2] * 114);
+        newColor = this._adjustBrightnessByLimit(_constant__WEBPACK_IMPORTED_MODULE_2__["MAX_LIMIT_BGCOLOR_BRIGHTNESS"], bgColorRgb).alpha(bgColorAlpha); // const ratio = (MAX_LIMIT_BGCOLOR_BRIGHTNESS * 1000)
+        //   / (bgColorRgb[0] * 299 + bgColorRgb[1] * 587 + bgColorRgb[2] * 114);
         // newColor = Color.rgb(bgColorRgb[0] * ratio, bgColorRgb[1] * ratio, bgColorRgb[2] * ratio);
       } else if (bgColorHsl[2] < _constant__WEBPACK_IMPORTED_MODULE_2__["LOW_BLACKWHITE_HSL_BRIGHTNESS"]) {
         // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
@@ -3259,7 +3289,10 @@ var SDK = /*#__PURE__*/function () {
     value: function _adjustBrightness(color, el, options) {
       // 背景：
       // 处理原则：白背景改黑，其他高感知亮度背景调暗，低亮度适当提高亮度（感知亮度：https://www.w3.org/TR/AERT/#color-contrast）
-      // 处理方法：黑白灰色（h=0，s=0）亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS时，做取反处理；感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，取MAX_LIMIT_BGCOLOR_BRIGHTNESS；其他亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS时，设为LOW_BLACKWHITE_HSL_BRIGHTNESS。
+      // 处理方法：
+      // 黑白灰色（h=0，s=0）亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS时，做取反处理；
+      // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，取MAX_LIMIT_BGCOLOR_BRIGHTNESS；
+      // 其他亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS时，设为LOW_BLACKWHITE_HSL_BRIGHTNESS。
       // 字体、边框：
       // 处理原则：根据调整后的背景颜色和最小亮度差值算出字体颜色，接近白色字体颜色保持不变，带背景图片子元素字体颜色不变
       // 处理方法：亮度小于HIGH_BLACKWHITE_HSL_BRIGHTNESS时，用（90%-该亮度），大于等于HIGH_BLACKWHITE_HSL_BRIGHTNESS则保持不变；
@@ -3355,7 +3388,7 @@ var SDK = /*#__PURE__*/function () {
           }
         }
 
-        if ((/background/i.test(key) || /^(-webkit-)?border-image/.test(key)) && /url\([^\)]*\)/i.test(value)) {
+        if ((/background/i.test(key) || /^(-webkit-)?border-image/.test(key)) && /url\([^)]*\)/i.test(value)) {
           hasInlineBackgroundImage = true;
         } // 过滤掉一些key
 
@@ -3476,8 +3509,8 @@ var SDK = /*#__PURE__*/function () {
         var textColorIdx = ['-webkit-text-stroke-color', 'color', '-webkit-text-fill-color'].indexOf(key);
         var isBorderColor = /^border/.test(key);
         var isGradient = /gradient/.test(value);
-        var extStyle = '';
         var gradientColors = [];
+        var extStyle = '';
         var gradientMixColor;
 
         if (!hasInlineBackgroundImage && colorReg.test(value)) {
@@ -3539,7 +3572,7 @@ var SDK = /*#__PURE__*/function () {
           var isBackgroundAttr = /^background/.test(key);
           var isBorderImageAttr = /^(-webkit-)?border-image/.test(key);
 
-          if ((isBackgroundAttr || isBorderImageAttr) && /url\([^\)]*\)/i.test(value)) {
+          if ((isBackgroundAttr || isBorderImageAttr) && /url\([^)]*\)/i.test(value)) {
             cssChange = true;
 
             var imgBgColor = el.getAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]) || _this._config.defaultLightBgColor; // 在背景图片下加一层原背景颜色：
@@ -3547,7 +3580,7 @@ var SDK = /*#__PURE__*/function () {
             // border-image不支持多层背景，需要添加background-color
 
 
-            value = value.replace(/^(.*?)url\(([^\)]*)\)(.*)$/i, function (matches) {
+            value = value.replace(/^(.*?)url\(([^)]*)\)(.*)$/i, function (matches) {
               var newValue = matches;
               var newBackgroundPositionValue = '';
               var newBackgroundSizeValue = '';
