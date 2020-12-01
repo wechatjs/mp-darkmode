@@ -1,6 +1,6 @@
 {
   "name": "mp-darkmode",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "微信公众平台图文 Dark Mode 转换算法",
   "main": "dist/darkmode.min.js",
   "dependencies": {
@@ -19,6 +19,14 @@
     "dev": "webpack --config build/dev.config.js --watch",
     "build": "webpack --config build/prod.config.js"
   },
+  "files": [
+    "dist",
+    "doc",
+    "LICENSE",
+    "package.json",
+    "README_CN.md",
+    "README.md"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wechatjs/mp-darkmode.git"

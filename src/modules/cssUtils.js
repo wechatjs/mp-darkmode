@@ -11,12 +11,12 @@
  * @method genCssKV 生成css键值对
  * @param {string} key css属性
  * @param {string} val css值
- * @returns {string} css键值对
+ * @return {string} css键值对
  *
  * @method genCss 生成css，包括css选择器
  * @param {string} className DOM节点类名
  * @param {string} cssKV     css键值对
- * @returns {string} css
+ * @return {string} css
  *
  * @method addCss 加入css
  * @param {string}  css              css样式

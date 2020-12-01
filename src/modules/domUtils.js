@@ -3,15 +3,15 @@
  *
  * @function getChildrenAndIt 获取某个节点及它的所有子节点
  * @param {Dom Object} dom 节点对象
- * @returns {Dom Object Array} 节点对象列表
+ * @return {Dom Object Array} 节点对象列表
  *
  * @function hasTextNode 判断某个节点里是否包含文字节点
  * @param {Dom Object} dom 节点对象
- * @returns {boolean} 判断结果
+ * @return {boolean} 判断结果
  *
  * @function hasTableClass 判断table相关元素有没有指定class
  * @param {Dom Object} dom 节点对象
- * @returns {string | null} 判断结果，如果有，返回class对应的lm色值，否则返回null
+ * @return {string | null} 判断结果，如果有，返回class对应的lm色值，否则返回null
  *
  */
 
@@ -60,12 +60,15 @@ export function hasTableClass(dom) {
  * @param {Dom Object Array} nodes 要处理的节点列表
  *
  * @method len 获取要处理的节点列表长度
- * @returns {number} 长度
+ * @return {number} 长度
  *
  * @method get 获取要处理的节点列表长度（包含延迟节点、容器节点等逻辑）
- * @returns {Dom Object Array} 要处理的节点列表
+ * @return {Dom Object Array} 要处理的节点列表
  *
  * @method delay 将所有要处理的节点转移到延迟处理队列里
+ *
+ * @method hasDelay 判断是否包含延迟处理的节点
+ * @return {boolean} 判断结果
  *
  * @method addFirstPageNode 添加首屏节点
  * @param {Dom Object} node 要添加的首屏节点
@@ -112,6 +115,10 @@ export class DomUtils {
   delay() {
     this._nodes.forEach(node => this._delayNodes.push(node)); // 转移到延迟处理的节点里
     this._nodes = []; // 转移后清空列表
+  }
+
+  hasDelay() {
+    return this._delayNodes.length > 0;
   }
 
   addFirstPageNode(node) {

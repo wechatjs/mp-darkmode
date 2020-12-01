@@ -6,6 +6,7 @@
  * @param {Object}           opt   Dark Mode配置，详见init配置说明
  *
  * @function init 初始化Dark Mode配置
+ * @param {Function}   opt.begin                 开始处理时触发的回调
  * @param {Function}   opt.error                 发生error时触发的回调
  * @param {String}     opt.mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
  * @param {Object}     opt.whitelist             节点白名单
@@ -40,7 +41,10 @@ const classReg = new RegExp(`${CLASS_PREFIX}[^ ]+`, 'g');
 const config = {
   hasInit: false, // 是否初始化过配置
 
+  // hooks
+  begin: null, // 开始处理时触发的回调
   error: null, // 发生error时触发的回调
+
   mode: '', // 强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
   whitelist: { // 节点白名单
     tagName: ['MPCPS', 'IFRAME'] // 标签名列表
@@ -113,6 +117,8 @@ const switchToDarkmode = (mqlObj, opt = {
   try {
     if (config.mode ? (config.mode === 'dark') : mqlObj.matches) { // Dark Mode
       if (opt.type === 'dom') { // 处理节点
+        typeof config.begin === 'function' && config.begin(domUtils.hasDelay());
+
         domUtils.get().forEach(node => {
           if (node.className && typeof node.className === 'string') {
             node.className = node.className.replace(classReg, ''); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
@@ -191,6 +197,7 @@ export function init(opt = {}) {
     document.getElementsByTagName('html')[0].classList.add(HTML_CLASS);
   }
 
+  setConfig('function', opt, 'begin');
   setConfig('function', opt, 'error');
   setConfig('boolean', opt, 'needJudgeFirstPage');
   setConfig('boolean', opt, 'delayBgJudge');

@@ -7,6 +7,8 @@ API
 
 - `nodes` &lt;DOM Object Array&gt; The DOM to be converted.
 - `options` &lt;Object&gt; Configuration.
+  - `options.begin` &lt;Function&gt; Callback triggered when Dark Mode conversion starts.
+    - `isSwitch` &lt;boolean&gt; Whether to switch to Dark Mode.
   - `options.error` &lt;Function&gt; Callback triggered when an error occurs.
     - `err` &lt;Error&gt; Error object.
   - `options.mode` &lt;string&gt; The specified color mode (dark | light), if specified, the system color will not be monitored.

@@ -2326,6 +2326,7 @@ __webpack_require__.r(__webpack_exports__);
  * @param {Object}           opt   Dark Mode配置，详见init配置说明
  *
  * @function init 初始化Dark Mode配置
+ * @param {Function}   opt.begin                 开始处理时触发的回调
  * @param {Function}   opt.error                 发生error时触发的回调
  * @param {String}     opt.mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
  * @param {Object}     opt.whitelist             节点白名单
@@ -2349,6 +2350,9 @@ var classReg = new RegExp("".concat(_modules_constant__WEBPACK_IMPORTED_MODULE_0
 var config = {
   hasInit: false,
   // 是否初始化过配置
+  // hooks
+  begin: null,
+  // 开始处理时触发的回调
   error: null,
   // 发生error时触发的回调
   mode: '',
@@ -2435,6 +2439,7 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
       // Dark Mode
       if (opt.type === 'dom') {
         // 处理节点
+        typeof config.begin === 'function' && config.begin(domUtils.hasDelay());
         domUtils.get().forEach(function (node) {
           if (node.className && typeof node.className === 'string') {
             node.className = node.className.replace(classReg, ''); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
@@ -2523,6 +2528,7 @@ function init() {
     document.getElementsByTagName('html')[0].classList.add(_modules_constant__WEBPACK_IMPORTED_MODULE_0__["HTML_CLASS"]);
   }
 
+  setConfig('function', opt, 'begin');
   setConfig('function', opt, 'error');
   setConfig('boolean', opt, 'needJudgeFirstPage');
   setConfig('boolean', opt, 'delayBgJudge');
@@ -2782,12 +2788,12 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * @method genCssKV 生成css键值对
  * @param {string} key css属性
  * @param {string} val css值
- * @returns {string} css键值对
+ * @return {string} css键值对
  *
  * @method genCss 生成css，包括css选择器
  * @param {string} className DOM节点类名
  * @param {string} cssKV     css键值对
- * @returns {string} css
+ * @return {string} css
  *
  * @method addCss 加入css
  * @param {string}  css              css样式
@@ -2899,15 +2905,15 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
  *
  * @function getChildrenAndIt 获取某个节点及它的所有子节点
  * @param {Dom Object} dom 节点对象
- * @returns {Dom Object Array} 节点对象列表
+ * @return {Dom Object Array} 节点对象列表
  *
  * @function hasTextNode 判断某个节点里是否包含文字节点
  * @param {Dom Object} dom 节点对象
- * @returns {boolean} 判断结果
+ * @return {boolean} 判断结果
  *
  * @function hasTableClass 判断table相关元素有没有指定class
  * @param {Dom Object} dom 节点对象
- * @returns {string | null} 判断结果，如果有，返回class对应的lm色值，否则返回null
+ * @return {string | null} 判断结果，如果有，返回class对应的lm色值，否则返回null
  *
  */
 function getChildrenAndIt(dom) {
@@ -2956,12 +2962,15 @@ function hasTableClass(dom) {
  * @param {Dom Object Array} nodes 要处理的节点列表
  *
  * @method len 获取要处理的节点列表长度
- * @returns {number} 长度
+ * @return {number} 长度
  *
  * @method get 获取要处理的节点列表长度（包含延迟节点、容器节点等逻辑）
- * @returns {Dom Object Array} 要处理的节点列表
+ * @return {Dom Object Array} 要处理的节点列表
  *
  * @method delay 将所有要处理的节点转移到延迟处理队列里
+ *
+ * @method hasDelay 判断是否包含延迟处理的节点
+ * @return {boolean} 判断结果
  *
  * @method addFirstPageNode 添加首屏节点
  * @param {Dom Object} node 要添加的首屏节点
@@ -3031,6 +3040,11 @@ var DomUtils = /*#__PURE__*/function () {
 
 
       this._nodes = []; // 转移后清空列表
+    }
+  }, {
+    key: "hasDelay",
+    value: function hasDelay() {
+      return this._delayNodes.length > 0;
     }
   }, {
     key: "addFirstPageNode",
@@ -3113,7 +3127,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  * @method convert 处理节点
  * @param {DOM Object} el 要处理的节点
- * @returns {string} 处理后的css，包含css选择器
+ * @return {string} 处理后的css，包含css选择器
  *
  */
 // dependencies
