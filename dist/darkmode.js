@@ -3155,18 +3155,20 @@ var parseColor = function parseColor(value) {
     return "rgb(".concat(color_name__WEBPACK_IMPORTED_MODULE_1___default.a[match.replace(/(^[\s,()]+)|([\s,()]+$)/g, '').toLowerCase()].toString(), ")");
   });
 }; // 处理颜色，包括清除!important和转换英文定义颜色
-// 计算mix颜色
 
+
+var BG_COLOR_DELIMITER = '|'; // 计算mix颜色
 
 var mixColor = function mixColor(colors) {
   if (!colors || colors.length < 1) return '';
   if (colors.length === 1) return colors[0];
   var retColor = colors.shift();
-  var nextColor = colors.pop();
+  var nextColor = colors.shift();
 
   while (nextColor) {
-    retColor = color__WEBPACK_IMPORTED_MODULE_0___default()(retColor).mix(color__WEBPACK_IMPORTED_MODULE_0___default()(nextColor));
-    nextColor = colors.pop();
+    var nextColorObj = color__WEBPACK_IMPORTED_MODULE_0___default()(nextColor);
+    retColor = color__WEBPACK_IMPORTED_MODULE_0___default()(retColor).mix(nextColorObj, nextColorObj.alpha());
+    nextColor = colors.shift();
   }
 
   return retColor;
@@ -3527,7 +3529,7 @@ var SDK = /*#__PURE__*/function () {
         var extStyle = '';
         var gradientMixColor;
 
-        if (!hasInlineBackgroundImage && colorReg.test(value)) {
+        if (colorReg.test(value)) {
           if (isGradient) {
             // 把原渐变色取出来
             value.replace(colorRegGlobal, function (match) {
@@ -3537,6 +3539,7 @@ var SDK = /*#__PURE__*/function () {
             gradientMixColor = mixColor([].concat(gradientColors)); // console.log(value, gradientColors, 'mix:', gradientMixColor) ;
           }
 
+          var replaceIndex = 0;
           value = value.replace(colorRegGlobal, function (match) {
             // 渐变色统一改成mix纯色
             if (isGradient) {
@@ -3553,7 +3556,7 @@ var SDK = /*#__PURE__*/function () {
               hasInlineColor: hasInlineColor
             });
 
-            var retColor = ret.newColor;
+            var retColor = !hasInlineBackgroundImage && ret.newColor;
             extStyle += ret.extStyle; // 对背景颜色和文字颜色做继承传递，用于文字亮度计算
 
             if (isBgColor || textColorIdx > 0) {
@@ -3561,9 +3564,11 @@ var SDK = /*#__PURE__*/function () {
               var attrName = isBgColor ? _constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"] : _constant__WEBPACK_IMPORTED_MODULE_2__["COLORATTR"];
               var originalAttrName = isBgColor ? _constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"] : _constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"];
               var retColorStr = retColor ? retColor.toString() : match;
-              Object(_domUtils__WEBPACK_IMPORTED_MODULE_3__["getChildrenAndIt"])(el).forEach(function (dom) {
+              replaceIndex === 0 && Object(_domUtils__WEBPACK_IMPORTED_MODULE_3__["getChildrenAndIt"])(el).forEach(function (dom) {
+                var originalAttrValue = dom.getAttribute(originalAttrName) || _this._config.defaultLightBgColor;
+
                 dom.setAttribute(attrName, retColorStr);
-                dom.setAttribute(originalAttrName, match); // 如果设置背景颜色，取消背景图片的影响
+                dom.setAttribute(originalAttrName, originalAttrValue.split(BG_COLOR_DELIMITER).concat(match).join(BG_COLOR_DELIMITER)); // 如果设置背景颜色，取消背景图片的影响
 
                 if (isBgColor && color__WEBPACK_IMPORTED_MODULE_0___default()(retColorStr).alpha() >= 0.05 && dom.getAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"])) {
                   dom.removeAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]);
@@ -3572,6 +3577,7 @@ var SDK = /*#__PURE__*/function () {
             }
 
             retColor && (cssChange = true);
+            replaceIndex += 1;
             return retColor || match;
           }).replace(/\s?!\s?important/ig, '');
         }
@@ -3588,11 +3594,9 @@ var SDK = /*#__PURE__*/function () {
 
           if ((isBackgroundAttr || isBorderImageAttr) && /url\([^)]*\)/i.test(value)) {
             cssChange = true;
-
-            var imgBgColor = el.getAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]) || _this._config.defaultLightBgColor; // 在背景图片下加一层原背景颜色：
+            var imgBgColor = mixColor((el.getAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]) || _this._config.defaultLightBgColor).split(BG_COLOR_DELIMITER)); // 在背景图片下加一层原背景颜色：
             // background-image使用多层背景(注意background-position也要多加一层 https://www.w3.org/TR/css-backgrounds-3/#layering)；
             // border-image不支持多层背景，需要添加background-color
-
 
             value = value.replace(/^(.*?)url\(([^)]*)\)(.*)$/i, function (matches) {
               var newValue = matches;
@@ -3635,8 +3639,7 @@ var SDK = /*#__PURE__*/function () {
             }); // 没有设置自定义字体颜色，则使用非 Dark Mode 下默认字体颜色
 
             if (!hasInlineColor) {
-              var textColor = el.getAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]) || _this._config.defaultLightTextColor;
-
+              var textColor = mixColor((el.getAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]) || _this._config.defaultLightTextColor).split(BG_COLOR_DELIMITER));
               cssKV += _this._cssUtils.genCssKV('color', textColor);
               Object(_domUtils__WEBPACK_IMPORTED_MODULE_3__["getChildrenAndIt"])(el).forEach(function (dom) {
                 return dom.setAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["COLORATTR"], textColor);

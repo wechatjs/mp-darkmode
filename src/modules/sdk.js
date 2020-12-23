@@ -58,6 +58,7 @@ const colorReg = /rgba?\([^)]+\)/i;
 const colorRegGlobal = /rgba?\([^)]+\)/ig;
 const removeImportant = value => value.replace(IMPORTANT_REGEXP, ''); // 清除!important
 const parseColor = value => removeImportant(value).replace(colorNameReg, match => `rgb(${ColorName[match.replace(/(^[\s,()]+)|([\s,()]+$)/g, '').toLowerCase()].toString()})`); // 处理颜色，包括清除!important和转换英文定义颜色
+const BG_COLOR_DELIMITER = '|';
 
 // 计算mix颜色
 const mixColor = colors => {
@@ -65,10 +66,11 @@ const mixColor = colors => {
   if (colors.length === 1) return colors[0];
 
   let retColor = colors.shift();
-  let nextColor = colors.pop();
+  let nextColor = colors.shift();
   while (nextColor) {
-    retColor = Color(retColor).mix(Color(nextColor));
-    nextColor = colors.pop();
+    const nextColorObj = Color(nextColor);
+    retColor = Color(retColor).mix(nextColorObj, nextColorObj.alpha());
+    nextColor = colors.shift();
   }
 
   return retColor;
@@ -394,7 +396,7 @@ export default class SDK {
       let extStyle = '';
       let gradientMixColor;
 
-      if (!hasInlineBackgroundImage && colorReg.test(value)) {
+      if (colorReg.test(value)) {
         if (isGradient) {
           // 把原渐变色取出来
           value.replace(colorRegGlobal, match => gradientColors.push(match));
@@ -403,6 +405,7 @@ export default class SDK {
           gradientMixColor = mixColor([].concat(gradientColors));
           // console.log(value, gradientColors, 'mix:', gradientMixColor) ;
         }
+        let replaceIndex = 0;
         value = value.replace(colorRegGlobal, match => {
           // 渐变色统一改成mix纯色
           if (isGradient) {
@@ -418,7 +421,7 @@ export default class SDK {
             isBorderColor,
             hasInlineColor
           });
-          const retColor = ret.newColor;
+          const retColor = !hasInlineBackgroundImage && ret.newColor;
 
           extStyle += ret.extStyle;
 
@@ -427,9 +430,10 @@ export default class SDK {
             const attrName = isBgColor ? BGCOLORATTR : COLORATTR;
             const originalAttrName = isBgColor ? ORIGINAL_BGCOLORATTR : ORIGINAL_COLORATTR;
             const retColorStr = retColor ? retColor.toString() : match;
-            getChildrenAndIt(el).forEach(dom => {
+            replaceIndex === 0 && getChildrenAndIt(el).forEach(dom => {
+              const originalAttrValue = dom.getAttribute(originalAttrName) || this._config.defaultLightBgColor;
               dom.setAttribute(attrName, retColorStr);
-              dom.setAttribute(originalAttrName, match);
+              dom.setAttribute(originalAttrName, originalAttrValue.split(BG_COLOR_DELIMITER).concat(match).join(BG_COLOR_DELIMITER));
 
               // 如果设置背景颜色，取消背景图片的影响
               if (isBgColor && Color(retColorStr).alpha() >= 0.05 && dom.getAttribute(BGIMAGEATTR)) {
@@ -439,7 +443,7 @@ export default class SDK {
           }
 
           retColor && (cssChange = true);
-
+          replaceIndex += 1;
           return retColor || match;
         }).replace(/\s?!\s?important/ig, '');
       }
@@ -454,7 +458,7 @@ export default class SDK {
         const isBorderImageAttr = /^(-webkit-)?border-image/.test(key);
         if ((isBackgroundAttr || isBorderImageAttr) && /url\([^)]*\)/i.test(value)) {
           cssChange = true;
-          const imgBgColor = el.getAttribute(ORIGINAL_BGCOLORATTR) || this._config.defaultLightBgColor;
+          const imgBgColor = mixColor((el.getAttribute(ORIGINAL_BGCOLORATTR) || this._config.defaultLightBgColor).split(BG_COLOR_DELIMITER));
 
           // 在背景图片下加一层原背景颜色：
           // background-image使用多层背景(注意background-position也要多加一层 https://www.w3.org/TR/css-backgrounds-3/#layering)；
@@ -493,7 +497,7 @@ export default class SDK {
 
           // 没有设置自定义字体颜色，则使用非 Dark Mode 下默认字体颜色
           if (!hasInlineColor) {
-            const textColor = el.getAttribute(ORIGINAL_COLORATTR) || this._config.defaultLightTextColor;
+            const textColor = mixColor((el.getAttribute(ORIGINAL_COLORATTR) || this._config.defaultLightTextColor).split(BG_COLOR_DELIMITER));
             cssKV += this._cssUtils.genCssKV('color', textColor);
             getChildrenAndIt(el).forEach(dom => dom.setAttribute(COLORATTR, textColor));
           }
