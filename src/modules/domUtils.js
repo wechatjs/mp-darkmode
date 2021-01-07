@@ -21,7 +21,7 @@ export function getChildrenAndIt(dom) {
 
 export function hasTextNode(dom) {
   let cnt = '';
-  dom.childNodes.forEach(node => {
+  Array.prototype.forEach.call(dom.childNodes, node => {
     if (node.nodeType === 3) {
       cnt += node.nodeValue.replace(/\s/g, ''); // 不考虑空白字符
     }
@@ -113,7 +113,7 @@ export class DomUtils {
   }
 
   delay() {
-    this._nodes.forEach(node => this._delayNodes.push(node)); // 转移到延迟处理的节点里
+    Array.prototype.forEach.call(this._nodes, node => this._delayNodes.push(node)); // 转移到延迟处理的节点里
     this._nodes = []; // 转移后清空列表
   }
 

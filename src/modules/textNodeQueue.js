@@ -56,7 +56,7 @@ export default class TextNodeQueue {
     this._queue.forEach(item => {
       if (!item.updated) {
         Array.prototype.some.call(nodes, node => {
-          if (node.classList.contains(item.className)) {
+          if (node.nodeType === 1 && node.classList.contains(item.className)) {
             item.el = node;
             item.updated = true;
             return true;

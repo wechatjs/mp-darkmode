@@ -2440,7 +2440,7 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
       if (opt.type === 'dom') {
         // 处理节点
         typeof config.begin === 'function' && config.begin(domUtils.hasDelay());
-        domUtils.get().forEach(function (node) {
+        Array.prototype.forEach.call(domUtils.get(), function (node) {
           if (node.className && typeof node.className === 'string') {
             node.className = node.className.replace(classReg, ''); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
           }
@@ -2660,7 +2660,7 @@ var BgNodeStack = /*#__PURE__*/function () {
       this._stack.forEach(function (item) {
         if (!item.updated) {
           Array.prototype.some.call(nodes, function (node) {
-            if (node.classList.contains(item.className)) {
+            if (node.nodeType === 1 && node.classList.contains(item.className)) {
               item.el = node;
               item.updated = true;
               return true;
@@ -2924,7 +2924,7 @@ function getChildrenAndIt(dom) {
 ;
 function hasTextNode(dom) {
   var cnt = '';
-  dom.childNodes.forEach(function (node) {
+  Array.prototype.forEach.call(dom.childNodes, function (node) {
     if (node.nodeType === 3) {
       cnt += node.nodeValue.replace(/\s/g, ''); // 不考虑空白字符
     }
@@ -3034,10 +3034,9 @@ var DomUtils = /*#__PURE__*/function () {
     value: function delay() {
       var _this = this;
 
-      this._nodes.forEach(function (node) {
+      Array.prototype.forEach.call(this._nodes, function (node) {
         return _this._delayNodes.push(node);
       }); // 转移到延迟处理的节点里
-
 
       this._nodes = []; // 转移后清空列表
     }
@@ -3782,7 +3781,7 @@ var TextNodeQueue = /*#__PURE__*/function () {
       this._queue.forEach(function (item) {
         if (!item.updated) {
           Array.prototype.some.call(nodes, function (node) {
-            if (node.classList.contains(item.className)) {
+            if (node.nodeType === 1 && node.classList.contains(item.className)) {
               item.el = node;
               item.updated = true;
               return true;

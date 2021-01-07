@@ -119,7 +119,7 @@ const switchToDarkmode = (mqlObj, opt = {
       if (opt.type === 'dom') { // 处理节点
         typeof config.begin === 'function' && config.begin(domUtils.hasDelay());
 
-        domUtils.get().forEach(node => {
+        Array.prototype.forEach.call(domUtils.get(), node => {
           if (node.className && typeof node.className === 'string') {
             node.className = node.className.replace(classReg, ''); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
           }
