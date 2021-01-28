@@ -3134,27 +3134,32 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 color_name__WEBPACK_IMPORTED_MODULE_1___default.a.windowtext = [0, 0, 0]; // 补上这个colorName
 
+color_name__WEBPACK_IMPORTED_MODULE_1___default.a.transparent = [255, 255, 255, 0]; // 支持透明，暂定用白色透明度0来表示
+
  // 节点相关操作工具API
 
 
 var colorNameReg = new RegExp(Object.keys(color_name__WEBPACK_IMPORTED_MODULE_1___default.a).map(function (colorName) {
-  return "(^|[\\s,()]+)".concat(colorName, "([\\s,()]+|$)");
+  return "\\b".concat(colorName, "\\b");
 }).join('|'), 'ig'); // 生成正则表达式来匹配这些colorName
 
-var colorReg = /rgba?\([^)]+\)/i;
-var colorRegGlobal = /rgba?\([^)]+\)/ig;
+var colorReg = /\brgba?\([^)]+\)/i;
+var colorRegGlobal = /\brgba?\([^)]+\)/ig;
 
 var removeImportant = function removeImportant(value) {
   return value.replace(_constant__WEBPACK_IMPORTED_MODULE_2__["IMPORTANT_REGEXP"], '');
 }; // 清除!important
 
 
-var parseColor = function parseColor(value) {
+var parseColor = function parseColor(value, parseTransparent) {
   return removeImportant(value).replace(colorNameReg, function (match) {
-    return "rgb(".concat(color_name__WEBPACK_IMPORTED_MODULE_1___default.a[match.replace(/(^[\s,()]+)|([\s,()]+$)/g, '').toLowerCase()].toString(), ")");
-  });
-}; // 处理颜色，包括清除!important和转换英文定义颜色
+    // 处理颜色，包括清除!important和转换英文定义颜色
+    if (!parseTransparent && match === 'transparent') return match; // 如果不转换transparent，直接返回transparent
 
+    var color = color_name__WEBPACK_IMPORTED_MODULE_1___default.a[match.toLowerCase()];
+    return "".concat(color.length > 3 ? 'rgba' : 'rgb', "(").concat(color.toString(), ")");
+  });
+};
 
 var BG_COLOR_DELIMITER = '|'; // 计算mix颜色
 
@@ -3515,9 +3520,7 @@ var SDK = /*#__PURE__*/function () {
             value = _ref11[1];
 
         var oldValue = value;
-        var cssChange = false; // 将英文定义颜色转换为rgb格式
-
-        value = parseColor(value); // 找出色值来处理
+        var cssChange = false; // 找出色值来处理
 
         var isBgColor = /^background/.test(key);
         var isTextShadow = key === 'text-shadow';
@@ -3526,16 +3529,22 @@ var SDK = /*#__PURE__*/function () {
         var isGradient = /gradient/.test(value);
         var gradientColors = [];
         var extStyle = '';
-        var gradientMixColor;
+        var gradientMixColor; // 将英文定义颜色转换为rgb格式
+
+        value = parseColor(value, isGradient); // 渐变需要处理透明
 
         if (colorReg.test(value)) {
           if (isGradient) {
             // 把原渐变色取出来
-            value.replace(colorRegGlobal, function (match) {
-              return gradientColors.push(match);
-            }); // 计算出一个mix颜色
+            var matches = colorRegGlobal.exec(value);
 
-            gradientMixColor = mixColor([].concat(gradientColors)); // console.log(value, gradientColors, 'mix:', gradientMixColor) ;
+            while (matches) {
+              gradientColors.push(matches[0]);
+              matches = colorRegGlobal.exec(value);
+            } // 计算出一个mix颜色
+
+
+            gradientMixColor = mixColor(gradientColors);
           }
 
           var replaceIndex = 0;

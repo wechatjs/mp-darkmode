@@ -20,6 +20,7 @@
 import Color from 'color';
 import ColorName from 'color-name';
 ColorName.windowtext = [0, 0, 0]; // 补上这个colorName
+ColorName.transparent = [255, 255, 255, 0]; // 支持透明，暂定用白色透明度0来表示
 
 import {
   CLASS_PREFIX,
@@ -53,11 +54,16 @@ import {
   hasTableClass
 } from './domUtils';
 
-const colorNameReg = new RegExp(Object.keys(ColorName).map(colorName => `(^|[\\s,()]+)${colorName}([\\s,()]+|$)`).join('|'), 'ig'); // 生成正则表达式来匹配这些colorName
-const colorReg = /rgba?\([^)]+\)/i;
-const colorRegGlobal = /rgba?\([^)]+\)/ig;
+const colorNameReg = new RegExp(Object.keys(ColorName).map(colorName => `\\b${colorName}\\b`).join('|'), 'ig'); // 生成正则表达式来匹配这些colorName
+const colorReg = /\brgba?\([^)]+\)/i;
+const colorRegGlobal = /\brgba?\([^)]+\)/ig;
 const removeImportant = value => value.replace(IMPORTANT_REGEXP, ''); // 清除!important
-const parseColor = value => removeImportant(value).replace(colorNameReg, match => `rgb(${ColorName[match.replace(/(^[\s,()]+)|([\s,()]+$)/g, '').toLowerCase()].toString()})`); // 处理颜色，包括清除!important和转换英文定义颜色
+const parseColor = (value, parseTransparent) => removeImportant(value).replace(colorNameReg, match => { // 处理颜色，包括清除!important和转换英文定义颜色
+  if (!parseTransparent && match === 'transparent') return match; // 如果不转换transparent，直接返回transparent
+
+  const color = ColorName[match.toLowerCase()];
+  return `${color.length > 3 ? 'rgba' : 'rgb'}(${color.toString()})`;
+});
 const BG_COLOR_DELIMITER = '|';
 
 // 计算mix颜色
@@ -383,9 +389,6 @@ export default class SDK {
       const oldValue = value;
       let cssChange = false;
 
-      // 将英文定义颜色转换为rgb格式
-      value = parseColor(value);
-
       // 找出色值来处理
       const isBgColor = /^background/.test(key);
       const isTextShadow = key === 'text-shadow';
@@ -396,14 +399,20 @@ export default class SDK {
       let extStyle = '';
       let gradientMixColor;
 
+      // 将英文定义颜色转换为rgb格式
+      value = parseColor(value, isGradient); // 渐变需要处理透明
+
       if (colorReg.test(value)) {
         if (isGradient) {
           // 把原渐变色取出来
-          value.replace(colorRegGlobal, match => gradientColors.push(match));
+          let matches = colorRegGlobal.exec(value);
+          while (matches) {
+            gradientColors.push(matches[0]);
+            matches = colorRegGlobal.exec(value);
+          }
 
           // 计算出一个mix颜色
-          gradientMixColor = mixColor([].concat(gradientColors));
-          // console.log(value, gradientColors, 'mix:', gradientMixColor) ;
+          gradientMixColor = mixColor(gradientColors);
         }
         let replaceIndex = 0;
         value = value.replace(colorRegGlobal, match => {
