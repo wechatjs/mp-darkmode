@@ -165,7 +165,7 @@ const switchToDarkmode = (mqlObj, opt = {
       }
     }
   } catch (e) {
-    console.error(e);
+    console.log('An error occurred when running the dark mode conversion algorithm\n', e);
     typeof config.error === 'function' && config.error(e);
   }
 };

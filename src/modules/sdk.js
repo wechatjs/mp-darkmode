@@ -262,6 +262,15 @@ export default class SDK {
     };
   }
 
+  _try(func) {
+    try {
+      return func();
+    } catch (e) {
+      console.log('An error occurred when running the dark mode conversion algorithm\n', e);
+      typeof this._config.error === 'function' && this._config.error(e);
+    }
+  }
+
   convert(el) {
     const nodeName = el.nodeName;
 
@@ -331,27 +340,31 @@ export default class SDK {
     });
 
     if (TABLE_NAME.indexOf(nodeName) > -1 && !hasInlineBackground) { // 如果table没有内联样式
-      let color = hasTableClass(el); // 获取class对应的lm色值
-      if (!color) color = el.getAttribute('bgcolor'); // 如果没有class则获取bgcolor的色值
-      if (color) { // 有色值（class对应的lm色值或者是bgcolor色值），则当做内联样式来处理
-        cssKVList.unshift(['background-color', Color(color).toString()]);
-        hasInlineBackground = true;
-      }
+      this._try(() => {
+        let color = hasTableClass(el); // 获取class对应的lm色值
+        if (!color) color = el.getAttribute('bgcolor'); // 如果没有class则获取bgcolor的色值
+        if (color) { // 有色值（class对应的lm色值或者是bgcolor色值），则当做内联样式来处理
+          cssKVList.unshift(['background-color', Color(color).toString()]);
+          hasInlineBackground = true;
+        }
+      });
     }
 
     if (nodeName === 'FONT' && !hasInlineColor) { // 如果是font标签且没有内联样式
-      const color = el.getAttribute('color'); // 获取color的色值
-      if (color) { // 有色值，则当做内联样式来处理
-        cssKVList.push(['color', Color(color).toString()]);
-        hasInlineColor = true;
-      }
+      this._try(() => {
+        const color = el.getAttribute('color'); // 获取color的色值
+        if (color) { // 有色值，则当做内联样式来处理
+          cssKVList.push(['color', Color(color).toString()]);
+          hasInlineColor = true;
+        }
+      });
     }
 
     // 处理-webkit-text相关样式
     let webkitFillColor = '';
     let webkitStrokeColor = '';
     let webkitTextLen = 0;
-    cssKVList.some(([key, value], idx) => {
+    cssKVList.some(([key, value], idx) => this._try(() => {
       if (key.indexOf('-webkit-text') !== 0) { // 遍历到非-webkit-text样式
         webkitTextLen = idx; // 记录-webkit-text相关样式的长度
         return true; // 结束遍历
@@ -361,17 +374,18 @@ export default class SDK {
         case '-webkit-text-fill-color':
           webkitFillColor = parseWebkitFillColorAndStrokeColor(value);
           break;
-        case '-webkit-text-stroke': // 有-webkit-text-stroke时就不会有-webkit-text-stroke-color
+        case '-webkit-text-stroke': { // 有-webkit-text-stroke时就不会有-webkit-text-stroke-color
           const newValue = value.split(' ');
           newValue.length === 2 && (webkitStrokeColor = parseWebkitFillColorAndStrokeColor(newValue[1]));
           break;
+        }
         case '-webkit-text-stroke-color': // 有-webkit-text-stroke-color时就不会有-webkit-text-stroke
           webkitStrokeColor = parseWebkitFillColorAndStrokeColor(value);
           break;
       }
 
       return false; // 继续遍历
-    });
+    }));
     if (webkitFillColor) { // 有-webkit-text-fill-color，当做color对待
       if (hasInlineColor) { // 本来有color，替换为-webkit-text-fill-color
         cssKVList[cssKVList.length - 1] = ['-webkit-text-fill-color', webkitFillColor];
@@ -385,7 +399,7 @@ export default class SDK {
       webkitStrokeColor && cssKVList.unshift(['-webkit-text-stroke-color', webkitStrokeColor]); // 如果有-webkit-text-stroke-color，则插入到最前面
     }
 
-    cssKVList.forEach(([key, value]) => {
+    cssKVList.forEach(([key, value]) => this._try(() => {
       const oldValue = value;
       let cssChange = false;
 
@@ -521,7 +535,7 @@ export default class SDK {
           cssKV += this._cssUtils.genCssKV(key, value);
         }
       }
-    });
+    }));
 
     if (cssKV) { // 有处理过或者是背景图片就加class以及css
       IS_PC && el.setAttribute('data-style', styles.cssText); // PC端备份内联样式到data-style里，供编辑器做反处理

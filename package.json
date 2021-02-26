@@ -1,6 +1,6 @@
 {
   "name": "mp-darkmode",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "微信公众平台图文 Dark Mode 转换算法",
   "main": "dist/darkmode.min.js",
   "dependencies": {
