@@ -35,8 +35,4 @@ export const PAGE_HEIGHT = (window.getInnerHeight && window.getInnerHeight())
 
 export const TABLE_NAME = ['TABLE', 'TR', 'TD', 'TH']; // 支持bgcolor属性的table标签列表
 
-const UA = navigator.userAgent;
-export const IS_PC = (/windows\snt/i.test(UA) && !/Windows\sPhone/i.test(UA))
-  || (/mac\sos/i.test(UA) && !/(iPhone|iPad|iPod|iOS)/i.test(UA));
-
 export const IMPORTANT_REGEXP = / !important$/; // !important

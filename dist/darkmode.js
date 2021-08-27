@@ -2685,7 +2685,7 @@ var BgNodeStack = /*#__PURE__*/function () {
 /*!*********************************!*\
   !*** ./src/modules/constant.js ***!
   \*********************************/
-/*! exports provided: MEDIA_QUERY, CLASS_PREFIX, HTML_CLASS, COLORATTR, BGCOLORATTR, ORIGINAL_COLORATTR, ORIGINAL_BGCOLORATTR, BGIMAGEATTR, DEFAULT_LIGHT_TEXTCOLOR, DEFAULT_LIGHT_BGCOLOR, DEFAULT_DARK_TEXTCOLOR, DEFAULT_DARK_BGCOLOR, GRAY_MASK_COLOR, WHITE_LIKE_COLOR_BRIGHTNESS, MAX_LIMIT_BGCOLOR_BRIGHTNESS, MIN_LIMIT_OFFSET_BRIGHTNESS, HIGH_BGCOLOR_BRIGHTNESS, HIGH_BLACKWHITE_HSL_BRIGHTNESS, LOW_BLACKWHITE_HSL_BRIGHTNESS, PAGE_HEIGHT, TABLE_NAME, IS_PC, IMPORTANT_REGEXP */
+/*! exports provided: MEDIA_QUERY, CLASS_PREFIX, HTML_CLASS, COLORATTR, BGCOLORATTR, ORIGINAL_COLORATTR, ORIGINAL_BGCOLORATTR, BGIMAGEATTR, DEFAULT_LIGHT_TEXTCOLOR, DEFAULT_LIGHT_BGCOLOR, DEFAULT_DARK_TEXTCOLOR, DEFAULT_DARK_BGCOLOR, GRAY_MASK_COLOR, WHITE_LIKE_COLOR_BRIGHTNESS, MAX_LIMIT_BGCOLOR_BRIGHTNESS, MIN_LIMIT_OFFSET_BRIGHTNESS, HIGH_BGCOLOR_BRIGHTNESS, HIGH_BLACKWHITE_HSL_BRIGHTNESS, LOW_BLACKWHITE_HSL_BRIGHTNESS, PAGE_HEIGHT, TABLE_NAME, IMPORTANT_REGEXP */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2711,7 +2711,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LOW_BLACKWHITE_HSL_BRIGHTNESS", function() { return LOW_BLACKWHITE_HSL_BRIGHTNESS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PAGE_HEIGHT", function() { return PAGE_HEIGHT; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TABLE_NAME", function() { return TABLE_NAME; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IS_PC", function() { return IS_PC; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IMPORTANT_REGEXP", function() { return IMPORTANT_REGEXP; });
 /**
  * @name 常量
@@ -2750,8 +2749,6 @@ var LOW_BLACKWHITE_HSL_BRIGHTNESS = 22;
 var PAGE_HEIGHT = window.getInnerHeight && window.getInnerHeight() || window.innerHeight || document.documentElement.clientHeight;
 var TABLE_NAME = ['TABLE', 'TR', 'TD', 'TH']; // 支持bgcolor属性的table标签列表
 
-var UA = navigator.userAgent;
-var IS_PC = /windows\snt/i.test(UA) && !/Windows\sPhone/i.test(UA) || /mac\sos/i.test(UA) && !/(iPhone|iPad|iPod|iOS)/i.test(UA);
 var IMPORTANT_REGEXP = / !important$/; // !important
 
 /***/ }),
@@ -3689,7 +3686,7 @@ var SDK = /*#__PURE__*/function () {
 
       if (cssKV) {
         // 有处理过或者是背景图片就加class以及css
-        _constant__WEBPACK_IMPORTED_MODULE_2__["IS_PC"] && el.setAttribute('data-style', styles.cssText); // PC端备份内联样式到data-style里，供编辑器做反处理
+        el.setAttribute('data-style', styles.cssText); // 备份内联样式到data-style里，供编辑器做反处理
 
         var className = "".concat(_constant__WEBPACK_IMPORTED_MODULE_2__["CLASS_PREFIX"]).concat(this._idx++);
         el.classList.add(className);

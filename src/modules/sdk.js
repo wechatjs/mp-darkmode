@@ -42,8 +42,6 @@ import {
 
   TABLE_NAME,
 
-  IS_PC,
-
   IMPORTANT_REGEXP
 } from './constant';
 
@@ -538,7 +536,7 @@ export default class SDK {
     }));
 
     if (cssKV) { // 有处理过或者是背景图片就加class以及css
-      IS_PC && el.setAttribute('data-style', styles.cssText); // PC端备份内联样式到data-style里，供编辑器做反处理
+      el.setAttribute('data-style', styles.cssText); // 备份内联样式到data-style里，供编辑器做反处理
       const className = `${CLASS_PREFIX}${this._idx++}`;
       el.classList.add(className);
       css += (cssKV ? this._cssUtils.genCss(className, cssKV) : '');
