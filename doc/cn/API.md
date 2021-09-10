@@ -9,6 +9,7 @@ API
 - `options` &lt;Object&gt; Dark Mode转换算法配置项。
   - `options.begin` &lt;Function&gt; Dark Mode转换开始时触发的回调。
     - `isSwitch` &lt;boolean&gt; 是否切换Dark Mode时进行转换。
+  - `options.showFirstPage` &lt;Function&gt; 首屏处理完成时触发的回调。
   - `options.error` &lt;Function&gt; 发生error时触发的回调。
     - `err` &lt;Error&gt; 错误对象。
   - `options.mode` &lt;string&gt; 强制指定的颜色模式（dark | light），指定了就不监听系统颜色。

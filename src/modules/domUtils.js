@@ -56,6 +56,8 @@ export function hasTableClass(dom) {
  * @constructor
  * @param {Object} config Darkmode配置
  *
+ * @attr {boolean} showFirstPage 是否已显示首屏
+ *
  * @method set 设置要处理的节点列表
  * @param {Dom Object Array} nodes 要处理的节点列表
  *
@@ -81,6 +83,8 @@ export class DomUtils {
   _nodes = []; // 要处理的节点列表
   _firstPageNodes = []; // 首屏节点列表
   _delayNodes = []; // 延迟处理的节点列表
+
+  showFirstPage = false; // 是否已显示首屏
 
   constructor(config) {
     this._config = config;
@@ -128,5 +132,6 @@ export class DomUtils {
   showFirstPageNodes() {
     this._firstPageNodes.forEach(node => node.style.visibility = 'visible'); // 显示首屏节点
     this._firstPageNodes = []; // 处理完之后清空列表
+    this.showFirstPage = true; // 记录为已显示首屏
   }
 };

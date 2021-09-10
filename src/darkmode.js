@@ -7,6 +7,7 @@
  *
  * @function init 初始化Dark Mode配置
  * @param {Function}   opt.begin                 开始处理时触发的回调
+ * @param {Function}   opt.showFirstPage         首屏处理完成时触发的回调
  * @param {Function}   opt.error                 发生error时触发的回调
  * @param {String}     opt.mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
  * @param {Object}     opt.whitelist             节点白名单
@@ -43,6 +44,7 @@ const config = {
 
   // hooks
   begin: null, // 开始处理时触发的回调
+  showFirstPage: null, // 首屏处理完成时触发的回调
   error: null, // 发生error时触发的回调
 
   mode: '', // 强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
@@ -141,6 +143,7 @@ const switchToDarkmode = (mqlObj, opt = {
               // 显示首屏
               cssUtils.writeStyle(true); // 写入首屏样式表
               domUtils.showFirstPageNodes(); // 显示首屏节点
+              typeof config.showFirstPage === 'function' && config.showFirstPage(); // 执行首屏回调
 
               cssUtils.addCss(sdk.convert(node), false); // 写入非首屏样式
             }
@@ -152,6 +155,11 @@ const switchToDarkmode = (mqlObj, opt = {
         }));
       }
 
+      if (config.needJudgeFirstPage || (!config.needJudgeFirstPage && !domUtils.showFirstPage)) {
+        // config.needJudgeFirstPage === ture，表示需要判断首屏但是正文长度没超过一屏
+        // config.needJudgeFirstPage === false && domUtils.showFirstPage === false，表示不需要判断首屏且没有做首屏优化
+        typeof config.showFirstPage === 'function' && config.showFirstPage();
+      }
       cssUtils.writeStyle(); // 写入非首屏样式表
     } else {
       // 首次加载页面时为非Dark Mode，标记为不需要判断首屏
@@ -198,6 +206,7 @@ export function init(opt = {}) {
   }
 
   setConfig('function', opt, 'begin');
+  setConfig('function', opt, 'showFirstPage');
   setConfig('function', opt, 'error');
   setConfig('boolean', opt, 'needJudgeFirstPage');
   setConfig('boolean', opt, 'delayBgJudge');

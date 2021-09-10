@@ -2327,6 +2327,7 @@ __webpack_require__.r(__webpack_exports__);
  *
  * @function init 初始化Dark Mode配置
  * @param {Function}   opt.begin                 开始处理时触发的回调
+ * @param {Function}   opt.showFirstPage         首屏处理完成时触发的回调
  * @param {Function}   opt.error                 发生error时触发的回调
  * @param {String}     opt.mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
  * @param {Object}     opt.whitelist             节点白名单
@@ -2353,6 +2354,8 @@ var config = {
   // hooks
   begin: null,
   // 开始处理时触发的回调
+  showFirstPage: null,
+  // 首屏处理完成时触发的回调
   error: null,
   // 发生error时触发的回调
   mode: '',
@@ -2471,6 +2474,8 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
 
               domUtils.showFirstPageNodes(); // 显示首屏节点
 
+              typeof config.showFirstPage === 'function' && config.showFirstPage(); // 执行首屏回调
+
               cssUtils.addCss(sdk.convert(node), false); // 写入非首屏样式
             }
           }
@@ -2482,6 +2487,12 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
             cssUtils.addCss(cssUtils.genCss(bg.className, bg.cssKV), false); // 写入非首屏样式
           });
         });
+      }
+
+      if (config.needJudgeFirstPage || !config.needJudgeFirstPage && !domUtils.showFirstPage) {
+        // config.needJudgeFirstPage === ture，表示需要判断首屏但是正文长度没超过一屏
+        // config.needJudgeFirstPage === false && domUtils.showFirstPage === false，表示不需要判断首屏且没有做首屏优化
+        typeof config.showFirstPage === 'function' && config.showFirstPage();
       }
 
       cssUtils.writeStyle(); // 写入非首屏样式表
@@ -2529,6 +2540,7 @@ function init() {
   }
 
   setConfig('function', opt, 'begin');
+  setConfig('function', opt, 'showFirstPage');
   setConfig('function', opt, 'error');
   setConfig('boolean', opt, 'needJudgeFirstPage');
   setConfig('boolean', opt, 'delayBgJudge');
@@ -2955,6 +2967,8 @@ function hasTableClass(dom) {
  * @constructor
  * @param {Object} config Darkmode配置
  *
+ * @attr {boolean} showFirstPage 是否已显示首屏
+ *
  * @method set 设置要处理的节点列表
  * @param {Dom Object Array} nodes 要处理的节点列表
  *
@@ -2980,6 +2994,7 @@ var DomUtils = /*#__PURE__*/function () {
   // 要处理的节点列表
   // 首屏节点列表
   // 延迟处理的节点列表
+  // 是否已显示首屏
   function DomUtils(config) {
     _classCallCheck(this, DomUtils);
 
@@ -2988,6 +3003,8 @@ var DomUtils = /*#__PURE__*/function () {
     _defineProperty(this, "_firstPageNodes", []);
 
     _defineProperty(this, "_delayNodes", []);
+
+    _defineProperty(this, "showFirstPage", false);
 
     this._config = config;
   }
@@ -3056,6 +3073,8 @@ var DomUtils = /*#__PURE__*/function () {
 
 
       this._firstPageNodes = []; // 处理完之后清空列表
+
+      this.showFirstPage = true; // 记录为已显示首屏
     }
   }]);
 
