@@ -58,3 +58,13 @@ Darkmode.init({
 ```javascript
 Darkmode.convertBg(document.body.querySelectorAll('*'));
 ```
+
+### `Darkmode.extend(pluginList)`
+
+- `pluginList` &lt;Plugin Array&gt; 要挂载的插件列表。
+
+挂载插件。
+
+```javascript
+Darkmode.extend([pluginA, pluginB, pluginC]);
+```

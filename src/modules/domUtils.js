@@ -7,13 +7,20 @@
  *
  * @function hasTextNode 判断某个节点里是否包含文字节点
  * @param {Dom Object} dom 节点对象
- * @return {boolean} 判断结果
+ * @return {Boolean} 判断结果
  *
  * @function hasTableClass 判断table相关元素有没有指定class
  * @param {Dom Object} dom 节点对象
- * @return {string | null} 判断结果，如果有，返回class对应的lm色值，否则返回null
+ * @return {String | null} 判断结果，如果有，返回class对应的lm色值，否则返回null
  *
  */
+
+// Darkmode配置
+import config from './config';
+
+import {
+  sdk
+} from './global';
 
 export function getChildrenAndIt(dom) {
   return [dom].concat(...dom.querySelectorAll('*'));
@@ -53,18 +60,13 @@ export function hasTableClass(dom) {
  *
  * @class DomUtils
  *
- * @constructor
- * @param {Object} config Darkmode配置
- *
+ * @attr {number} length 要处理的节点列表长度
  * @attr {boolean} showFirstPage 是否已显示首屏
  *
  * @method set 设置要处理的节点列表
  * @param {Dom Object Array} nodes 要处理的节点列表
  *
- * @method len 获取要处理的节点列表长度
- * @return {number} 长度
- *
- * @method get 获取要处理的节点列表长度（包含延迟节点、容器节点等逻辑）
+ * @method get 获取要处理的节点列表（包含延迟节点、容器节点等逻辑）
  * @return {Dom Object Array} 要处理的节点列表
  *
  * @method delay 将所有要处理的节点转移到延迟处理队列里
@@ -77,6 +79,8 @@ export function hasTableClass(dom) {
  *
  * @method showFirstPageNodes 显示所有首屏节点
  *
+ * @method emptyFirstPageNodes 清空记录的首屏节点
+ *
  */
 
 export class DomUtils {
@@ -86,16 +90,14 @@ export class DomUtils {
 
   showFirstPage = false; // 是否已显示首屏
 
-  constructor(config) {
-    this._config = config;
+  constructor() {}
+
+  get length() {
+    return this._nodes.length;
   }
 
   set(nodes = []) {
     this._nodes = nodes;
-  }
-
-  len() {
-    return this._nodes.length;
   }
 
   get() {
@@ -103,13 +105,13 @@ export class DomUtils {
 
     if (this._nodes.length) { // 有节点
       res = this._nodes;
-      this._nodes = [];
+      sdk.isDarkmode && (this._nodes = []);
     } else { // 如果没有节点
       if (this._delayNodes.length) { // 有延迟节点，则使用延迟节点
         res = this._delayNodes;
         this._delayNodes = [];
-      } else if (this._config.container) { // 没有延迟节点，但有容器，重新获取容器内的节点
-        res = this._config.container.querySelectorAll('*');
+      } else if (config.container) { // 没有延迟节点，但有容器，重新获取容器内的节点
+        res = config.container.querySelectorAll('*');
       }
     }
 
@@ -131,7 +133,10 @@ export class DomUtils {
 
   showFirstPageNodes() {
     this._firstPageNodes.forEach(node => node.style.visibility = 'visible'); // 显示首屏节点
-    this._firstPageNodes = []; // 处理完之后清空列表
     this.showFirstPage = true; // 记录为已显示首屏
+  }
+
+  emptyFirstPageNodes() {
+    this._firstPageNodes = [];
   }
 };

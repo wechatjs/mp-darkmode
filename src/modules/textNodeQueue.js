@@ -4,26 +4,27 @@
  * @class TextNodeQueue
  *
  * @constructor
- * @param {Object} config Darkmode配置
- * @param {string} prefix 类名前缀
+ * @param {String} prefix 类名前缀
  *
  * @method push 文本节点入队
  * @param {Dom Object} el 文本节点对象
  *
  * @method forEach 遍历，遍历过的文本节点出队
- * @param {function} callback 回调
+ * @param {Function} callback 回调
  *
  * @method update 更新队列的节点对象，主要解决前后节点不一致的问题
  * @param {Dom Object Array} nodes 要更新的节点对象列表
  *
  */
 
+// Darkmode配置
+import config from './config';
+
 export default class TextNodeQueue {
   _queue = []; // 文本节点队列，{ el, className, updated }
   _idx = 0; // 索引值
 
-  constructor(config, prefix) {
-    this._config = config;
+  constructor(prefix) {
     this._prefix = prefix;
   }
 
@@ -33,7 +34,7 @@ export default class TextNodeQueue {
     this._queue.push({
       el,
       className,
-      updated: !this._config.delayBgJudge
+      updated: !config.delayBgJudge
     });
   }
 

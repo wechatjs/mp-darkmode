@@ -59,6 +59,16 @@ Darkmode.run(document.body.querySelectorAll('*'), {
 
 更多详细用法可参考[API](./doc/cn/API.md)。
 
+## 插件
+
+从 `v1.1.0` 开始支持插件，可以在转换过程中进行自定义操作，比如过滤 DOM 属性。插件的使用方法如下：
+
+```javascript
+Darkmode.extend([pluginA, pluginB, pluginC]);
+```
+
+如果你想编写自己的 Dark Mode 插件，可以参考[这里](./doc/cn/plugins.md)。
+
 ## 处理原则
 
 详见[图文富文本内容 Dark Mode 处理原则](./doc/cn/principle.md)。

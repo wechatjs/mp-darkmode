@@ -59,6 +59,16 @@ Darkmode.run(document.body.querySelectorAll('*'), {
 
 More detailed usage can refer to [API](./doc/en/API.md).
 
+## Plugins
+
+Plugins are supported since `v1.1.0`. Custom actions can be performed during transformation, such as filtering DOM attributes. How to use the plugin is as follows:
+
+```javascript
+Darkmode.extend([pluginA, pluginB, pluginC]);
+```
+
+If you want to write your own Dark Mode plugin, you can refer to [here](./doc/en/plugins.md)。
+
 ## Contribution
 
 The algorithm is constantly updated and optimized. If you have a good idea, you can fork and submit your code. For specific development, please refer to [Development Guide](./doc/en/develop.md).

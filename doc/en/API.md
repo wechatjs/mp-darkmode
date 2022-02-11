@@ -58,3 +58,13 @@ Processing background. When `delayBgJudge = true` in the configuration item, you
 ```javascript
 Darkmode.convertBg(document.body.querySelectorAll('*'));
 ```
+
+### `Darkmode.extend(pluginList)`
+
+- `pluginList` &lt;Plugin Array&gt; List of plugins to mount.
+
+Mount the plugin.
+
+```javascript
+Darkmode.extend([pluginA, pluginB, pluginC]);
+```

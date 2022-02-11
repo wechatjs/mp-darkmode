@@ -4,28 +4,29 @@
  * @class BgNodeStack
  *
  * @constructor
- * @param {Object} config Darkmode配置
- * @param {string} prefix 类名前缀
+ * @param {String} prefix 类名前缀
  *
  * @method push 背景节点入栈
  * @param {Dom Object} el    背景节点对象
- * @param {string}     cssKV css键值对
+ * @param {String}     cssKV css键值对
  *
  * @method contains 判断节点是否在背景节点的区域
  * @param {Dom Object} el       要判断的节点对象（非背景节点）
- * @param {function}   callback 如果在背景节点区域内，则执行该回调函数
+ * @param {Function}   callback 如果在背景节点区域内，则执行该回调函数
  *
  * @method update 更新堆栈的节点对象，主要解决前后节点不一致的问题
  * @param {Dom Object Array} nodes 要更新的节点对象列表
  *
  */
 
+// Darkmode配置
+import config from './config';
+
 export default class BgNodeStack {
   _stack = []; // 需要判断位置的背景堆栈，{ el, className, cssKV, updated, rect }
   _idx = 0; // 索引值
 
-  constructor(config, prefix) {
-    this._config = config;
+  constructor(prefix) {
     this._prefix = prefix;
   }
 
@@ -36,7 +37,7 @@ export default class BgNodeStack {
       el,
       className,
       cssKV,
-      updated: !this._config.delayBgJudge
+      updated: !config.delayBgJudge
     });
   }
 
