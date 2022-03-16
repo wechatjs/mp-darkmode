@@ -4,11 +4,11 @@
  * @class BgNodeStack
  *
  * @constructor
- * @param {String} prefix 类名前缀
+ * @param {string} prefix 类名前缀
  *
  * @method push 背景节点入栈
  * @param {Dom Object} el    背景节点对象
- * @param {String}     cssKV css键值对
+ * @param {string}     cssKV css键值对
  *
  * @method contains 判断节点是否在背景节点的区域
  * @param {Dom Object} el       要判断的节点对象（非背景节点）

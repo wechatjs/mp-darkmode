@@ -7,11 +7,11 @@
  *
  * @function hasTextNode 判断某个节点里是否包含文字节点
  * @param {Dom Object} dom 节点对象
- * @return {Boolean} 判断结果
+ * @return {boolean} 判断结果
  *
  * @function hasTableClass 判断table相关元素有没有指定class
  * @param {Dom Object} dom 节点对象
- * @return {String | null} 判断结果，如果有，返回class对应的lm色值，否则返回null
+ * @return {string | null} 判断结果，如果有，返回class对应的lm色值，否则返回null
  *
  */
 

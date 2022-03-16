@@ -1510,12 +1510,13 @@ module.exports = {
 /* MIT license */
 var colorNames = __webpack_require__(/*! color-name */ "./node_modules/color-name/index.js");
 var swizzle = __webpack_require__(/*! simple-swizzle */ "./node_modules/simple-swizzle/index.js");
+var hasOwnProperty = Object.hasOwnProperty;
 
 var reverseNames = {};
 
 // create a list of reverse color names
 for (var name in colorNames) {
-	if (colorNames.hasOwnProperty(name)) {
+	if (hasOwnProperty.call(colorNames, name)) {
 		reverseNames[colorNames[name]] = name;
 	}
 }
@@ -1558,9 +1559,9 @@ cs.get.rgb = function (string) {
 
 	var abbr = /^#([a-f0-9]{3,4})$/i;
 	var hex = /^#([a-f0-9]{6})([a-f0-9]{2})?$/i;
-	var rgba = /^rgba?\(\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/;
-	var per = /^rgba?\(\s*([+-]?[\d\.]+)\%\s*,\s*([+-]?[\d\.]+)\%\s*,\s*([+-]?[\d\.]+)\%\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/;
-	var keyword = /(\D+)/;
+	var rgba = /^rgba?\(\s*([+-]?\d+)(?=[\s,])\s*(?:,\s*)?([+-]?\d+)(?=[\s,])\s*(?:,\s*)?([+-]?\d+)\s*(?:[,|\/]\s*([+-]?[\d\.]+)(%?)\s*)?\)$/;
+	var per = /^rgba?\(\s*([+-]?[\d\.]+)\%\s*,?\s*([+-]?[\d\.]+)\%\s*,?\s*([+-]?[\d\.]+)\%\s*(?:[,|\/]\s*([+-]?[\d\.]+)(%?)\s*)?\)$/;
+	var keyword = /^(\w+)$/;
 
 	var rgb = [0, 0, 0, 1];
 	var match;
@@ -1578,7 +1579,7 @@ cs.get.rgb = function (string) {
 		}
 
 		if (hexAlpha) {
-			rgb[3] = Math.round((parseInt(hexAlpha, 16) / 255) * 100) / 100;
+			rgb[3] = parseInt(hexAlpha, 16) / 255;
 		}
 	} else if (match = string.match(abbr)) {
 		match = match[1];
@@ -1589,7 +1590,7 @@ cs.get.rgb = function (string) {
 		}
 
 		if (hexAlpha) {
-			rgb[3] = Math.round((parseInt(hexAlpha + hexAlpha, 16) / 255) * 100) / 100;
+			rgb[3] = parseInt(hexAlpha + hexAlpha, 16) / 255;
 		}
 	} else if (match = string.match(rgba)) {
 		for (i = 0; i < 3; i++) {
@@ -1597,7 +1598,11 @@ cs.get.rgb = function (string) {
 		}
 
 		if (match[4]) {
-			rgb[3] = parseFloat(match[4]);
+			if (match[5]) {
+				rgb[3] = parseFloat(match[4]) * 0.01;
+			} else {
+				rgb[3] = parseFloat(match[4]);
+			}
 		}
 	} else if (match = string.match(per)) {
 		for (i = 0; i < 3; i++) {
@@ -1605,19 +1610,22 @@ cs.get.rgb = function (string) {
 		}
 
 		if (match[4]) {
-			rgb[3] = parseFloat(match[4]);
+			if (match[5]) {
+				rgb[3] = parseFloat(match[4]) * 0.01;
+			} else {
+				rgb[3] = parseFloat(match[4]);
+			}
 		}
 	} else if (match = string.match(keyword)) {
 		if (match[1] === 'transparent') {
 			return [0, 0, 0, 0];
 		}
 
-		rgb = colorNames[match[1]];
-
-		if (!rgb) {
+		if (!hasOwnProperty.call(colorNames, match[1])) {
 			return null;
 		}
 
+		rgb = colorNames[match[1]];
 		rgb[3] = 1;
 
 		return rgb;
@@ -1638,12 +1646,12 @@ cs.get.hsl = function (string) {
 		return null;
 	}
 
-	var hsl = /^hsla?\(\s*([+-]?(?:\d*\.)?\d+)(?:deg)?\s*,\s*([+-]?[\d\.]+)%\s*,\s*([+-]?[\d\.]+)%\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/;
+	var hsl = /^hsla?\(\s*([+-]?(?:\d{0,3}\.)?\d+)(?:deg)?\s*,?\s*([+-]?[\d\.]+)%\s*,?\s*([+-]?[\d\.]+)%\s*(?:[,|\/]\s*([+-]?(?=\.\d|\d)(?:0|[1-9]\d*)?(?:\.\d*)?(?:[eE][+-]?\d+)?)\s*)?\)$/;
 	var match = string.match(hsl);
 
 	if (match) {
 		var alpha = parseFloat(match[4]);
-		var h = (parseFloat(match[1]) + 360) % 360;
+		var h = ((parseFloat(match[1]) % 360) + 360) % 360;
 		var s = clamp(parseFloat(match[2]), 0, 100);
 		var l = clamp(parseFloat(match[3]), 0, 100);
 		var a = clamp(isNaN(alpha) ? 1 : alpha, 0, 1);
@@ -1659,7 +1667,7 @@ cs.get.hwb = function (string) {
 		return null;
 	}
 
-	var hwb = /^hwb\(\s*([+-]?\d*[\.]?\d+)(?:deg)?\s*,\s*([+-]?[\d\.]+)%\s*,\s*([+-]?[\d\.]+)%\s*(?:,\s*([+-]?[\d\.]+)\s*)?\)$/;
+	var hwb = /^hwb\(\s*([+-]?\d{0,3}(?:\.\d+)?)(?:deg)?\s*,\s*([+-]?[\d\.]+)%\s*,\s*([+-]?[\d\.]+)%\s*(?:,\s*([+-]?(?=\.\d|\d)(?:0|[1-9]\d*)?(?:\.\d*)?(?:[eE][+-]?\d+)?)\s*)?\)$/;
 	var match = string.match(hwb);
 
 	if (match) {
@@ -1738,7 +1746,7 @@ function clamp(num, min, max) {
 }
 
 function hexDouble(num) {
-	var str = num.toString(16).toUpperCase();
+	var str = Math.round(num).toString(16).toUpperCase();
 	return (str.length < 2) ? '0' + str : str;
 }
 
@@ -2327,17 +2335,17 @@ __webpack_require__.r(__webpack_exports__);
  * @param {Function}   opt.begin                 开始处理时触发的回调
  * @param {Function}   opt.showFirstPage         首屏处理完成时触发的回调
  * @param {Function}   opt.error                 发生error时触发的回调
- * @param {String}     opt.mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
+ * @param {string}     opt.mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
  * @param {Object}     opt.whitelist             节点白名单
  * @param {Array}      opt.whitelist.tagName     标签名列表
- * @param {Boolean}    opt.needJudgeFirstPage    是否需要判断首屏
- * @param {Boolean}    opt.delayBgJudge          是否延迟背景判断
+ * @param {boolean}    opt.needJudgeFirstPage    是否需要判断首屏
+ * @param {boolean}    opt.delayBgJudge          是否延迟背景判断
  * @param {DOM Object} opt.container             延迟运行js时使用的容器
- * @param {String}     opt.cssSelectorsPrefix    css选择器前缀
- * @param {String}     opt.defaultLightTextColor 非Dark Mode下字体颜色
- * @param {String}     opt.defaultLightBgColor   非Dark Mode下背景颜色
- * @param {String}     opt.defaultDarkTextColor  Dark Mode下字体颜色
- * @param {String}     opt.defaultDarkBgColor    Dark Mode下背景颜色
+ * @param {string}     opt.cssSelectorsPrefix    css选择器前缀
+ * @param {string}     opt.defaultLightTextColor 非Dark Mode下字体颜色
+ * @param {string}     opt.defaultLightBgColor   非Dark Mode下背景颜色
+ * @param {string}     opt.defaultDarkTextColor  Dark Mode下字体颜色
+ * @param {string}     opt.defaultDarkBgColor    Dark Mode下背景颜色
  *
  * @function convertBg 处理背景
  * @param {Dom Object Array} nodes 要处理的节点列表
@@ -2483,7 +2491,7 @@ function init() {
   _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('string', opt, 'defaultDarkTextColor');
   _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('string', opt, 'defaultDarkBgColor');
 
-  if (!_modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].mode && mql === null) {
+  if (!_modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].mode && mql === null && window.matchMedia) {
     // 匹配媒体查询
     mql = window.matchMedia(_modules_constant__WEBPACK_IMPORTED_MODULE_0__["MEDIA_QUERY"]);
     mql.addListener(switchToDarkmode); // 监听
@@ -2529,7 +2537,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -2539,11 +2547,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * @class BgNodeStack
  *
  * @constructor
- * @param {String} prefix 类名前缀
+ * @param {string} prefix 类名前缀
  *
  * @method push 背景节点入栈
  * @param {Dom Object} el    背景节点对象
- * @param {String}     cssKV css键值对
+ * @param {string}     cssKV css键值对
  *
  * @method contains 判断节点是否在背景节点的区域
  * @param {Dom Object} el       要判断的节点对象（非背景节点）
@@ -2646,26 +2654,26 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * @name Darkmode配置
  *
- * @attr {Boolean}      hasInit               是否初始化过配置
+ * @attr {boolean}      hasInit               是否初始化过配置
  * @attr {Function}     begin                 开始处理时触发的回调
  * @attr {Function}     showFirstPage         首屏处理完成时触发的回调
  * @attr {Function}     error                 发生error时触发的回调
- * @attr {String}       mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
+ * @attr {string}       mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
  * @attr {Object}       whitelist             节点白名单
- * @attr {String Array} whitelist.tagName     标签名列表
- * @attr {Boolean}      needJudgeFirstPage    是否需要判断首屏
- * @attr {Boolean}      delayBgJudge          是否延迟背景判断
+ * @attr {string Array} whitelist.tagName     标签名列表
+ * @attr {boolean}      needJudgeFirstPage    是否需要判断首屏
+ * @attr {boolean}      delayBgJudge          是否延迟背景判断
  * @attr {DOM Object}   container             延迟运行js时使用的容器
- * @attr {String}       cssSelectorsPrefix    css选择器前缀
- * @attr {String}       defaultLightTextColor 非Dark Mode下字体颜色
- * @attr {String}       defaultLightBgColor   非Dark Mode下背景颜色
- * @attr {String}       defaultDarkTextColor  Dark Mode下字体颜色
- * @attr {String}       defaultDarkBgColor    Dark Mode下背景颜色
+ * @attr {string}       cssSelectorsPrefix    css选择器前缀
+ * @attr {string}       defaultLightTextColor 非Dark Mode下字体颜色
+ * @attr {string}       defaultLightBgColor   非Dark Mode下背景颜色
+ * @attr {string}       defaultDarkTextColor  Dark Mode下字体颜色
+ * @attr {string}       defaultDarkBgColor    Dark Mode下背景颜色
  *
  * @method set 设置配置
- * @param {String} type 要处理的节点
+ * @param {string} type 要处理的节点
  * @param {Object} opt  传入的配置对象
- * @param {String} key  配置名
+ * @param {string} key  配置名
  *
  */
 
@@ -2805,11 +2813,11 @@ function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArra
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
-function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
@@ -2817,7 +2825,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -2826,24 +2834,24 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  * @class CssUtils
  *
- * @attr {Boolean} isFinish 是否运行过Dark Mode处理逻辑（写入过非首屏样式表则表示已运行过）
+ * @attr {boolean} isFinish 是否运行过Dark Mode处理逻辑（写入过非首屏样式表则表示已运行过）
  *
  * @method genCssKV 生成css键值对
- * @param {String} key css属性
- * @param {String} val css值
- * @return {String} css键值对
+ * @param {string} key css属性
+ * @param {string} val css值
+ * @return {string} css键值对
  *
  * @method genCss 生成css，包括css选择器
- * @param {String} className DOM节点类名
- * @param {String} cssKV     css键值对
- * @return {String} css
+ * @param {string} className DOM节点类名
+ * @param {string} cssKV     css键值对
+ * @return {string} css
  *
  * @method addCss 加入css
- * @param {String}  css              css样式
- * @param {Boolean} isFirstPageStyle 是否首屏样式
+ * @param {string}  css              css样式
+ * @param {boolean} isFirstPageStyle 是否首屏样式
  *
  * @method writeStyle 写入样式表
- * @param {Boolean} isFirstPageStyle 是否首屏样式
+ * @param {boolean} isFirstPageStyle 是否首屏样式
  *
  */
  // Darkmode配置
@@ -2958,7 +2966,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -2966,9 +2974,9 @@ function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableTo
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
 
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 
@@ -2983,11 +2991,11 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
  *
  * @function hasTextNode 判断某个节点里是否包含文字节点
  * @param {Dom Object} dom 节点对象
- * @return {Boolean} 判断结果
+ * @return {boolean} 判断结果
  *
  * @function hasTableClass 判断table相关元素有没有指定class
  * @param {Dom Object} dom 节点对象
- * @return {String | null} 判断结果，如果有，返回class对应的lm色值，否则返回null
+ * @return {string | null} 判断结果，如果有，返回class对应的lm色值，否则返回null
  *
  */
 // Darkmode配置
@@ -3073,6 +3081,11 @@ var DomUtils = /*#__PURE__*/function () {
   }
 
   _createClass(DomUtils, [{
+    key: "length",
+    get: function get() {
+      return this._nodes.length;
+    }
+  }, {
     key: "set",
     value: function set() {
       var nodes = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
@@ -3136,11 +3149,6 @@ var DomUtils = /*#__PURE__*/function () {
     key: "emptyFirstPageNodes",
     value: function emptyFirstPageNodes() {
       this._firstPageNodes = [];
-    }
-  }, {
-    key: "length",
-    get: function get() {
-      return this._nodes.length;
     }
   }]);
 
@@ -3215,22 +3223,22 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 
 /**
  * @name 插件基类
  *
  * @class Plugin
  *
- * @attr {Number}  loopTimes  遍历次数（全部节点遍历结束算一次）
- * @attr {Boolean} isDarkmode 是否为Dark Mode
+ * @attr {number}  loopTimes  遍历次数（全部节点遍历结束算一次）
+ * @attr {boolean} isDarkmode 是否为Dark Mode
  *
  * @method addCss 添加样式
- * @param {String}  className       DOM节点类名
+ * @param {string}  className       DOM节点类名
  * @param {Array}   kvList          css键值对列表
- * @param {String}  kvList[0].key   css属性
- * @param {String}  kvList[0].value css值
- * @param {Boolean} needMediaQuery  是否需要Dark Mode媒体查询
+ * @param {string}  kvList[0].key   css属性
+ * @param {string}  kvList[0].value css值
+ * @param {boolean} needMediaQuery  是否需要添加Dark Mode媒体查询
  *
  */
 
@@ -3243,16 +3251,6 @@ var Plugin = /*#__PURE__*/function () {
   }
 
   _createClass(Plugin, [{
-    key: "addCss",
-    value: function addCss(className, kvList) {
-      var needMediaQuery = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
-      (needMediaQuery ? cssNeedMQ : cssNoMQ).push(_global__WEBPACK_IMPORTED_MODULE_0__["cssUtils"].genCss(className, kvList.map(function (_ref) {
-        var key = _ref.key,
-            value = _ref.value;
-        return _global__WEBPACK_IMPORTED_MODULE_0__["cssUtils"].genCssKV(key, value);
-      }).join('')));
-    }
-  }, {
     key: "loopTimes",
     get: function get() {
       return _global__WEBPACK_IMPORTED_MODULE_0__["plugins"].loopTimes;
@@ -3261,6 +3259,16 @@ var Plugin = /*#__PURE__*/function () {
     key: "isDarkmode",
     get: function get() {
       return _global__WEBPACK_IMPORTED_MODULE_0__["sdk"].isDarkmode;
+    }
+  }, {
+    key: "addCss",
+    value: function addCss(className, kvList) {
+      var needMediaQuery = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+      (needMediaQuery ? cssNeedMQ : cssNoMQ).push(_global__WEBPACK_IMPORTED_MODULE_0__["cssUtils"].genCss(className, kvList.map(function (_ref) {
+        var key = _ref.key,
+            value = _ref.value;
+        return _global__WEBPACK_IMPORTED_MODULE_0__["cssUtils"].genCssKV(key, value);
+      }).join('')));
     }
   }]);
 
@@ -3271,21 +3279,21 @@ var Plugin = /*#__PURE__*/function () {
  *
  * @class Plugins
  *
- * @attr {Number} length             已挂载的插件数量
- * @attr {String} firstPageStyle     首屏样式
- * @attr {String} otherPageStyle     非首屏样式
- * @attr {String} firstPageStyleNoMQ 首屏样式（不需要加媒体查询）
- * @attr {String} otherPageStyleNoMQ 非首屏样式（不需要加媒体查询）
+ * @attr {number} length             已挂载的插件数量
+ * @attr {string} firstPageStyle     首屏样式
+ * @attr {string} otherPageStyle     非首屏样式
+ * @attr {string} firstPageStyleNoMQ 首屏样式（不需要加媒体查询）
+ * @attr {string} otherPageStyleNoMQ 非首屏样式（不需要加媒体查询）
  *
  * @method extend 挂载插件
  * @param {Function} plugin 插件构造函数
  *
  * @method emit 执行插件钩子
- * @param {String} name 钩子名称
+ * @param {string} name 钩子名称
  * @param {Any}    args 钩子参数
  *
  * @method addCss 写入插件样式
- * @param {Boolean} isFirstPageStyle 是否首屏样式
+ * @param {boolean} isFirstPageStyle 是否首屏样式
  *
  * @method resetCss 重置插件样式
  *
@@ -3385,7 +3393,7 @@ function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArra
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
@@ -3393,9 +3401,9 @@ function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableTo
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
 
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 
@@ -3405,7 +3413,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -3416,7 +3424,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  * @method convert 处理节点
  * @param {DOM Object} el 要处理的节点
- * @return {String} 处理后的css，包含css选择器
+ * @return {string} 处理后的css，包含css选择器
  *
  */
 // dependencies
@@ -4027,13 +4035,13 @@ var SDK = /*#__PURE__*/function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return TextNodeQueue; });
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./config */ "./src/modules/config.js");
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -4043,7 +4051,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * @class TextNodeQueue
  *
  * @constructor
- * @param {String} prefix 类名前缀
+ * @param {string} prefix 类名前缀
  *
  * @method push 文本节点入队
  * @param {Dom Object} el 文本节点对象

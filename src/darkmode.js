@@ -9,17 +9,17 @@
  * @param {Function}   opt.begin                 开始处理时触发的回调
  * @param {Function}   opt.showFirstPage         首屏处理完成时触发的回调
  * @param {Function}   opt.error                 发生error时触发的回调
- * @param {String}     opt.mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
+ * @param {string}     opt.mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
  * @param {Object}     opt.whitelist             节点白名单
  * @param {Array}      opt.whitelist.tagName     标签名列表
- * @param {Boolean}    opt.needJudgeFirstPage    是否需要判断首屏
- * @param {Boolean}    opt.delayBgJudge          是否延迟背景判断
+ * @param {boolean}    opt.needJudgeFirstPage    是否需要判断首屏
+ * @param {boolean}    opt.delayBgJudge          是否延迟背景判断
  * @param {DOM Object} opt.container             延迟运行js时使用的容器
- * @param {String}     opt.cssSelectorsPrefix    css选择器前缀
- * @param {String}     opt.defaultLightTextColor 非Dark Mode下字体颜色
- * @param {String}     opt.defaultLightBgColor   非Dark Mode下背景颜色
- * @param {String}     opt.defaultDarkTextColor  Dark Mode下字体颜色
- * @param {String}     opt.defaultDarkBgColor    Dark Mode下背景颜色
+ * @param {string}     opt.cssSelectorsPrefix    css选择器前缀
+ * @param {string}     opt.defaultLightTextColor 非Dark Mode下字体颜色
+ * @param {string}     opt.defaultLightBgColor   非Dark Mode下背景颜色
+ * @param {string}     opt.defaultDarkTextColor  Dark Mode下字体颜色
+ * @param {string}     opt.defaultDarkBgColor    Dark Mode下背景颜色
  *
  * @function convertBg 处理背景
  * @param {Dom Object Array} nodes 要处理的节点列表
@@ -166,7 +166,7 @@ export function init(opt = {}) {
   config.set('string', opt, 'defaultDarkTextColor');
   config.set('string', opt, 'defaultDarkBgColor');
 
-  if (!config.mode && mql === null) {
+  if (!config.mode && mql === null && window.matchMedia) {
     // 匹配媒体查询
     mql = window.matchMedia(MEDIA_QUERY);
     mql.addListener(switchToDarkmode); // 监听

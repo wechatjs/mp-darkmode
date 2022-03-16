@@ -3,24 +3,24 @@
  *
  * @class CssUtils
  *
- * @attr {Boolean} isFinish 是否运行过Dark Mode处理逻辑（写入过非首屏样式表则表示已运行过）
+ * @attr {boolean} isFinish 是否运行过Dark Mode处理逻辑（写入过非首屏样式表则表示已运行过）
  *
  * @method genCssKV 生成css键值对
- * @param {String} key css属性
- * @param {String} val css值
- * @return {String} css键值对
+ * @param {string} key css属性
+ * @param {string} val css值
+ * @return {string} css键值对
  *
  * @method genCss 生成css，包括css选择器
- * @param {String} className DOM节点类名
- * @param {String} cssKV     css键值对
- * @return {String} css
+ * @param {string} className DOM节点类名
+ * @param {string} cssKV     css键值对
+ * @return {string} css
  *
  * @method addCss 加入css
- * @param {String}  css              css样式
- * @param {Boolean} isFirstPageStyle 是否首屏样式
+ * @param {string}  css              css样式
+ * @param {boolean} isFirstPageStyle 是否首屏样式
  *
  * @method writeStyle 写入样式表
- * @param {Boolean} isFirstPageStyle 是否首屏样式
+ * @param {boolean} isFirstPageStyle 是否首屏样式
  *
  */
 

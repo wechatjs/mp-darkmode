@@ -4,7 +4,7 @@
  * @class TextNodeQueue
  *
  * @constructor
- * @param {String} prefix 类名前缀
+ * @param {string} prefix 类名前缀
  *
  * @method push 文本节点入队
  * @param {Dom Object} el 文本节点对象

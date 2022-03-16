@@ -1,6 +1,6 @@
 {
   "name": "mp-darkmode",
-  "version": "1.1.0-beta.0",
+  "version": "1.1.0-beta.1",
   "description": "微信公众平台图文 Dark Mode 转换算法",
   "main": "dist/darkmode.min.js",
   "dependencies": {
@@ -8,12 +8,12 @@
     "color-name": "^1.1.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.9.0",
-    "@babel/plugin-proposal-class-properties": "^7.16.5",
-    "@babel/preset-env": "^7.9.0",
-    "babel-loader": "^8.1.0",
-    "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "@babel/core": "^7.17.8",
+    "@babel/plugin-proposal-class-properties": "^7.16.7",
+    "@babel/preset-env": "^7.16.11",
+    "babel-loader": "^8.2.3",
+    "webpack": "^4.46.0",
+    "webpack-cli": "^3.3.12"
   },
   "scripts": {
     "dev": "webpack --config build/dev.config.js --watch",

@@ -43,13 +43,13 @@ Darkmode.run(document.body.querySelectorAll('*')); // 处理body下的所有DOM�
 
 ### `Darkmode.run(nodes[, options])`
 
-- `nodes` &lt;DOM Object Array&gt; 要进行Dark Mode转换的DOM节点数组。
-- `options` &lt;Object&gt; Dark Mode转换算法配置项。
-  - `options.error` &lt;Function&gt; 发生error时触发的回调。
+- `nodes` &lt;DOM Object Array&gt; 要进行 Dark Mode 转换的 DOM 节点数组。
+- `options` &lt;Object&gt; Dark Mode 转换算法配置项。
+  - `options.error` &lt;Function&gt; 发生 error 时触发的回调。
     - `err` &lt;Error&gt; 错误对象。
-  - `options.mode` &lt;string&gt; 强制指定的颜色模式（dark | light），指定了就不监听系统颜色。
+  - `options.mode` &lt;string&gt; 强制指定的颜色模式（ dark | light ），指定了就不监听系统颜色。
 
-运行Dark Mode转换算法。
+运行 Dark Mode 转换算法。
 
 ```javascript
 Darkmode.run(document.body.querySelectorAll('*'), {
@@ -57,7 +57,7 @@ Darkmode.run(document.body.querySelectorAll('*'), {
 });
 ```
 
-更多详细用法可参考[API](./doc/cn/API.md)。
+更多详细用法可参考 [API](./doc/cn/API.md)。
 
 ## 插件
 

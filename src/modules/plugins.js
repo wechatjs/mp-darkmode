@@ -3,15 +3,15 @@
  *
  * @class Plugin
  *
- * @attr {Number}  loopTimes  遍历次数（全部节点遍历结束算一次）
- * @attr {Boolean} isDarkmode 是否为Dark Mode
+ * @attr {number}  loopTimes  遍历次数（全部节点遍历结束算一次）
+ * @attr {boolean} isDarkmode 是否为Dark Mode
  *
  * @method addCss 添加样式
- * @param {String}  className       DOM节点类名
+ * @param {string}  className       DOM节点类名
  * @param {Array}   kvList          css键值对列表
- * @param {String}  kvList[0].key   css属性
- * @param {String}  kvList[0].value css值
- * @param {Boolean} needMediaQuery  是否需要Dark Mode媒体查询
+ * @param {string}  kvList[0].key   css属性
+ * @param {string}  kvList[0].value css值
+ * @param {boolean} needMediaQuery  是否需要添加Dark Mode媒体查询
  *
  */
 
@@ -48,21 +48,21 @@ class Plugin {
  *
  * @class Plugins
  *
- * @attr {Number} length             已挂载的插件数量
- * @attr {String} firstPageStyle     首屏样式
- * @attr {String} otherPageStyle     非首屏样式
- * @attr {String} firstPageStyleNoMQ 首屏样式（不需要加媒体查询）
- * @attr {String} otherPageStyleNoMQ 非首屏样式（不需要加媒体查询）
+ * @attr {number} length             已挂载的插件数量
+ * @attr {string} firstPageStyle     首屏样式
+ * @attr {string} otherPageStyle     非首屏样式
+ * @attr {string} firstPageStyleNoMQ 首屏样式（不需要加媒体查询）
+ * @attr {string} otherPageStyleNoMQ 非首屏样式（不需要加媒体查询）
  *
  * @method extend 挂载插件
  * @param {Function} plugin 插件构造函数
  *
  * @method emit 执行插件钩子
- * @param {String} name 钩子名称
+ * @param {string} name 钩子名称
  * @param {Any}    args 钩子参数
  *
  * @method addCss 写入插件样式
- * @param {Boolean} isFirstPageStyle 是否首屏样式
+ * @param {boolean} isFirstPageStyle 是否首屏样式
  *
  * @method resetCss 重置插件样式
  *

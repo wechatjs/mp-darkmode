@@ -5,7 +5,7 @@
  *
  * @method convert 处理节点
  * @param {DOM Object} el 要处理的节点
- * @return {String} 处理后的css，包含css选择器
+ * @return {string} 处理后的css，包含css选择器
  *
  */
 

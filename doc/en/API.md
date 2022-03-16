@@ -34,7 +34,7 @@ Darkmode.run(document.body.querySelectorAll('*'), {
 
 ### `Darkmode.init(options)`
 
-- `options` Same as the `options` parameter in `Darkmode.run`.
+- `options` Same as the `options` parameter in `Darkmode.run()`.
 
 Initialize Dark Mode configuration. **Note: The configuration can only be set once.**
 
