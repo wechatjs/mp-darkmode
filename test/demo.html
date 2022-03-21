@@ -652,14 +652,14 @@
           </div>
 
           <div>
-            <h2 class="demo_title">Dark Mode online</h2>
+            <h2 class="demo_title" id="dark_online_title">Dark Mode online</h2>
             <div class="rich_media_wrp article_dark">
               <div class="rich_media_content" id="dark_online"></div>
             </div>
           </div>
 
           <div>
-            <h2 class="demo_title">Dark Mode</h2>
+            <h2 class="demo_title" id="dark_title">Dark Mode</h2>
             <div class="rich_media_wrp article_dark">
               <div class="rich_media_content" id="dark"></div>
             </div>
@@ -674,20 +674,31 @@
   <!-- <script type="text/javascript" src="../dist/darkmode.min.js"></script> -->
   <script type="text/javascript">
     var html = document.getElementById('light').innerHTML;
+    var begin, fp;
 
     var container_online = document.getElementById('dark_online');
     container_online.innerHTML = html;
+    begin = new Date();
     Darkmode_online.run(container_online.querySelectorAll('*'), { // 运行Dark Mode转换算法
       mode: 'dark',
-      cssSelectorsPrefix: '#dark_online'
+      cssSelectorsPrefix: '#dark_online',
+      showFirstPage: function() {
+        fp = new Date() - begin;
+      }
     });
+    document.getElementById('dark_online_title').innerText += ' (cost: ' + (new Date() - begin) + 'ms, first page: ' + fp + 'ms)';
 
     var container = document.getElementById('dark');
     container.innerHTML = html;
+    begin = new Date();
     Darkmode.run(container.querySelectorAll('*'), { // 运行Dark Mode转换算法
       mode: 'dark',
-      cssSelectorsPrefix: '#dark'
+      cssSelectorsPrefix: '#dark',
+      showFirstPage: function() {
+        fp = new Date() - begin;
+      }
     });
+    document.getElementById('dark_title').innerText += ' (cost: ' + (new Date() - begin) + 'ms, first page: ' + fp + 'ms)';
   </script>
 </body>
 </html>

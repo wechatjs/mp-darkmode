@@ -2780,7 +2780,7 @@ var DEFAULT_DARK_TEXTCOLOR = '#a3a3a3'; // 前景色：rgba(255,255,255,0.6) 背
 
 var DEFAULT_DARK_BGCOLOR = '#191919'; // Dark Mode下背景颜色
 
-var GRAY_MASK_COLOR = 'rgba(0,0,0,0.1)'; // 灰色蒙层色值
+var GRAY_MASK_COLOR = 'rgba(0,0,0,0.2)'; // 灰色蒙层色值
 
 var WHITE_LIKE_COLOR_BRIGHTNESS = 250; // 接近白色的感知亮度阈值
 
