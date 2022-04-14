@@ -251,7 +251,10 @@ export default class SDK {
         });
       }
     } else if (options.isTextShadow) { // 字体阴影
-      newColor = this._adjustBackgroundBrightness(color); // 按照背景色的方法来处理
+      // 无背景图片
+      if (!el.getAttribute(BGIMAGEATTR)) {
+        newColor = this._adjustBackgroundBrightness(color); // 按照背景色的方法来处理
+      }
     }
 
     return {
