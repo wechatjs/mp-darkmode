@@ -2,15 +2,15 @@
  * @name 节点相关操作工具API
  *
  * @function getChildrenAndIt 获取某个节点及它的所有子节点
- * @param {Dom Object} dom 节点对象
- * @return {Dom Object Array} 节点对象列表
+ * @param {DOM Object} dom 节点对象
+ * @return {DOM Object Array} 节点对象列表
  *
  * @function hasTextNode 判断某个节点里是否包含文字节点
- * @param {Dom Object} dom 节点对象
+ * @param {DOM Object} dom 节点对象
  * @return {boolean} 判断结果
  *
  * @function hasTableClass 判断table相关元素有没有指定class
- * @param {Dom Object} dom 节点对象
+ * @param {DOM Object} dom 节点对象
  * @return {string | null} 判断结果，如果有，返回class对应的lm色值，否则返回null
  *
  */
@@ -64,10 +64,10 @@ export function hasTableClass(dom) {
  * @attr {boolean} showFirstPage 是否已显示首屏
  *
  * @method set 设置要处理的节点列表
- * @param {Dom Object Array} nodes 要处理的节点列表
+ * @param {DOM Object Array} nodes 要处理的节点列表
  *
  * @method get 获取要处理的节点列表（包含延迟节点、容器节点等逻辑）
- * @return {Dom Object Array} 要处理的节点列表
+ * @return {DOM Object Array} 要处理的节点列表
  *
  * @method delay 将所有要处理的节点转移到延迟处理队列里
  *
@@ -75,7 +75,7 @@ export function hasTableClass(dom) {
  * @return {boolean} 判断结果
  *
  * @method addFirstPageNode 添加首屏节点
- * @param {Dom Object} node 要添加的首屏节点
+ * @param {DOM Object} node 要添加的首屏节点
  *
  * @method showFirstPageNodes 显示所有首屏节点
  *

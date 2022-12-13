@@ -55,6 +55,11 @@ import {
   hasTableClass
 } from './domUtils';
 
+const SEMICOLON_PLACEHOLDER = '<$#_SEMICOLON_#$>'; // 分号占位符
+const SEMICOLON_PLACEHOLDER_REGEXP = /<\$#_SEMICOLON_#\$>/g;
+
+const DM_CLASSNAME_REGEXP = new RegExp(`${CLASS_PREFIX}\\d+`);
+
 const colorNameReg = new RegExp(Object.keys(ColorName).map(colorName => `\\b${colorName}\\b`).join('|'), 'ig'); // 生成正则表达式来匹配这些colorName
 const colorReg = /\brgba?\([^)]+\)/i;
 const colorRegGlobal = /\brgba?\([^)]+\)/ig;
@@ -194,7 +199,7 @@ export default class SDK {
   }
 
   // 调整明度
-  _adjustBrightness(color, el, options) {
+  _adjustBrightness(color, el, options, isUpdate) {
     // 背景：
     // 处理原则：白背景改黑，其他高感知亮度背景调暗，低亮度适当提高亮度（感知亮度：https://www.w3.org/TR/AERT/#color-contrast）
     // 处理方法：
@@ -215,20 +220,19 @@ export default class SDK {
 
     if (options.isBgColor) { // 背景色
       // 如果设置背景颜色，取消背景图片的影响
-      if (el.getAttribute(BGIMAGEATTR) && alpha >= 0.05) {
-        el.removeAttribute(BGIMAGEATTR);
+      if (el[BGIMAGEATTR] && alpha >= 0.05) {
+        delete el[BGIMAGEATTR];
       }
 
       newColor = this._adjustBackgroundBrightness(color);
 
       if (!options.hasInlineColor) {
-        const parentTextColor = el.getAttribute(COLORATTR) || config.defaultLightTextColor;
+        const parentTextColor = el[COLORATTR] || config.defaultLightTextColor;
         const parentBgColorStr = newColor || color;
-        // el.setAttribute(BGCOLORATTR, newColor || color)
         const ret = this._adjustBrightness(Color(parentTextColor), el, {
           isTextColor: true,
           parentElementBgColorStr: parentBgColorStr
-        });
+        }, isUpdate);
         if (ret.newColor) {
           extStyle += cssUtils.genCssKV('color', ret.newColor);
         } else {
@@ -237,14 +241,14 @@ export default class SDK {
       }
     } else if (options.isTextColor || options.isBorderColor) { // 字体色、边框色
       const parentElementBgColorStr = options.parentElementBgColorStr
-        || (options.isTextColor && el.getAttribute(BGCOLORATTR))
+        || (options.isTextColor && el[BGCOLORATTR])
         || config.defaultDarkBgColor;
       const parentElementBgColor = Color(parentElementBgColorStr);
 
       // 无背景图片
-      if (!el.getAttribute(BGIMAGEATTR)) {
+      if (!el[BGIMAGEATTR]) {
         newColor = this._adjustTextBrightness(color, parentElementBgColor);
-        plugins.emit('afterConvertTextColor', el, {
+        plugins.emit(`afterConvertTextColor${isUpdate ? 'ByUpdateStyle' : ''}`, el, {
           // fontColor: color,
           fontColor: newColor,
           bgColor: parentElementBgColor
@@ -252,7 +256,7 @@ export default class SDK {
       }
     } else if (options.isTextShadow) { // 字体阴影
       // 无背景图片
-      if (!el.getAttribute(BGIMAGEATTR)) {
+      if (!el[BGIMAGEATTR]) {
         newColor = this._adjustBackgroundBrightness(color); // 按照背景色的方法来处理
       }
     }
@@ -272,30 +276,35 @@ export default class SDK {
     }
   }
 
-  convert(el) {
+  convert(el, cssKVList, isUpdate) {
     plugins.resetCss();
-    plugins.emit('beforeConvertNode', el);
+    plugins.emit(`beforeConvertNode${isUpdate ? 'ByUpdateStyle' : ''}`, el);
 
     let css = ''; // css
+    let bgCss = ''; // 文字底图css
 
-    if (this.isDarkmode) {
+    if (this.isDarkmode || isUpdate) {
       const nodeName = el.nodeName;
 
       if (config.whitelist.tagName.indexOf(nodeName) > -1) return '';
 
       const styles = el.style;
-      let cssKV = ''; // css键值对
+
+      if (!cssKVList) { // 没有传入cssKVList就从内联样式中提取
+        // styles.cssText 读出来的颜色统一是rgba格式，除了用英文定义颜色（如：black、white）
+        cssKVList = ((styles.cssText && styles.cssText.replace(/("[^;]*);([^;]*")|('[^;]*);([^;]*')/g, `$1$3${SEMICOLON_PLACEHOLDER}$2$4`).split(';')) || []).map(cssStr => { // 将cssStr转换为[key, value]，并清除各个元素的前后空白字符
+          const splitIdx = cssStr.indexOf(':');
+          return [cssStr.slice(0, splitIdx).toLowerCase(), cssStr.slice(splitIdx + 1).replace(SEMICOLON_PLACEHOLDER_REGEXP, ';')].map(item => (item || '').replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, ''));
+        });
+      }
+
       let hasInlineColor = false; // 是否有自定义字体颜色
       let hasInlineBackground = false;
       let hasInlineBackgroundImage = false;
       let elBackgroundPositionAttr;
       let elBackgroundSizeAttr;
 
-      // styles.cssText 读出来的颜色统一是rgba格式，除了用英文定义颜色（如：black、white）
-      const cssKVList = ((styles.cssText && styles.cssText.split(';')) || []).map(cssStr => { // 将cssStr转换为[key, value]，并清除各个元素的前后空白字符
-        const splitIdx = cssStr.indexOf(':');
-        return [cssStr.slice(0, splitIdx).toLowerCase(), cssStr.slice(splitIdx + 1)].map(item => (item || '').replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, ''));
-      }).filter(([key, value]) => {
+      cssKVList = cssKVList.filter(([key, value]) => {
         if (key === 'color') {
           hasInlineColor = true;
         } else if (/background/i.test(key)) {
@@ -405,6 +414,23 @@ export default class SDK {
         webkitStrokeColor && cssKVList.unshift(['-webkit-text-stroke-color', webkitStrokeColor]); // 如果有-webkit-text-stroke-color，则插入到最前面
       }
 
+      let dmClassName = '';
+      let dmBgClassName = '';
+      if (isUpdate && el.className && typeof el.className === 'string') {
+        // 先提取dm className
+        let matches = el.className.match(DM_CLASSNAME_REGEXP);
+        if (matches) {
+          dmClassName = matches[0];
+        }
+
+        // 再提取dm bg className
+        matches = el.className.match(bgStack.classNameReg);
+        if (matches) {
+          dmBgClassName = matches[0];
+        }
+      }
+
+      let cssKV = ''; // css键值对
       cssKVList.forEach(([key, value]) => this._try(() => {
         const oldValue = value;
         let cssChange = false;
@@ -449,7 +475,7 @@ export default class SDK {
               isTextColor: textColorIdx > -1,
               isBorderColor,
               hasInlineColor
-            });
+            }, isUpdate);
             const retColor = !hasInlineBackgroundImage && ret.newColor;
 
             extStyle += ret.extStyle;
@@ -460,13 +486,13 @@ export default class SDK {
               const originalAttrName = isBgColor ? ORIGINAL_BGCOLORATTR : ORIGINAL_COLORATTR;
               const retColorStr = retColor ? retColor.toString() : match;
               replaceIndex === 0 && getChildrenAndIt(el).forEach(dom => {
-                const originalAttrValue = dom.getAttribute(originalAttrName) || config.defaultLightBgColor;
-                dom.setAttribute(attrName, retColorStr);
-                dom.setAttribute(originalAttrName, originalAttrValue.split(BG_COLOR_DELIMITER).concat(match).join(BG_COLOR_DELIMITER));
+                const originalAttrValue = dom[originalAttrName] || config.defaultLightBgColor;
+                dom[attrName] = retColorStr;
+                dom[originalAttrName] = originalAttrValue.split(BG_COLOR_DELIMITER).concat(match).join(BG_COLOR_DELIMITER);
 
                 // 如果设置背景颜色，取消背景图片的影响
-                if (isBgColor && Color(retColorStr).alpha() >= 0.05 && dom.getAttribute(BGIMAGEATTR)) {
-                  dom.removeAttribute(BGIMAGEATTR);
+                if (isBgColor && Color(retColorStr).alpha() >= 0.05 && dom[BGIMAGEATTR]) {
+                  delete dom[BGIMAGEATTR];
                 }
               });
             }
@@ -485,7 +511,7 @@ export default class SDK {
           const isBorderImageAttr = /^(-webkit-)?border-image/.test(key);
           if ((isBackgroundAttr || isBorderImageAttr) && /url\([^)]*\)/i.test(value)) {
             cssChange = true;
-            const imgBgColor = mixColor((el.getAttribute(ORIGINAL_BGCOLORATTR) || config.defaultLightBgColor).split(BG_COLOR_DELIMITER));
+            const imgBgColor = mixColor((el[ORIGINAL_BGCOLORATTR] || config.defaultLightBgColor).split(BG_COLOR_DELIMITER));
 
             // 在背景图片下加一层原背景颜色：
             // background-image使用多层背景(注意background-position也要多加一层 https://www.w3.org/TR/css-backgrounds-3/#layering)；
@@ -496,8 +522,10 @@ export default class SDK {
               let newBackgroundSizeValue = '';
               let tmpCssKvStr = '';
 
-              if (el.getAttribute(BGIMAGEATTR) !== '1') { // 避免重复setAttribute
-                getChildrenAndIt(el).forEach(dom => dom.setAttribute(BGIMAGEATTR, '1'));
+              if (!el[BGIMAGEATTR]) { // 避免重复set
+                getChildrenAndIt(el).forEach(dom => {
+                  dom[BGIMAGEATTR] = true;
+                });
               }
 
               // background-image
@@ -514,27 +542,44 @@ export default class SDK {
                   cssKV += cssUtils.genCssKV('background-size', `${newBackgroundSizeValue}`);
                   tmpCssKvStr += cssUtils.genCssKV('background-size', `${newBackgroundSizeValue},100%`);
                 }
-                bgStack.push(el, tmpCssKvStr); // 背景图入栈
+                if (dmBgClassName) { // 如果是文字底图，则直接加样式
+                  bgCss += cssUtils.genCss(dmBgClassName, tmpCssKvStr);
+                } else { // 否则背景图入栈
+                  bgStack.push(el, tmpCssKvStr);
+                }
               } else {
                 // border-image元素，如果当前元素没有背景颜色，补背景颜色
-                !hasInlineBackground && bgStack.push(el, cssUtils.genCssKV('background-image', `linear-gradient(${GRAY_MASK_COLOR}, ${GRAY_MASK_COLOR}),linear-gradient(${imgBgColor}, ${imgBgColor})`)); // 背景图入栈
+                if (!hasInlineBackground) {
+                  tmpCssKvStr = cssUtils.genCssKV('background-image', `linear-gradient(${GRAY_MASK_COLOR}, ${GRAY_MASK_COLOR}),linear-gradient(${imgBgColor}, ${imgBgColor})`);
+                  if (dmBgClassName) { // 如果是文字底图，则直接加样式
+                    bgCss += cssUtils.genCss(dmBgClassName, tmpCssKvStr);
+                  } else { // 否则背景图入栈
+                    bgStack.push(el, tmpCssKvStr); // 背景图入栈
+                  }
+                }
               }
               return newValue;
             });
 
             // 没有设置自定义字体颜色，则使用非 Dark Mode 下默认字体颜色
             if (!hasInlineColor) {
-              const textColor = mixColor((el.getAttribute(ORIGINAL_COLORATTR) || config.defaultLightTextColor).split(BG_COLOR_DELIMITER));
+              const textColor = mixColor((el[ORIGINAL_COLORATTR] || config.defaultLightTextColor).split(BG_COLOR_DELIMITER));
               cssKV += cssUtils.genCssKV('color', textColor);
-              getChildrenAndIt(el).forEach(dom => dom.setAttribute(COLORATTR, textColor));
+              getChildrenAndIt(el).forEach(dom => {
+                dom[COLORATTR] = textColor;
+              });
             }
           }
         }
 
         if (cssChange) {
-          IMPORTANT_REGEXP.test(oldValue) && (styles[key] = removeImportant(oldValue)); // 清除inline style的!important
+          !isUpdate && IMPORTANT_REGEXP.test(oldValue) && (styles[key] = removeImportant(oldValue)); // 清除inline style的!important
           if (isGradient) {
-            bgStack.push(el, cssUtils.genCssKV(key, value)); // 渐变入栈
+            if (dmBgClassName) { // 如果是文字底图，则直接加样式
+              bgCss += cssUtils.genCss(dmBgClassName, cssUtils.genCssKV(key, value));
+            } else { // 否则背景图入栈
+              bgStack.push(el, cssUtils.genCssKV(key, value)); // 渐变入栈
+            }
           } else {
             cssKV += cssUtils.genCssKV(key, value);
           }
@@ -542,13 +587,18 @@ export default class SDK {
       }));
 
       if (cssKV) { // 有处理过或者是背景图片就加class以及css
+        // TODO: 备份应该写到插件里
         el.setAttribute('data-style', styles.cssText); // 备份内联样式到data-style里，供编辑器做反处理
-        const className = `${CLASS_PREFIX}${this._idx++}`;
-        el.classList.add(className);
-        css += (cssKV ? cssUtils.genCss(className, cssKV) : '');
+        if (!dmClassName) {
+          dmClassName = `${CLASS_PREFIX}${this._idx++}`;
+          el.classList.add(dmClassName);
+        }
+        css += (cssKV ? cssUtils.genCss(dmClassName, cssKV) : '');
       }
 
-      if (hasTextNode(el)) { // 如果节点里有文本，要判断是否在背景图里
+      css += bgCss; // 追加文字底图样式，要在添加cssKV之后添加，避免被覆盖
+
+      if (!isUpdate && hasTextNode(el)) { // 如果节点里有文本，要判断是否在背景图里
         if (config.delayBgJudge) { // 延迟背景判断
           tnQueue.push(el); // 文字入队
         } else {
@@ -559,7 +609,7 @@ export default class SDK {
       }
     }
 
-    plugins.emit('afterConvertNode', el);
+    plugins.emit(`afterConvertNode${isUpdate ? 'ByUpdateStyle' : ''}`, el);
 
     return css;
   }

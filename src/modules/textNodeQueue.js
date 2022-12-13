@@ -7,13 +7,13 @@
  * @param {string} prefix 类名前缀
  *
  * @method push 文本节点入队
- * @param {Dom Object} el 文本节点对象
+ * @param {DOM Object} el 文本节点对象
  *
  * @method forEach 遍历，遍历过的文本节点出队
  * @param {Function} callback 回调
  *
  * @method update 更新队列的节点对象，主要解决前后节点不一致的问题
- * @param {Dom Object Array} nodes 要更新的节点对象列表
+ * @param {DOM Object Array} nodes 要更新的节点对象列表
  *
  */
 

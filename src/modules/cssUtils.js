@@ -53,12 +53,12 @@ export default class CssUtils {
     return `${config.mode === 'dark' ? `html.${HTML_CLASS} ` : ''}${config.cssSelectorsPrefix && `${config.cssSelectorsPrefix} `}.${className}{${cssKV}}`;
   }
 
-  addCss(css, isFirstPageStyle) {
+  addCss(css, isFirstPageStyle = false) {
     this[isFirstPageStyle ? '_firstPageStyle' : '_otherPageStyle'] += css;
     plugins.addCss(isFirstPageStyle);
   }
 
-  writeStyle(isFirstPageStyle) {
+  writeStyle(isFirstPageStyle = false) {
     !isFirstPageStyle && sdk.isDarkmode && (this.isFinish = true); // 在Dark Mode下一旦写入了非首屏样式表，则认为已经运行过Dark Mode处理逻辑
 
     // 获取样式表内容

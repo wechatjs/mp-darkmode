@@ -7,15 +7,15 @@
  * @param {string} prefix 类名前缀
  *
  * @method push 背景节点入栈
- * @param {Dom Object} el    背景节点对象
+ * @param {DOM Object} el    背景节点对象
  * @param {string}     cssKV css键值对
  *
  * @method contains 判断节点是否在背景节点的区域
- * @param {Dom Object} el       要判断的节点对象（非背景节点）
+ * @param {DOM Object} el       要判断的节点对象（非背景节点）
  * @param {Function}   callback 如果在背景节点区域内，则执行该回调函数
  *
  * @method update 更新堆栈的节点对象，主要解决前后节点不一致的问题
- * @param {Dom Object Array} nodes 要更新的节点对象列表
+ * @param {DOM Object Array} nodes 要更新的节点对象列表
  *
  */
 
@@ -28,6 +28,7 @@ export default class BgNodeStack {
 
   constructor(prefix) {
     this._prefix = prefix;
+    this.classNameReg = new RegExp(`${this._prefix}\\d+`);
   }
 
   push(el, cssKV) {

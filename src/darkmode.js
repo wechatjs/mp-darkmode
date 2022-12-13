@@ -2,7 +2,7 @@
  * @name Darkmode主入口
  *
  * @function run 配置并处理
- * @param {Dom Object Array} nodes 要处理的节点列表
+ * @param {DOM Object Array} nodes 要处理的节点列表
  * @param {Object}           opt   Dark Mode配置，详见init配置说明
  *
  * @function init 初始化Dark Mode配置
@@ -22,10 +22,14 @@
  * @param {string}     opt.defaultDarkBgColor    Dark Mode下背景颜色
  *
  * @function convertBg 处理背景
- * @param {Dom Object Array} nodes 要处理的节点列表
+ * @param {DOM Object Array} nodes 要处理的节点列表
  *
  * @function extend 挂载插件
  * @param {Array} pluginList 插件列表
+ *
+ * @function updateStyle 更新节点Dark Mode样式
+ * @param {DOM Object} node   要更新的节点
+ * @param {Object}     styles 更新的样式键值对对象，如：{ color: '#ddd' }
  *
  */
 
@@ -71,13 +75,13 @@ const switchToDarkmode = (mqlObj, opt = {
 
         if (sdk.isDarkmode || plugins.length) {
           if (!config.needJudgeFirstPage) { // 不需要判断首屏
-            cssUtils.addCss(sdk.convert(node), false); // 写入非首屏样式
+            cssUtils.addCss(sdk.convert(node)); // 写入非首屏样式
           } else { // 判断首屏
             const rect = node.getBoundingClientRect();
             const top = rect.top;
             const bottom = rect.bottom;
             if (top <= 0 && bottom <= 0) { // 首屏前面
-              cssUtils.addCss(sdk.convert(node), false); // 写入非首屏样式
+              cssUtils.addCss(sdk.convert(node)); // 写入非首屏样式
             } else if ((top > 0 && top < PAGE_HEIGHT) || (bottom > 0 && bottom < PAGE_HEIGHT)) { // 首屏
               domUtils.addFirstPageNode(node); // 记录首屏节点
               cssUtils.addCss(sdk.convert(node), true); // 写入首屏样式
@@ -89,7 +93,7 @@ const switchToDarkmode = (mqlObj, opt = {
               domUtils.showFirstPageNodes(); // 显示首屏节点
               typeof config.showFirstPage === 'function' && config.showFirstPage(); // 执行首屏回调
 
-              cssUtils.addCss(sdk.convert(node), false); // 写入非首屏样式
+              cssUtils.addCss(sdk.convert(node)); // 写入非首屏样式
             }
           }
         }
@@ -98,7 +102,7 @@ const switchToDarkmode = (mqlObj, opt = {
       plugins.loopTimes++;
     } else if (opt.type === 'bg') { // 处理背景
       sdk.isDarkmode && tnQueue.forEach(text => bgStack.contains(text, bg => {
-        cssUtils.addCss(cssUtils.genCss(bg.className, bg.cssKV), false); // 写入非首屏样式
+        cssUtils.addCss(cssUtils.genCss(bg.className, bg.cssKV)); // 写入非首屏样式
       }));
     }
 
@@ -189,4 +193,10 @@ export function convertBg(nodes) {
 
 export function extend(pluginList) {
   pluginList.forEach(plugin => plugins.extend(plugin));
+};
+
+export function updateStyle(node, styles) {
+  if (!cssUtils.isFinish) return; // 没有运行过Dark Mode处理逻辑则无需运行
+  cssUtils.addCss(sdk.convert(node, styles ? Object.keys(styles).map(key => [key, styles[key]]) : undefined, true), false);
+  cssUtils.writeStyle();
 };

@@ -2312,7 +2312,7 @@ swizzle.wrap = function (fn) {
 /*!*************************!*\
   !*** ./src/darkmode.js ***!
   \*************************/
-/*! exports provided: run, init, convertBg, extend */
+/*! exports provided: run, init, convertBg, extend, updateStyle */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2321,6 +2321,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "init", function() { return init; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "convertBg", function() { return convertBg; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "extend", function() { return extend; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "updateStyle", function() { return updateStyle; });
 /* harmony import */ var _modules_constant__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/constant */ "./src/modules/constant.js");
 /* harmony import */ var _modules_config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/config */ "./src/modules/config.js");
 /* harmony import */ var _modules_global__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/global */ "./src/modules/global.js");
@@ -2328,7 +2329,7 @@ __webpack_require__.r(__webpack_exports__);
  * @name Darkmode主入口
  *
  * @function run 配置并处理
- * @param {Dom Object Array} nodes 要处理的节点列表
+ * @param {DOM Object Array} nodes 要处理的节点列表
  * @param {Object}           opt   Dark Mode配置，详见init配置说明
  *
  * @function init 初始化Dark Mode配置
@@ -2348,10 +2349,14 @@ __webpack_require__.r(__webpack_exports__);
  * @param {string}     opt.defaultDarkBgColor    Dark Mode下背景颜色
  *
  * @function convertBg 处理背景
- * @param {Dom Object Array} nodes 要处理的节点列表
+ * @param {DOM Object Array} nodes 要处理的节点列表
  *
  * @function extend 挂载插件
  * @param {Array} pluginList 插件列表
+ *
+ * @function updateStyle 更新节点Dark Mode样式
+ * @param {DOM Object} node   要更新的节点
+ * @param {Object}     styles 更新的样式键值对对象，如：{ color: '#ddd' }
  *
  */
 
@@ -2384,7 +2389,7 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
         if (_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].isDarkmode || _modules_global__WEBPACK_IMPORTED_MODULE_2__["plugins"].length) {
           if (!_modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].needJudgeFirstPage) {
             // 不需要判断首屏
-            _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].addCss(_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].convert(node), false); // 写入非首屏样式
+            _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].addCss(_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].convert(node)); // 写入非首屏样式
           } else {
             // 判断首屏
             var rect = node.getBoundingClientRect();
@@ -2393,7 +2398,7 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
 
             if (top <= 0 && bottom <= 0) {
               // 首屏前面
-              _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].addCss(_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].convert(node), false); // 写入非首屏样式
+              _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].addCss(_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].convert(node)); // 写入非首屏样式
             } else if (top > 0 && top < _modules_constant__WEBPACK_IMPORTED_MODULE_0__["PAGE_HEIGHT"] || bottom > 0 && bottom < _modules_constant__WEBPACK_IMPORTED_MODULE_0__["PAGE_HEIGHT"]) {
               // 首屏
               _modules_global__WEBPACK_IMPORTED_MODULE_2__["domUtils"].addFirstPageNode(node); // 记录首屏节点
@@ -2410,7 +2415,7 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
 
               typeof _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].showFirstPage === 'function' && _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].showFirstPage(); // 执行首屏回调
 
-              _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].addCss(_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].convert(node), false); // 写入非首屏样式
+              _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].addCss(_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].convert(node)); // 写入非首屏样式
             }
           }
         }
@@ -2420,7 +2425,7 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
       // 处理背景
       _modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].isDarkmode && _modules_global__WEBPACK_IMPORTED_MODULE_2__["tnQueue"].forEach(function (text) {
         return _modules_global__WEBPACK_IMPORTED_MODULE_2__["bgStack"].contains(text, function (bg) {
-          _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].addCss(_modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].genCss(bg.className, bg.cssKV), false); // 写入非首屏样式
+          _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].addCss(_modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].genCss(bg.className, bg.cssKV)); // 写入非首屏样式
         });
       });
     }
@@ -2519,6 +2524,15 @@ function extend(pluginList) {
   });
 }
 ;
+function updateStyle(node, styles) {
+  if (!_modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].isFinish) return; // 没有运行过Dark Mode处理逻辑则无需运行
+
+  _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].addCss(_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].convert(node, styles ? Object.keys(styles).map(function (key) {
+    return [key, styles[key]];
+  }) : undefined, true), false);
+  _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].writeStyle();
+}
+;
 
 /***/ }),
 
@@ -2550,15 +2564,15 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * @param {string} prefix 类名前缀
  *
  * @method push 背景节点入栈
- * @param {Dom Object} el    背景节点对象
+ * @param {DOM Object} el    背景节点对象
  * @param {string}     cssKV css键值对
  *
  * @method contains 判断节点是否在背景节点的区域
- * @param {Dom Object} el       要判断的节点对象（非背景节点）
+ * @param {DOM Object} el       要判断的节点对象（非背景节点）
  * @param {Function}   callback 如果在背景节点区域内，则执行该回调函数
  *
  * @method update 更新堆栈的节点对象，主要解决前后节点不一致的问题
- * @param {Dom Object Array} nodes 要更新的节点对象列表
+ * @param {DOM Object Array} nodes 要更新的节点对象列表
  *
  */
 // Darkmode配置
@@ -2575,6 +2589,7 @@ var BgNodeStack = /*#__PURE__*/function () {
     _defineProperty(this, "_idx", 0);
 
     this._prefix = prefix;
+    this.classNameReg = new RegExp("".concat(this._prefix, "\\d+"));
   }
 
   _createClass(BgNodeStack, [{
@@ -2884,13 +2899,15 @@ var CssUtils = /*#__PURE__*/function () {
     }
   }, {
     key: "addCss",
-    value: function addCss(css, isFirstPageStyle) {
+    value: function addCss(css) {
+      var isFirstPageStyle = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       this[isFirstPageStyle ? '_firstPageStyle' : '_otherPageStyle'] += css;
       _global__WEBPACK_IMPORTED_MODULE_2__["plugins"].addCss(isFirstPageStyle);
     }
   }, {
     key: "writeStyle",
-    value: function writeStyle(isFirstPageStyle) {
+    value: function writeStyle() {
+      var isFirstPageStyle = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       !isFirstPageStyle && _global__WEBPACK_IMPORTED_MODULE_2__["sdk"].isDarkmode && (this.isFinish = true); // 在Dark Mode下一旦写入了非首屏样式表，则认为已经运行过Dark Mode处理逻辑
       // 获取样式表内容
 
@@ -2986,15 +3003,15 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
  * @name 节点相关操作工具API
  *
  * @function getChildrenAndIt 获取某个节点及它的所有子节点
- * @param {Dom Object} dom 节点对象
- * @return {Dom Object Array} 节点对象列表
+ * @param {DOM Object} dom 节点对象
+ * @return {DOM Object Array} 节点对象列表
  *
  * @function hasTextNode 判断某个节点里是否包含文字节点
- * @param {Dom Object} dom 节点对象
+ * @param {DOM Object} dom 节点对象
  * @return {boolean} 判断结果
  *
  * @function hasTableClass 判断table相关元素有没有指定class
- * @param {Dom Object} dom 节点对象
+ * @param {DOM Object} dom 节点对象
  * @return {string | null} 判断结果，如果有，返回class对应的lm色值，否则返回null
  *
  */
@@ -3044,10 +3061,10 @@ function hasTableClass(dom) {
  * @attr {boolean} showFirstPage 是否已显示首屏
  *
  * @method set 设置要处理的节点列表
- * @param {Dom Object Array} nodes 要处理的节点列表
+ * @param {DOM Object Array} nodes 要处理的节点列表
  *
  * @method get 获取要处理的节点列表（包含延迟节点、容器节点等逻辑）
- * @return {Dom Object Array} 要处理的节点列表
+ * @return {DOM Object Array} 要处理的节点列表
  *
  * @method delay 将所有要处理的节点转移到延迟处理队列里
  *
@@ -3055,7 +3072,7 @@ function hasTableClass(dom) {
  * @return {boolean} 判断结果
  *
  * @method addFirstPageNode 添加首屏节点
- * @param {Dom Object} node 要添加的首屏节点
+ * @param {DOM Object} node 要添加的首屏节点
  *
  * @method showFirstPageNodes 显示所有首屏节点
  *
@@ -3440,6 +3457,10 @@ color_name__WEBPACK_IMPORTED_MODULE_1___default.a.transparent = [255, 255, 255, 
  // 节点相关操作工具API
 
 
+var SEMICOLON_PLACEHOLDER = '<$#_SEMICOLON_#$>'; // 分号占位符
+
+var SEMICOLON_PLACEHOLDER_REGEXP = /<\$#_SEMICOLON_#\$>/g;
+var DM_CLASSNAME_REGEXP = new RegExp("".concat(_constant__WEBPACK_IMPORTED_MODULE_2__["CLASS_PREFIX"], "\\d+"));
 var colorNameReg = new RegExp(Object.keys(color_name__WEBPACK_IMPORTED_MODULE_1___default.a).map(function (colorName) {
   return "\\b".concat(colorName, "\\b");
 }).join('|'), 'ig'); // 生成正则表达式来匹配这些colorName
@@ -3607,7 +3628,7 @@ var SDK = /*#__PURE__*/function () {
 
   }, {
     key: "_adjustBrightness",
-    value: function _adjustBrightness(color, el, options) {
+    value: function _adjustBrightness(color, el, options, isUpdate) {
       // 背景：
       // 处理原则：白背景改黑，其他高感知亮度背景调暗，低亮度适当提高亮度（感知亮度：https://www.w3.org/TR/AERT/#color-contrast）
       // 处理方法：
@@ -3626,20 +3647,20 @@ var SDK = /*#__PURE__*/function () {
       if (options.isBgColor) {
         // 背景色
         // 如果设置背景颜色，取消背景图片的影响
-        if (el.getAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]) && alpha >= 0.05) {
-          el.removeAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]);
+        if (el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]] && alpha >= 0.05) {
+          delete el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]];
         }
 
         newColor = this._adjustBackgroundBrightness(color);
 
         if (!options.hasInlineColor) {
-          var parentTextColor = el.getAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["COLORATTR"]) || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightTextColor;
-          var parentBgColorStr = newColor || color; // el.setAttribute(BGCOLORATTR, newColor || color)
+          var parentTextColor = el[_constant__WEBPACK_IMPORTED_MODULE_2__["COLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightTextColor;
+          var parentBgColorStr = newColor || color;
 
           var ret = this._adjustBrightness(color__WEBPACK_IMPORTED_MODULE_0___default()(parentTextColor), el, {
             isTextColor: true,
             parentElementBgColorStr: parentBgColorStr
-          });
+          }, isUpdate);
 
           if (ret.newColor) {
             extStyle += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('color', ret.newColor);
@@ -3649,12 +3670,12 @@ var SDK = /*#__PURE__*/function () {
         }
       } else if (options.isTextColor || options.isBorderColor) {
         // 字体色、边框色
-        var parentElementBgColorStr = options.parentElementBgColorStr || options.isTextColor && el.getAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]) || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor;
+        var parentElementBgColorStr = options.parentElementBgColorStr || options.isTextColor && el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor;
         var parentElementBgColor = color__WEBPACK_IMPORTED_MODULE_0___default()(parentElementBgColorStr); // 无背景图片
 
-        if (!el.getAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"])) {
+        if (!el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) {
           newColor = this._adjustTextBrightness(color, parentElementBgColor);
-          _global__WEBPACK_IMPORTED_MODULE_4__["plugins"].emit('afterConvertTextColor', el, {
+          _global__WEBPACK_IMPORTED_MODULE_4__["plugins"].emit("afterConvertTextColor".concat(isUpdate ? 'ByUpdateStyle' : ''), el, {
             // fontColor: color,
             fontColor: newColor,
             bgColor: parentElementBgColor
@@ -3663,7 +3684,7 @@ var SDK = /*#__PURE__*/function () {
       } else if (options.isTextShadow) {
         // 字体阴影
         // 无背景图片
-        if (!el.getAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"])) {
+        if (!el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) {
           newColor = this._adjustBackgroundBrightness(color); // 按照背景色的方法来处理
         }
       }
@@ -3685,33 +3706,39 @@ var SDK = /*#__PURE__*/function () {
     }
   }, {
     key: "convert",
-    value: function convert(el) {
+    value: function convert(el, cssKVList, isUpdate) {
       var _this = this;
 
       _global__WEBPACK_IMPORTED_MODULE_4__["plugins"].resetCss();
-      _global__WEBPACK_IMPORTED_MODULE_4__["plugins"].emit('beforeConvertNode', el);
+      _global__WEBPACK_IMPORTED_MODULE_4__["plugins"].emit("beforeConvertNode".concat(isUpdate ? 'ByUpdateStyle' : ''), el);
       var css = ''; // css
 
-      if (this.isDarkmode) {
+      var bgCss = ''; // 文字底图css
+
+      if (this.isDarkmode || isUpdate) {
         var nodeName = el.nodeName;
         if (_config__WEBPACK_IMPORTED_MODULE_3__["default"].whitelist.tagName.indexOf(nodeName) > -1) return '';
         var styles = el.style;
-        var cssKV = ''; // css键值对
+
+        if (!cssKVList) {
+          // 没有传入cssKVList就从内联样式中提取
+          // styles.cssText 读出来的颜色统一是rgba格式，除了用英文定义颜色（如：black、white）
+          cssKVList = (styles.cssText && styles.cssText.replace(/("[^;]*);([^;]*")|('[^;]*);([^;]*')/g, "$1$3".concat(SEMICOLON_PLACEHOLDER, "$2$4")).split(';') || []).map(function (cssStr) {
+            // 将cssStr转换为[key, value]，并清除各个元素的前后空白字符
+            var splitIdx = cssStr.indexOf(':');
+            return [cssStr.slice(0, splitIdx).toLowerCase(), cssStr.slice(splitIdx + 1).replace(SEMICOLON_PLACEHOLDER_REGEXP, ';')].map(function (item) {
+              return (item || '').replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+            });
+          });
+        }
 
         var hasInlineColor = false; // 是否有自定义字体颜色
 
         var hasInlineBackground = false;
         var hasInlineBackgroundImage = false;
         var elBackgroundPositionAttr;
-        var elBackgroundSizeAttr; // styles.cssText 读出来的颜色统一是rgba格式，除了用英文定义颜色（如：black、white）
-
-        var cssKVList = (styles.cssText && styles.cssText.split(';') || []).map(function (cssStr) {
-          // 将cssStr转换为[key, value]，并清除各个元素的前后空白字符
-          var splitIdx = cssStr.indexOf(':');
-          return [cssStr.slice(0, splitIdx).toLowerCase(), cssStr.slice(splitIdx + 1)].map(function (item) {
-            return (item || '').replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
-          });
-        }).filter(function (_ref) {
+        var elBackgroundSizeAttr;
+        cssKVList = cssKVList.filter(function (_ref) {
           var _ref2 = _slicedToArray(_ref, 2),
               key = _ref2[0],
               value = _ref2[1];
@@ -3841,6 +3868,27 @@ var SDK = /*#__PURE__*/function () {
           webkitStrokeColor && cssKVList.unshift(['-webkit-text-stroke-color', webkitStrokeColor]); // 如果有-webkit-text-stroke-color，则插入到最前面
         }
 
+        var dmClassName = '';
+        var dmBgClassName = '';
+
+        if (isUpdate && el.className && typeof el.className === 'string') {
+          // 先提取dm className
+          var matches = el.className.match(DM_CLASSNAME_REGEXP);
+
+          if (matches) {
+            dmClassName = matches[0];
+          } // 再提取dm bg className
+
+
+          matches = el.className.match(_global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].classNameReg);
+
+          if (matches) {
+            dmBgClassName = matches[0];
+          }
+        }
+
+        var cssKV = ''; // css键值对
+
         cssKVList.forEach(function (_ref9) {
           var _ref10 = _slicedToArray(_ref9, 2),
               key = _ref10[0],
@@ -3864,11 +3912,11 @@ var SDK = /*#__PURE__*/function () {
             if (colorReg.test(value)) {
               if (isGradient) {
                 // 把原渐变色取出来
-                var matches = colorRegGlobal.exec(value);
+                var _matches = colorRegGlobal.exec(value);
 
-                while (matches) {
-                  gradientColors.push(matches[0]);
-                  matches = colorRegGlobal.exec(value);
+                while (_matches) {
+                  gradientColors.push(_matches[0]);
+                  _matches = colorRegGlobal.exec(value);
                 } // 计算出一个mix颜色
 
 
@@ -3890,7 +3938,7 @@ var SDK = /*#__PURE__*/function () {
                   isTextColor: textColorIdx > -1,
                   isBorderColor: isBorderColor,
                   hasInlineColor: hasInlineColor
-                });
+                }, isUpdate);
 
                 var retColor = !hasInlineBackgroundImage && ret.newColor;
                 extStyle += ret.extStyle; // 对背景颜色和文字颜色做继承传递，用于文字亮度计算
@@ -3901,12 +3949,12 @@ var SDK = /*#__PURE__*/function () {
                   var originalAttrName = isBgColor ? _constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"] : _constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"];
                   var retColorStr = retColor ? retColor.toString() : match;
                   replaceIndex === 0 && Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
-                    var originalAttrValue = dom.getAttribute(originalAttrName) || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightBgColor;
-                    dom.setAttribute(attrName, retColorStr);
-                    dom.setAttribute(originalAttrName, originalAttrValue.split(BG_COLOR_DELIMITER).concat(match).join(BG_COLOR_DELIMITER)); // 如果设置背景颜色，取消背景图片的影响
+                    var originalAttrValue = dom[originalAttrName] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightBgColor;
+                    dom[attrName] = retColorStr;
+                    dom[originalAttrName] = originalAttrValue.split(BG_COLOR_DELIMITER).concat(match).join(BG_COLOR_DELIMITER); // 如果设置背景颜色，取消背景图片的影响
 
-                    if (isBgColor && color__WEBPACK_IMPORTED_MODULE_0___default()(retColorStr).alpha() >= 0.05 && dom.getAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"])) {
-                      dom.removeAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]);
+                    if (isBgColor && color__WEBPACK_IMPORTED_MODULE_0___default()(retColorStr).alpha() >= 0.05 && dom[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) {
+                      delete dom[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]];
                     }
                   });
                 }
@@ -3927,7 +3975,7 @@ var SDK = /*#__PURE__*/function () {
 
               if ((isBackgroundAttr || isBorderImageAttr) && /url\([^)]*\)/i.test(value)) {
                 cssChange = true;
-                var imgBgColor = mixColor((el.getAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]) || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightBgColor).split(BG_COLOR_DELIMITER)); // 在背景图片下加一层原背景颜色：
+                var imgBgColor = mixColor((el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightBgColor).split(BG_COLOR_DELIMITER)); // 在背景图片下加一层原背景颜色：
                 // background-image使用多层背景(注意background-position也要多加一层 https://www.w3.org/TR/css-backgrounds-3/#layering)；
                 // border-image不支持多层背景，需要添加background-color
 
@@ -3937,10 +3985,10 @@ var SDK = /*#__PURE__*/function () {
                   var newBackgroundSizeValue = '';
                   var tmpCssKvStr = '';
 
-                  if (el.getAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]) !== '1') {
-                    // 避免重复setAttribute
+                  if (!el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) {
+                    // 避免重复set
                     Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
-                      return dom.setAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"], '1');
+                      dom[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]] = true;
                     });
                   } // background-image
 
@@ -3961,30 +4009,52 @@ var SDK = /*#__PURE__*/function () {
                       tmpCssKvStr += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-size', "".concat(newBackgroundSizeValue, ",100%"));
                     }
 
-                    _global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].push(el, tmpCssKvStr); // 背景图入栈
+                    if (dmBgClassName) {
+                      // 如果是文字底图，则直接加样式
+                      bgCss += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(dmBgClassName, tmpCssKvStr);
+                    } else {
+                      // 否则背景图入栈
+                      _global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].push(el, tmpCssKvStr);
+                    }
                   } else {
                     // border-image元素，如果当前元素没有背景颜色，补背景颜色
-                    !hasInlineBackground && _global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].push(el, _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-image', "linear-gradient(".concat(_constant__WEBPACK_IMPORTED_MODULE_2__["GRAY_MASK_COLOR"], ", ").concat(_constant__WEBPACK_IMPORTED_MODULE_2__["GRAY_MASK_COLOR"], "),linear-gradient(").concat(imgBgColor, ", ").concat(imgBgColor, ")"))); // 背景图入栈
+                    if (!hasInlineBackground) {
+                      tmpCssKvStr = _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-image', "linear-gradient(".concat(_constant__WEBPACK_IMPORTED_MODULE_2__["GRAY_MASK_COLOR"], ", ").concat(_constant__WEBPACK_IMPORTED_MODULE_2__["GRAY_MASK_COLOR"], "),linear-gradient(").concat(imgBgColor, ", ").concat(imgBgColor, ")"));
+
+                      if (dmBgClassName) {
+                        // 如果是文字底图，则直接加样式
+                        bgCss += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(dmBgClassName, tmpCssKvStr);
+                      } else {
+                        // 否则背景图入栈
+                        _global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].push(el, tmpCssKvStr); // 背景图入栈
+                      }
+                    }
                   }
 
                   return newValue;
                 }); // 没有设置自定义字体颜色，则使用非 Dark Mode 下默认字体颜色
 
                 if (!hasInlineColor) {
-                  var textColor = mixColor((el.getAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]) || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightTextColor).split(BG_COLOR_DELIMITER));
+                  var textColor = mixColor((el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightTextColor).split(BG_COLOR_DELIMITER));
                   cssKV += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('color', textColor);
                   Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
-                    return dom.setAttribute(_constant__WEBPACK_IMPORTED_MODULE_2__["COLORATTR"], textColor);
+                    dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COLORATTR"]] = textColor;
                   });
                 }
               }
             }
 
             if (cssChange) {
-              _constant__WEBPACK_IMPORTED_MODULE_2__["IMPORTANT_REGEXP"].test(oldValue) && (styles[key] = removeImportant(oldValue)); // 清除inline style的!important
+              !isUpdate && _constant__WEBPACK_IMPORTED_MODULE_2__["IMPORTANT_REGEXP"].test(oldValue) && (styles[key] = removeImportant(oldValue)); // 清除inline style的!important
 
               if (isGradient) {
-                _global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].push(el, _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(key, value)); // 渐变入栈
+                if (dmBgClassName) {
+                  // 如果是文字底图，则直接加样式
+                  bgCss += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(dmBgClassName, _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(key, value));
+                } else {
+                  // 否则背景图入栈
+                  _global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].push(el, _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(key, value)); // 渐变入栈
+                }
               } else {
                 cssKV += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(key, value);
               }
@@ -3994,14 +4064,20 @@ var SDK = /*#__PURE__*/function () {
 
         if (cssKV) {
           // 有处理过或者是背景图片就加class以及css
+          // TODO: 备份应该写到插件里
           el.setAttribute('data-style', styles.cssText); // 备份内联样式到data-style里，供编辑器做反处理
 
-          var className = "".concat(_constant__WEBPACK_IMPORTED_MODULE_2__["CLASS_PREFIX"]).concat(this._idx++);
-          el.classList.add(className);
-          css += cssKV ? _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(className, cssKV) : '';
+          if (!dmClassName) {
+            dmClassName = "".concat(_constant__WEBPACK_IMPORTED_MODULE_2__["CLASS_PREFIX"]).concat(this._idx++);
+            el.classList.add(dmClassName);
+          }
+
+          css += cssKV ? _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(dmClassName, cssKV) : '';
         }
 
-        if (Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["hasTextNode"])(el)) {
+        css += bgCss; // 追加文字底图样式，要在添加cssKV之后添加，避免被覆盖
+
+        if (!isUpdate && Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["hasTextNode"])(el)) {
           // 如果节点里有文本，要判断是否在背景图里
           if (_config__WEBPACK_IMPORTED_MODULE_3__["default"].delayBgJudge) {
             // 延迟背景判断
@@ -4014,7 +4090,7 @@ var SDK = /*#__PURE__*/function () {
         }
       }
 
-      _global__WEBPACK_IMPORTED_MODULE_4__["plugins"].emit('afterConvertNode', el);
+      _global__WEBPACK_IMPORTED_MODULE_4__["plugins"].emit("afterConvertNode".concat(isUpdate ? 'ByUpdateStyle' : ''), el);
       return css;
     }
   }]);
@@ -4057,13 +4133,13 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * @param {string} prefix 类名前缀
  *
  * @method push 文本节点入队
- * @param {Dom Object} el 文本节点对象
+ * @param {DOM Object} el 文本节点对象
  *
  * @method forEach 遍历，遍历过的文本节点出队
  * @param {Function} callback 回调
  *
  * @method update 更新队列的节点对象，主要解决前后节点不一致的问题
- * @param {Dom Object Array} nodes 要更新的节点对象列表
+ * @param {DOM Object Array} nodes 要更新的节点对象列表
  *
  */
 // Darkmode配置
