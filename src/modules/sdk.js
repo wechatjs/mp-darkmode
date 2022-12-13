@@ -32,6 +32,7 @@ import {
   HIGH_BGCOLOR_BRIGHTNESS,
   HIGH_BLACKWHITE_HSL_BRIGHTNESS,
   LOW_BLACKWHITE_HSL_BRIGHTNESS,
+  IGNORE_ALPHA,
 
   TABLE_NAME,
 
@@ -220,7 +221,7 @@ export default class SDK {
 
     if (options.isBgColor) { // 背景色
       // 如果设置背景颜色，取消背景图片的影响
-      if (el[BGIMAGEATTR] && alpha >= 0.05) {
+      if (el[BGIMAGEATTR] && alpha >= IGNORE_ALPHA) {
         delete el[BGIMAGEATTR];
       }
 
@@ -468,38 +469,42 @@ export default class SDK {
               cssChange = true;
             }
 
-            // 使用颜色处理算法
-            const ret = this._adjustBrightness(Color(match), el, {
-              isBgColor,
-              isTextShadow,
-              isTextColor: textColorIdx > -1,
-              isBorderColor,
-              hasInlineColor
-            }, isUpdate);
-            const retColor = !hasInlineBackgroundImage && ret.newColor;
+            const matchColor = Color(match);
+            if (matchColor.alpha() >= IGNORE_ALPHA) { // 忽略透明度低的色值
+              // 使用颜色处理算法
+              const ret = this._adjustBrightness(matchColor, el, {
+                isBgColor,
+                isTextShadow,
+                isTextColor: textColorIdx > -1,
+                isBorderColor,
+                hasInlineColor
+              }, isUpdate);
+              const retColor = !hasInlineBackgroundImage && ret.newColor;
 
-            extStyle += ret.extStyle;
+              extStyle += ret.extStyle;
 
-            // 对背景颜色和文字颜色做继承传递，用于文字亮度计算
-            if (isBgColor || textColorIdx > 0) { // 不处理-webkit-text-stroke-color
-              const attrName = isBgColor ? BGCOLORATTR : COLORATTR;
-              const originalAttrName = isBgColor ? ORIGINAL_BGCOLORATTR : ORIGINAL_COLORATTR;
-              const retColorStr = retColor ? retColor.toString() : match;
-              replaceIndex === 0 && getChildrenAndIt(el).forEach(dom => {
-                const originalAttrValue = dom[originalAttrName] || config.defaultLightBgColor;
-                dom[attrName] = retColorStr;
-                dom[originalAttrName] = originalAttrValue.split(BG_COLOR_DELIMITER).concat(match).join(BG_COLOR_DELIMITER);
+              // 对背景颜色和文字颜色做继承传递，用于文字亮度计算
+              if (isBgColor || textColorIdx > 0) { // 不处理-webkit-text-stroke-color
+                const attrName = isBgColor ? BGCOLORATTR : COLORATTR;
+                const originalAttrName = isBgColor ? ORIGINAL_BGCOLORATTR : ORIGINAL_COLORATTR;
+                const retColorStr = retColor ? retColor.toString() : match;
+                replaceIndex === 0 && getChildrenAndIt(el).forEach(dom => {
+                  const originalAttrValue = dom[originalAttrName] || config.defaultLightBgColor;
+                  dom[attrName] = retColorStr;
+                  dom[originalAttrName] = originalAttrValue.split(BG_COLOR_DELIMITER).concat(match).join(BG_COLOR_DELIMITER);
 
-                // 如果设置背景颜色，取消背景图片的影响
-                if (isBgColor && Color(retColorStr).alpha() >= 0.05 && dom[BGIMAGEATTR]) {
-                  delete dom[BGIMAGEATTR];
-                }
-              });
+                  // 如果设置背景颜色，取消背景图片的影响
+                  if (isBgColor && Color(retColorStr).alpha() >= IGNORE_ALPHA && dom[BGIMAGEATTR]) {
+                    delete dom[BGIMAGEATTR];
+                  }
+                });
+              }
+
+              retColor && (cssChange = true);
+              replaceIndex += 1;
+              return retColor || match;
             }
-
-            retColor && (cssChange = true);
-            replaceIndex += 1;
-            return retColor || match;
+            return match;
           }).replace(/\s?!\s?important/ig, '');
         }
 

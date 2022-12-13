@@ -5,6 +5,8 @@
 1. afterConvertTextColor lm 下不触发的问题
 1. 处理background-size和background-position有问题
 1. 渐变目前是先mix再反色，应该改成先反色再mix，有文字时mix，无文字时不mix（只有反色）
+1. 完善API updateStyle，当修改背景色相关属性时，需要递归更新后续节点的色值，以及补充该API相关文档
+1. 对比度算法加入透明度维度计算（现在是暂时通过忽略低透明度的色值来曲线救国）
 
 ## 优化
 

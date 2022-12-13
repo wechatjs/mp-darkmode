@@ -28,6 +28,7 @@ export const MIN_LIMIT_OFFSET_BRIGHTNESS = 65;
 export const HIGH_BGCOLOR_BRIGHTNESS = 100;
 export const HIGH_BLACKWHITE_HSL_BRIGHTNESS = 40;
 export const LOW_BLACKWHITE_HSL_BRIGHTNESS = 22;
+export const IGNORE_ALPHA = 0.05; // 忽略的透明度阈值
 
 export const PAGE_HEIGHT = (window.getInnerHeight && window.getInnerHeight())
   || window.innerHeight
