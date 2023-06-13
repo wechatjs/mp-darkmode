@@ -3159,7 +3159,7 @@ var DomUtils = /*#__PURE__*/function () {
     key: "showFirstPageNodes",
     value: function showFirstPageNodes() {
       this._firstPageNodes.forEach(function (node) {
-        return node.style.visibility = 'visible';
+        return !node.style.visibility && (node.style.visibility = 'visible');
       }); // 显示首屏节点
 
 

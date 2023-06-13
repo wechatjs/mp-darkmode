@@ -14,6 +14,7 @@
 1. 首屏优化处理长尾
 1. 去掉 visibility: visible ？
 1. 获取真正convert耗时（排除渲染）
+1. 可以把过滤attr属性的逻辑去掉了
 
 ## Feature
 

@@ -132,7 +132,7 @@ export class DomUtils {
   }
 
   showFirstPageNodes() {
-    this._firstPageNodes.forEach(node => node.style.visibility = 'visible'); // 显示首屏节点
+    this._firstPageNodes.forEach(node => !node.style.visibility && (node.style.visibility = 'visible')); // 显示首屏节点
     this.showFirstPage = true; // 记录为已显示首屏
   }
 

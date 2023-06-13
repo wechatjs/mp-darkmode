@@ -1,6 +1,52 @@
 <!-- 图文自定义样式 -->
 <div class="mp_artical_style_section_title"><a target="_blank" href="https://mp.weixin.qq.com/s/CvXXs6Q7_0nrpjkrbcVVAQ">文章来源</a></div>
 <div class="mp_artical_style_section">
+  <p style="letter-spacing: 0.578px;">以下内容为 visibility: hidden</p>
+  <p style="letter-spacing: 0.578px; visibility: hidden;">10月3日下午，杭州亚运会跳水女子10米跳台决赛中，中国选手全红婵施展“水花消失术”，完美一跳，赢得了现场7名裁判的一致满分。</p>
+  <p style="letter-spacing: 0.578px;">以下内容为 visibility: collapse</p>
+  <p style="letter-spacing: 0.578px; visibility: collapse;">10月3日下午，杭州亚运会跳水女子10米跳台决赛中，中国选手全红婵施展“水花消失术”，完美一跳，赢得了现场7名裁判的一致满分。</p>
+  <p style="letter-spacing: 0.578px;">以下内容为 visibility: visible</p>
+  <p style="letter-spacing: 0.578px; visibility: visible;">10月3日下午，杭州亚运会跳水女子10米跳台决赛中，中国选手全红婵施展“水花消失术”，完美一跳，赢得了现场7名裁判的一致满分。</p>
+  <p style="letter-spacing: 0.578px;">以下内容没有 visibility</p>
+  <p style="letter-spacing: 0.578px;">10月3日下午，杭州亚运会跳水女子10米跳台决赛中，中国选手全红婵施展“水花消失术”，完美一跳，赢得了现场7名裁判的一致满分。</p>
+</div>
+
+<!-- 图文自定义样式 -->
+<div class="mp_artical_style_section_title"><a target="_blank" href="https://mp.weixin.qq.com/s/h3ZE03rGF6rTEsWmZy0T7Q">文章来源</a></div>
+<div class="mp_artical_style_section">
+  <p data-tool="mdnice编辑器" style="font-size: 16px;padding-top: 8px;padding-bottom: 8px;margin: 0;line-height: 26px;color: black;"><strong style="font-weight: bold;color: black;">进一步解密加速</strong>：</p>
+  <span style="cursor:pointer;" data-tool="mdnice编辑器"><section role="presentation" data-formula="\begin{aligned}
+    m_p &amp;= \frac{(c^{\alpha _p} \bmod p^2 - 1) \cdot h_p}{p}  (\bmod p)  \\
+    m_q &amp;= \frac{(c^{\alpha _q} \bmod q^2 - 1) \cdot h_q}{q}  (\bmod q)  \\
+    D_{opt}(sk = (\alpha_p, \alpha_q \cdots), c \in \mathbb{Z}_{n^2}^{*}) &amp;= CRT(c, m_p, m_q, sk) \\
+    &amp;= ( (m_q - m_p) \cdot p^{-1} (\bmod q) ) \cdot p + m_p \\
+    \text{其中，}\\
+    p \cdot p^{-1} &amp;\equiv 1 \bmod q \\
+    \alpha _p &amp;= \alpha / gcd(\alpha, q-1) \\
+    \alpha _q &amp;=  \alpha / gcd(\alpha, p-1) \\
+    h_p &amp;= (\frac{g^{\alpha _p} \space \bmod \space p^2  \space - \space 1}{p})^{-1} \bmod p \\
+    h_q &amp;= (\frac{g^{\alpha _q} \space \bmod \space q^2  \space - \space 1}{q})^{-1} \bmod q \\
+    \end{aligned}
+    " data-formula-type="block-equation" style="display: block;text-align: center;overflow: auto;display: block;-webkit-overflow-scrolling: touch;"><embed style="vertical-align: -20.786ex;width: 65.723ex;height: auto;max-width: 300% !important;" src="https://mmbiz.qpic.cn/mmbiz_svg/6t0VDe9bl5fUp9gcRI6noId5nBN5ibWUiacSIhbOIBMzrnyGJn80vNfJC71PgicCmfAR5TMLwibpr12D2XRXkfRV87UIYtoUqPTw/0?wx_fmt=svg" data-type="svg+xml"></section></span>
+  <p data-tool="mdnice编辑器" style="font-size: 16px;padding-top: 8px;padding-bottom: 8px;margin: 0;line-height: 26px;color: black;">&emsp;&emsp;在解密阶段，与Scheme 3中非固定基模密运算中<span style="cursor:pointer;"><span role="presentation" data-formula="\alpha" data-formula-type="inline-equation" style=""><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -442 640 453" aria-hidden="true" style="vertical-align: -0.025ex;width: 1.448ex;height: 1.025ex;"><g stroke="black" fill="black" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="3B1" d="M34 156Q34 270 120 356T309 442Q379 442 421 402T478 304Q484 275 485 237V208Q534 282 560 374Q564 388 566 390T582 393Q603 393 603 385Q603 376 594 346T558 261T497 161L486 147L487 123Q489 67 495 47T514 26Q528 28 540 37T557 60Q559 67 562 68T577 70Q597 70 597 62Q597 56 591 43Q579 19 556 5T512 -10H505Q438 -10 414 62L411 69L400 61Q390 53 370 41T325 18T267 -2T203 -11Q124 -11 79 39T34 156ZM208 26Q257 26 306 47T379 90L403 112Q401 255 396 290Q382 405 304 405Q235 405 183 332Q156 292 139 224T121 120Q121 71 146 49T208 26Z"></path></g></g></g></svg></span></span>及阿里蚂蚁团队基于<span style="cursor:pointer;"><span role="presentation" data-formula="\mathbb{Z}_{n}^{*}" data-formula-type="inline-equation" style=""><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -738.9 1141.3 993.6" aria-hidden="true" style="vertical-align: -0.576ex;width: 2.582ex;height: 2.248ex;"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)"><g data-mml-node="math"><g data-mml-node="msubsup"><g data-mml-node="TeXAtom" data-mjx-texclass="ORD"><g data-mml-node="mi"><path data-c="5A" d="M39 -1Q29 9 29 12Q29 23 60 77T219 337L410 648H364Q261 648 210 628Q168 612 142 588T109 545T97 509T88 490Q85 489 80 489Q72 489 61 503L70 588Q72 607 75 628T79 662T81 675Q84 677 88 681Q90 683 341 683H592Q604 673 604 666Q604 662 412 348L221 37Q221 35 301 35Q406 35 446 48Q504 68 543 111T597 212Q602 239 617 239Q624 239 629 234T635 223Q635 215 621 113T604 8L597 1Q595 -1 317 -1H39ZM148 637L166 648H112V632Q111 629 110 622T108 612Q108 608 110 608T116 612T129 623T148 637ZM552 646Q552 648 504 648Q452 648 450 643Q448 639 266 343T77 37Q77 35 128 35H179L366 339L552 646ZM572 35Q581 89 581 97L561 77Q542 59 526 48L508 37L539 35H572Z"></path></g></g><g data-mml-node="TeXAtom" transform="translate(667, 410.1) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mo"><path data-c="2217" d="M229 286Q216 420 216 436Q216 454 240 464Q241 464 245 464T251 465Q263 464 273 456T283 436Q283 419 277 356T270 286L328 328Q384 369 389 372T399 375Q412 375 423 365T435 338Q435 325 425 315Q420 312 357 282T289 250L355 219L425 184Q434 175 434 161Q434 146 425 136T401 125Q393 125 383 131T328 171L270 213Q283 79 283 63Q283 53 276 44T250 35Q231 35 224 44T216 63Q216 80 222 143T229 213L171 171Q115 130 110 127Q106 124 100 124Q87 124 76 134T64 161Q64 166 64 169T67 175T72 181T81 188T94 195T113 204T138 215T170 230T210 250L74 315Q65 324 65 338Q65 353 74 363T98 374Q106 374 116 368T171 328L229 286Z"></path></g></g><g data-mml-node="TeXAtom" transform="translate(667, -247) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><path data-c="6E" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path></g></g></g></g></g></svg></span></span>中的子群结构不同的是，该解密优化通过优化分解同余方程，降低模指数空间，来提升模密运算的计算速度，从而使解密算法计算更快。</p>
+  <span style="cursor:pointer;" data-tool="mdnice编辑器"><section role="presentation" data-formula="\begin{aligned}
+    m_p &amp;= \frac{(c^{\alpha _p} \bmod p^2 - 1) \cdot h_p}{p}  (\bmod p)  \\
+    m_q &amp;= \frac{(c^{\alpha _q} \bmod q^2 - 1) \cdot h_q}{q}  (\bmod q)  \\
+    D_{opt}(sk = (\alpha_p, \alpha_q \cdots), c \in \mathbb{Z}_{n^2}^{*}) &amp;= CRT(c, m_p, m_q, sk) \\
+    &amp;= ( (m_q - m_p) \cdot p^{-1} (\bmod q) ) \cdot p + m_p \\
+    \text{其中，}\\
+    p \cdot p^{-1} &amp;\equiv 1 \bmod q \\
+    \alpha _p &amp;= \alpha / gcd(\alpha, q-1) \\
+    \alpha _q &amp;=  \alpha / gcd(\alpha, p-1) \\
+    h_p &amp;= (\frac{g^{\alpha _p} \space \bmod \space p^2  \space - \space 1}{p})^{-1} \bmod p \\
+    h_q &amp;= (\frac{g^{\alpha _q} \space \bmod \space q^2  \space - \space 1}{q})^{-1} \bmod q \\
+    \end{aligned}
+    " data-formula-type="block-equation" style="display: block;text-align: center;overflow: auto;display: block;-webkit-overflow-scrolling: touch;"><embed style="vertical-align: -20.786ex;width: 65.723ex;height: auto;max-width: 300% !important;" src="https://res.wx.qq.com/t/fed_upload/6524c627-68b1-43fa-b120-2df7b148b585/fill.svg" data-type="svg+xml"></section></span>
+</div>
+
+<!-- 图文自定义样式 -->
+<div class="mp_artical_style_section_title"><a target="_blank" href="https://mp.weixin.qq.com/s/CvXXs6Q7_0nrpjkrbcVVAQ">文章来源</a></div>
+<div class="mp_artical_style_section">
   <section style="font-size: 14px; line-height: 1.75; letter-spacing: 2px; color: rgb(0, 0, 0); visibility: visible;" data-style="font-size: 14px; line-height: 1.75; letter-spacing: 2px; color: rgb(0, 0, 0); visibility: visible;" class="js_darkmode__0"><section style="text-align: left; justify-content: flex-start; display: flex; flex-flow: row nowrap; visibility: visible;" powered-by="xiumi.us"><section style="display: inline-block; width: 100%; vertical-align: top; align-self: flex-start; flex: 0 0 auto; background-color: rgb(239, 240, 240); border-width: 0px; border-style: none; border-color: rgb(62, 62, 62); overflow: hidden; visibility: visible;" data-style="display: inline-block; width: 100%; vertical-align: top; align-self: flex-start; flex: 0 0 auto; background-color: rgb(239, 240, 240); border-width: 0px; border-style: none; border-color: rgb(62, 62, 62); overflow: hidden; visibility: visible;" class="js_darkmode__1"><section style="" powered-by="xiumi.us"><section style="text-align: center;justify-content: center;display: flex;flex-flow: row nowrap;margin-top: 25px;"><section style="display: inline-block;width: 98%;vertical-align: top;align-self: flex-start;flex: 0 0 auto;border-style: solid;border-width: 1px;border-color: rgb(0, 46, 248);background-color: rgba(255, 255, 255, 0);padding: 14px;height: auto;"><section style="margin-bottom: 5px;" powered-by="xiumi.us"><section style="text-align: left;"><section style="" powered-by="xiumi.us"><section style="text-align: justify;font-size: 16px;"><p style="text-align: left;text-wrap: wrap;"><strong>/ 何为“青云启梦” /</strong></p></section></section></section></section><section style="" powered-by="xiumi.us"><section style="text-align: left;justify-content: flex-start;display: flex;flex-flow: row nowrap;margin-top: 10px;"><section style="display: inline-block;width: 100%;vertical-align: top;align-self: flex-start;flex: 0 0 auto;background-color: rgba(254, 255, 255, 0);padding: 15px;"><section style="" powered-by="xiumi.us"><section style="text-align: justify;padding-right: 8px;padding-left: 8px;"><p style="text-wrap: wrap;">这是由<strong><span style="color: rgb(95, 156, 239);">华润集团</span></strong>主办，<strong><span style="color: rgb(95, 156, 239);">华润创业、</span></strong><strong>香港教育工作者</strong>联会承办的香港大学生跨境支教计划。本次支教计划为两地恢复全面通关后，首个开展的香港大学生前往内地支教交流活动。该计划招募的20名香港大学生代表将前往<strong>湖南韶山华润希望小镇</strong>进行为期2-3周的支教体验，期间还将安排当地文化参访、农事体验、企业参访和座谈交流等活动，<strong>帮助香港青年亲身感受乡村振兴及国家发展成果。</strong></p></section></section></section></section></section></section></section></section></section></section></section>
 </div>
 

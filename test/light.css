@@ -2939,3 +2939,8 @@ input.weui-btn_plain-default {
     padding-top: 32px;
   }
 }
+
+/* #light embed,
+#light object {
+  background-color: transparent;
+} */
