@@ -155,7 +155,7 @@ export function init(opt = {}) {
 
   if (['dark', 'light'].indexOf(opt.mode) > -1) {
     config.set('string', opt, 'mode');
-    document.getElementsByTagName('html')[0].classList.add(HTML_CLASS);
+    opt.mode === 'dark' && document.getElementsByTagName('html')[0].classList.add(HTML_CLASS);
   }
 
   config.set('function', opt, 'begin');

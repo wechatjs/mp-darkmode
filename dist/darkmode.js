@@ -2481,7 +2481,7 @@ function init() {
 
   if (['dark', 'light'].indexOf(opt.mode) > -1) {
     _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('string', opt, 'mode');
-    document.getElementsByTagName('html')[0].classList.add(_modules_constant__WEBPACK_IMPORTED_MODULE_0__["HTML_CLASS"]);
+    opt.mode === 'dark' && document.getElementsByTagName('html')[0].classList.add(_modules_constant__WEBPACK_IMPORTED_MODULE_0__["HTML_CLASS"]);
   }
 
   _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('function', opt, 'begin');
