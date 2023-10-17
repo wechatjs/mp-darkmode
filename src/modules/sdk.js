@@ -17,14 +17,14 @@ ColorName.transparent = [255, 255, 255, 0]; // 支持透明，暂定用白色透
 
 import {
   CLASS_PREFIX,
+  DM_CLASSNAME_REGEXP,
 
   COLORATTR,
   BGCOLORATTR,
   ORIGINAL_COLORATTR,
   ORIGINAL_BGCOLORATTR,
   BGIMAGEATTR,
-
-  GRAY_MASK_COLOR,
+  BG_COLOR_DELIMITER,
 
   WHITE_LIKE_COLOR_BRIGHTNESS,
   MIN_LIMIT_OFFSET_BRIGHTNESS,
@@ -36,7 +36,10 @@ import {
 
   TABLE_NAME,
 
-  IMPORTANT_REGEXP
+  IMPORTANT_REGEXP,
+
+  SEMICOLON_PLACEHOLDER,
+  SEMICOLON_PLACEHOLDER_REGEXP
 } from './constant';
 
 // Darkmode配置
@@ -56,11 +59,6 @@ import {
   hasTableClass
 } from './domUtils';
 
-const SEMICOLON_PLACEHOLDER = '<$#_SEMICOLON_#$>'; // 分号占位符
-const SEMICOLON_PLACEHOLDER_REGEXP = /<\$#_SEMICOLON_#\$>/g;
-
-const DM_CLASSNAME_REGEXP = new RegExp(`${CLASS_PREFIX}\\d+`);
-
 const colorNameReg = new RegExp(Object.keys(ColorName).map(colorName => `\\b${colorName}\\b`).join('|'), 'ig'); // 生成正则表达式来匹配这些colorName
 const colorReg = /\brgba?\([^)]+\)/i;
 const colorRegGlobal = /\brgba?\([^)]+\)/ig;
@@ -71,7 +69,6 @@ const parseColor = (value, parseTransparent) => removeImportant(value).replace(c
   const color = ColorName[match.toLowerCase()];
   return `${color.length > 3 ? 'rgba' : 'rgb'}(${color.toString()})`;
 });
-const BG_COLOR_DELIMITER = '|';
 
 // 计算mix颜色
 const mixColor = colors => {
@@ -113,6 +110,25 @@ const adjustBrightnessByLimit = (limitBright, rgb) => {
   }
   return Color.rgb(newTextR, newTextG, newTextB);
 };
+
+// 计算亮度，用作对比度计算
+const getLuminanace = rgb => {
+  const srgb = rgb.map(val => {
+    val /= 255;
+    return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
+  });
+  return srgb[0] * 0.2126 + srgb[1] * 0.7152 + srgb[2] * 0.0722;
+};
+
+// 计算对比度 https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-procedure
+const getContrast = (rgb1, rgb2) => {
+  const lum1 = getLuminanace(rgb1);
+  const lum2 = getLuminanace(rgb2);
+
+  // 亮色 / 暗色
+  if (lum1 < lum2) return (lum2 + 0.05) / (lum1 + 0.05);
+  return (lum1 + 0.05) / (lum2 + 0.05);
+}
 
 export default class SDK {
   _idx = 0; // 索引值
@@ -228,11 +244,10 @@ export default class SDK {
       newColor = this._adjustBackgroundBrightness(color);
 
       if (!options.hasInlineColor) {
-        const parentTextColor = el[COLORATTR] || config.defaultLightTextColor;
-        const parentBgColorStr = newColor || color;
+        const parentTextColor = el[ORIGINAL_COLORATTR] || config.defaultLightTextColor;
         const ret = this._adjustBrightness(Color(parentTextColor), el, {
           isTextColor: true,
-          parentElementBgColorStr: parentBgColorStr
+          parentElementBgColorStr: newColor || color
         }, isUpdate);
         if (ret.newColor) {
           extStyle += cssUtils.genCssKV('color', ret.newColor);
@@ -366,7 +381,7 @@ export default class SDK {
         });
       }
 
-      if (nodeName === 'FONT' && !hasInlineColor) { // 如果是font标签且没有内联样式
+      if (nodeName === 'FONT' && !hasInlineColor) { // 如果是font标签且没有内联文本颜色样式
         this._try(() => {
           const color = el.getAttribute('color'); // 获取color的色值
           if (color) { // 有色值，则当做内联样式来处理
@@ -485,13 +500,15 @@ export default class SDK {
 
               // 对背景颜色和文字颜色做继承传递，用于文字亮度计算
               if (isBgColor || textColorIdx > 0) { // 不处理-webkit-text-stroke-color
-                const attrName = isBgColor ? BGCOLORATTR : COLORATTR;
-                const originalAttrName = isBgColor ? ORIGINAL_BGCOLORATTR : ORIGINAL_COLORATTR;
                 const retColorStr = retColor ? retColor.toString() : match;
                 replaceIndex === 0 && getChildrenAndIt(el).forEach(dom => {
-                  const originalAttrValue = dom[originalAttrName] || config.defaultLightBgColor;
-                  dom[attrName] = retColorStr;
-                  dom[originalAttrName] = originalAttrValue.split(BG_COLOR_DELIMITER).concat(match).join(BG_COLOR_DELIMITER);
+                  if (isBgColor) {
+                    dom[BGCOLORATTR] = retColorStr;
+                    dom[ORIGINAL_BGCOLORATTR] = (dom[ORIGINAL_BGCOLORATTR] || config.defaultLightBgColor).split(BG_COLOR_DELIMITER).concat(match).join(BG_COLOR_DELIMITER);
+                  } else {
+                    dom[COLORATTR] = retColorStr;
+                    dom[ORIGINAL_COLORATTR] = match;
+                  }
 
                   // 如果设置背景颜色，取消背景图片的影响
                   if (isBgColor && Color(retColorStr).alpha() >= IGNORE_ALPHA && dom[BGIMAGEATTR]) {
@@ -501,7 +518,7 @@ export default class SDK {
               }
 
               retColor && (cssChange = true);
-              replaceIndex += 1;
+              replaceIndex++;
               return retColor || match;
             }
             return match;
@@ -535,7 +552,6 @@ export default class SDK {
 
               // background-image
               if (isBackgroundAttr) {
-                newValue = `linear-gradient(${GRAY_MASK_COLOR}, ${GRAY_MASK_COLOR}),${matches}`;
                 tmpCssKvStr = cssUtils.genCssKV(key, `${newValue},linear-gradient(${imgBgColor}, ${imgBgColor})`);
                 if (elBackgroundPositionAttr) {
                   newBackgroundPositionValue = `top left,${elBackgroundPositionAttr}`;
@@ -555,7 +571,7 @@ export default class SDK {
               } else {
                 // border-image元素，如果当前元素没有背景颜色，补背景颜色
                 if (!hasInlineBackground) {
-                  tmpCssKvStr = cssUtils.genCssKV('background-image', `linear-gradient(${GRAY_MASK_COLOR}, ${GRAY_MASK_COLOR}),linear-gradient(${imgBgColor}, ${imgBgColor})`);
+                  tmpCssKvStr = cssUtils.genCssKV('background-image', `linear-gradient(${imgBgColor}, ${imgBgColor})`);
                   if (dmBgClassName) { // 如果是文字底图，则直接加样式
                     bgCss += cssUtils.genCss(dmBgClassName, tmpCssKvStr);
                   } else { // 否则背景图入栈
@@ -568,7 +584,7 @@ export default class SDK {
 
             // 没有设置自定义字体颜色，则使用非 Dark Mode 下默认字体颜色
             if (!hasInlineColor) {
-              const textColor = mixColor((el[ORIGINAL_COLORATTR] || config.defaultLightTextColor).split(BG_COLOR_DELIMITER));
+              const textColor = el[ORIGINAL_COLORATTR] || config.defaultLightTextColor;
               cssKV += cssUtils.genCssKV('color', textColor);
               getChildrenAndIt(el).forEach(dom => {
                 dom[COLORATTR] = textColor;
@@ -592,8 +608,6 @@ export default class SDK {
       }));
 
       if (cssKV) { // 有处理过或者是背景图片就加class以及css
-        // TODO: 备份应该写到插件里
-        el.setAttribute('data-style', styles.cssText); // 备份内联样式到data-style里，供编辑器做反处理
         if (!dmClassName) {
           dmClassName = `${CLASS_PREFIX}${this._idx++}`;
           el.classList.add(dmClassName);
@@ -617,5 +631,9 @@ export default class SDK {
     plugins.emit(`afterConvertNode${isUpdate ? 'ByUpdateStyle' : ''}`, el);
 
     return css;
+  }
+
+  getContrast(color1, color2) {
+    return getContrast(Color(color1).rgb().array(), Color(color2).rgb().array());
   }
 };

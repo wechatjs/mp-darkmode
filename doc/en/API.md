@@ -59,6 +59,18 @@ Processing background. When `delayBgJudge = true` in the configuration item, you
 Darkmode.convertBg(document.body.querySelectorAll('*'));
 ```
 
+### `Darkmode.getContrast(color1, color2) => contrast`
+
+- `color1` &lt;string&gt; The color used to calculate color contrast, supports CSS color format.
+- `color2` &lt;string&gt; The color used to calculate color contrast, supports CSS color format.
+- return `contrast` &lt;number&gt; The color contrast, its value range is `[1, 21]`.
+
+Get the contrast between two colors.
+
+```javascript
+Darkmode.getContrast('#fff', '#000'); // return 21
+```
+
 ### `Darkmode.extend(pluginList)`
 
 - `pluginList` &lt;Plugin Array&gt; List of plugins to mount.

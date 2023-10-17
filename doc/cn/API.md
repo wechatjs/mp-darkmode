@@ -59,6 +59,18 @@ Darkmode.init({
 Darkmode.convertBg(document.body.querySelectorAll('*'));
 ```
 
+### `Darkmode.getContrast(color1, color2) => contrast`
+
+- `color1` &lt;string&gt; 要计算颜色对比度的颜色1，支持css颜色格式。
+- `color2` &lt;string&gt; 要计算颜色对比度的颜色2，支持css颜色格式。
+- return `contrast` &lt;number&gt; 颜色对比度，取值范围为`[1, 21]`。
+
+获取两个颜色的对比度。
+
+```javascript
+Darkmode.getContrast('#fff', '#000'); // return 21
+```
+
 ### `Darkmode.extend(pluginList)`
 
 - `pluginList` &lt;Plugin Array&gt; 要挂载的插件列表。
