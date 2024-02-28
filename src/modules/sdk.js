@@ -24,8 +24,6 @@ import {
   ORIGINAL_BGCOLORATTR,
   BGIMAGEATTR,
 
-  GRAY_MASK_COLOR,
-
   WHITE_LIKE_COLOR_BRIGHTNESS,
   MIN_LIMIT_OFFSET_BRIGHTNESS,
   MAX_LIMIT_BGCOLOR_BRIGHTNESS,
@@ -113,6 +111,25 @@ const adjustBrightnessByLimit = (limitBright, rgb) => {
   }
   return Color.rgb(newTextR, newTextG, newTextB);
 };
+
+// 计算亮度，用作对比度计算
+const getLuminanace = rgb => {
+  const srgb = rgb.map(val => {
+    val /= 255;
+    return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
+  });
+  return srgb[0] * 0.2126 + srgb[1] * 0.7152 + srgb[2] * 0.0722;
+};
+
+// 计算对比度 https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-procedure
+const getContrast = (rgb1, rgb2) => {
+  const lum1 = getLuminanace(rgb1);
+  const lum2 = getLuminanace(rgb2);
+
+  // 亮色 / 暗色
+  if (lum1 < lum2) return (lum2 + 0.05) / (lum1 + 0.05);
+  return (lum1 + 0.05) / (lum2 + 0.05);
+}
 
 export default class SDK {
   _idx = 0; // 索引值
@@ -535,7 +552,6 @@ export default class SDK {
 
               // background-image
               if (isBackgroundAttr) {
-                newValue = `linear-gradient(${GRAY_MASK_COLOR}, ${GRAY_MASK_COLOR}),${matches}`;
                 tmpCssKvStr = cssUtils.genCssKV(key, `${newValue},linear-gradient(${imgBgColor}, ${imgBgColor})`);
                 if (elBackgroundPositionAttr) {
                   newBackgroundPositionValue = `top left,${elBackgroundPositionAttr}`;
@@ -555,7 +571,7 @@ export default class SDK {
               } else {
                 // border-image元素，如果当前元素没有背景颜色，补背景颜色
                 if (!hasInlineBackground) {
-                  tmpCssKvStr = cssUtils.genCssKV('background-image', `linear-gradient(${GRAY_MASK_COLOR}, ${GRAY_MASK_COLOR}),linear-gradient(${imgBgColor}, ${imgBgColor})`);
+                  tmpCssKvStr = cssUtils.genCssKV('background-image', `linear-gradient(${imgBgColor}, ${imgBgColor})`);
                   if (dmBgClassName) { // 如果是文字底图，则直接加样式
                     bgCss += cssUtils.genCss(dmBgClassName, tmpCssKvStr);
                   } else { // 否则背景图入栈
@@ -617,5 +633,9 @@ export default class SDK {
     plugins.emit(`afterConvertNode${isUpdate ? 'ByUpdateStyle' : ''}`, el);
 
     return css;
+  }
+
+  getContrast(color1, color2) {
+    return getContrast(Color(color1).rgb().array(), Color(color2).rgb().array());
   }
 };

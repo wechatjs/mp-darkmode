@@ -2312,7 +2312,7 @@ swizzle.wrap = function (fn) {
 /*!*************************!*\
   !*** ./src/darkmode.js ***!
   \*************************/
-/*! exports provided: run, init, convertBg, extend, updateStyle */
+/*! exports provided: run, init, convertBg, extend, updateStyle, getContrast */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2322,6 +2322,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "convertBg", function() { return convertBg; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "extend", function() { return extend; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "updateStyle", function() { return updateStyle; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getContrast", function() { return getContrast; });
 /* harmony import */ var _modules_constant__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/constant */ "./src/modules/constant.js");
 /* harmony import */ var _modules_config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/config */ "./src/modules/config.js");
 /* harmony import */ var _modules_global__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/global */ "./src/modules/global.js");
@@ -2533,6 +2534,9 @@ function updateStyle(node, styles) {
   _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].writeStyle();
 }
 ;
+function getContrast(color1, color2) {
+  return _modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].getContrast(color1, color2);
+}
 
 /***/ }),
 
@@ -2743,7 +2747,7 @@ var config = {
 /*!*********************************!*\
   !*** ./src/modules/constant.js ***!
   \*********************************/
-/*! exports provided: MEDIA_QUERY, CLASS_PREFIX, HTML_CLASS, COLORATTR, BGCOLORATTR, ORIGINAL_COLORATTR, ORIGINAL_BGCOLORATTR, BGIMAGEATTR, DEFAULT_LIGHT_TEXTCOLOR, DEFAULT_LIGHT_BGCOLOR, DEFAULT_DARK_TEXTCOLOR, DEFAULT_DARK_BGCOLOR, GRAY_MASK_COLOR, WHITE_LIKE_COLOR_BRIGHTNESS, MAX_LIMIT_BGCOLOR_BRIGHTNESS, MIN_LIMIT_OFFSET_BRIGHTNESS, HIGH_BGCOLOR_BRIGHTNESS, HIGH_BLACKWHITE_HSL_BRIGHTNESS, LOW_BLACKWHITE_HSL_BRIGHTNESS, IGNORE_ALPHA, PAGE_HEIGHT, TABLE_NAME, IMPORTANT_REGEXP */
+/*! exports provided: MEDIA_QUERY, CLASS_PREFIX, HTML_CLASS, COLORATTR, BGCOLORATTR, ORIGINAL_COLORATTR, ORIGINAL_BGCOLORATTR, BGIMAGEATTR, DEFAULT_LIGHT_TEXTCOLOR, DEFAULT_LIGHT_BGCOLOR, DEFAULT_DARK_TEXTCOLOR, DEFAULT_DARK_BGCOLOR, WHITE_LIKE_COLOR_BRIGHTNESS, MAX_LIMIT_BGCOLOR_BRIGHTNESS, MIN_LIMIT_OFFSET_BRIGHTNESS, HIGH_BGCOLOR_BRIGHTNESS, HIGH_BLACKWHITE_HSL_BRIGHTNESS, LOW_BLACKWHITE_HSL_BRIGHTNESS, IGNORE_ALPHA, PAGE_HEIGHT, TABLE_NAME, IMPORTANT_REGEXP */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2760,7 +2764,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_LIGHT_BGCOLOR", function() { return DEFAULT_LIGHT_BGCOLOR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_DARK_TEXTCOLOR", function() { return DEFAULT_DARK_TEXTCOLOR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_DARK_BGCOLOR", function() { return DEFAULT_DARK_BGCOLOR; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "GRAY_MASK_COLOR", function() { return GRAY_MASK_COLOR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WHITE_LIKE_COLOR_BRIGHTNESS", function() { return WHITE_LIKE_COLOR_BRIGHTNESS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MAX_LIMIT_BGCOLOR_BRIGHTNESS", function() { return MAX_LIMIT_BGCOLOR_BRIGHTNESS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MIN_LIMIT_OFFSET_BRIGHTNESS", function() { return MIN_LIMIT_OFFSET_BRIGHTNESS; });
@@ -2795,8 +2798,6 @@ var DEFAULT_LIGHT_BGCOLOR = '#fff'; // 非Dark Mode下背景颜色
 var DEFAULT_DARK_TEXTCOLOR = '#a3a3a3'; // 前景色：rgba(255,255,255,0.6) 背景色：#191919
 
 var DEFAULT_DARK_BGCOLOR = '#191919'; // Dark Mode下背景颜色
-
-var GRAY_MASK_COLOR = 'rgba(0,0,0,0.2)'; // 灰色蒙层色值
 
 var WHITE_LIKE_COLOR_BRIGHTNESS = 250; // 接近白色的感知亮度阈值
 
@@ -3530,6 +3531,24 @@ var adjustBrightnessByLimit = function adjustBrightnessByLimit(limitBright, rgb)
   }
 
   return color__WEBPACK_IMPORTED_MODULE_0___default.a.rgb(newTextR, newTextG, newTextB);
+}; // 计算亮度，用作对比度计算
+
+
+var getLuminanace = function getLuminanace(rgb) {
+  var srgb = rgb.map(function (val) {
+    val /= 255;
+    return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
+  });
+  return srgb[0] * 0.2126 + srgb[1] * 0.7152 + srgb[2] * 0.0722;
+}; // 计算对比度 https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-procedure
+
+
+var _getContrast = function getContrast(rgb1, rgb2) {
+  var lum1 = getLuminanace(rgb1);
+  var lum2 = getLuminanace(rgb2); // 亮色 / 暗色
+
+  if (lum1 < lum2) return (lum2 + 0.05) / (lum1 + 0.05);
+  return (lum1 + 0.05) / (lum2 + 0.05);
 };
 
 var SDK = /*#__PURE__*/function () {
@@ -4004,7 +4023,6 @@ var SDK = /*#__PURE__*/function () {
 
 
                   if (isBackgroundAttr) {
-                    newValue = "linear-gradient(".concat(_constant__WEBPACK_IMPORTED_MODULE_2__["GRAY_MASK_COLOR"], ", ").concat(_constant__WEBPACK_IMPORTED_MODULE_2__["GRAY_MASK_COLOR"], "),").concat(matches);
                     tmpCssKvStr = _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(key, "".concat(newValue, ",linear-gradient(").concat(imgBgColor, ", ").concat(imgBgColor, ")"));
 
                     if (elBackgroundPositionAttr) {
@@ -4029,7 +4047,7 @@ var SDK = /*#__PURE__*/function () {
                   } else {
                     // border-image元素，如果当前元素没有背景颜色，补背景颜色
                     if (!hasInlineBackground) {
-                      tmpCssKvStr = _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-image', "linear-gradient(".concat(_constant__WEBPACK_IMPORTED_MODULE_2__["GRAY_MASK_COLOR"], ", ").concat(_constant__WEBPACK_IMPORTED_MODULE_2__["GRAY_MASK_COLOR"], "),linear-gradient(").concat(imgBgColor, ", ").concat(imgBgColor, ")"));
+                      tmpCssKvStr = _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-image', "linear-gradient(".concat(imgBgColor, ", ").concat(imgBgColor, ")"));
 
                       if (dmBgClassName) {
                         // 如果是文字底图，则直接加样式
@@ -4102,6 +4120,11 @@ var SDK = /*#__PURE__*/function () {
 
       _global__WEBPACK_IMPORTED_MODULE_4__["plugins"].emit("afterConvertNode".concat(isUpdate ? 'ByUpdateStyle' : ''), el);
       return css;
+    }
+  }, {
+    key: "getContrast",
+    value: function getContrast(color1, color2) {
+      return _getContrast(color__WEBPACK_IMPORTED_MODULE_0___default()(color1).rgb().array(), color__WEBPACK_IMPORTED_MODULE_0___default()(color2).rgb().array());
     }
   }]);
 

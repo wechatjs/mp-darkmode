@@ -200,3 +200,7 @@ export function updateStyle(node, styles) {
   cssUtils.addCss(sdk.convert(node, styles ? Object.keys(styles).map(key => [key, styles[key]]) : undefined, true), false);
   cssUtils.writeStyle();
 };
+
+export function getContrast(color1, color2) {
+  return sdk.getContrast(color1, color2);
+}
