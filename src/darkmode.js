@@ -83,7 +83,7 @@ const switchToDarkmode = (mqlObj, opt = {
             if (top <= 0 && bottom <= 0) { // 首屏前面
               cssUtils.addCss(sdk.convert(node)); // 写入非首屏样式
             } else if ((top > 0 && top < PAGE_HEIGHT) || (bottom > 0 && bottom < PAGE_HEIGHT)) { // 首屏
-              domUtils.addFirstPageNode(node); // 记录首屏节点
+              // domUtils.addFirstPageNode(node); // 记录首屏节点
               cssUtils.addCss(sdk.convert(node), true); // 写入首屏样式
             } else { // 首屏后面，理论上，这里最多只会进来一次
               config.needJudgeFirstPage = false; // 至此，不需要再判断首屏了
@@ -112,7 +112,7 @@ const switchToDarkmode = (mqlObj, opt = {
       typeof config.showFirstPage === 'function' && config.showFirstPage(); // 执行首屏回调
     }
     cssUtils.writeStyle(); // 写入非首屏样式表
-    domUtils.emptyFirstPageNodes(); // 清空记录的首屏节点
+    // domUtils.emptyFirstPageNodes(); // 清空记录的首屏节点
 
     if (!sdk.isDarkmode) { // 非Dark Mode
       // 首次加载页面时为非Dark Mode，标记为不需要判断首屏

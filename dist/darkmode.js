@@ -2401,8 +2401,7 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
               _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].addCss(_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].convert(node)); // 写入非首屏样式
             } else if (top > 0 && top < _modules_constant__WEBPACK_IMPORTED_MODULE_0__["PAGE_HEIGHT"] || bottom > 0 && bottom < _modules_constant__WEBPACK_IMPORTED_MODULE_0__["PAGE_HEIGHT"]) {
               // 首屏
-              _modules_global__WEBPACK_IMPORTED_MODULE_2__["domUtils"].addFirstPageNode(node); // 记录首屏节点
-
+              // domUtils.addFirstPageNode(node); // 记录首屏节点
               _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].addCss(_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].convert(node), true); // 写入首屏样式
             } else {
               // 首屏后面，理论上，这里最多只会进来一次
@@ -2437,8 +2436,7 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
     }
 
     _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].writeStyle(); // 写入非首屏样式表
-
-    _modules_global__WEBPACK_IMPORTED_MODULE_2__["domUtils"].emptyFirstPageNodes(); // 清空记录的首屏节点
+    // domUtils.emptyFirstPageNodes(); // 清空记录的首屏节点
 
     if (!_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].isDarkmode) {
       // 非Dark Mode
@@ -3158,11 +3156,10 @@ var DomUtils = /*#__PURE__*/function () {
   }, {
     key: "showFirstPageNodes",
     value: function showFirstPageNodes() {
-      this._firstPageNodes.forEach(function (node) {
-        return !node.style.visibility && (node.style.visibility = 'visible');
-      }); // 显示首屏节点
-
-
+      // 当首屏出现的元素内联样式包含 visibility: visible 时，首屏阻现失效，原逻辑废弃
+      // this._firstPageNodes.forEach(node => !node.style.visibility && (node.style.visibility = 'visible'));
+      // 当前解决方案：
+      // 默认外部容器 opaci 为 0，在触发 showFirstPage 回调时，将外部容器的 opacity 设置为 1
       this.showFirstPage = true; // 记录为已显示首屏
     }
   }, {
