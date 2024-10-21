@@ -15,20 +15,22 @@ API
   - `options.mode` &lt;string&gt; 强制指定的颜色模式（ dark | light ），指定了就不监听系统颜色。
   - `options.whitelist` &lt;Object&gt; 节点白名单，在白名单内的 DOM 将不会被转换。
     - `options.whitelist.tagName` &lt;string Array&gt; 标签名列表。
+    - `options.whitelist.attribute` &lt;string Array&gt; 属性列表。
   - `options.needJudgeFirstPage` &lt;boolean&gt; 是否需要判断首屏，默认 `true`。
   - `options.delayBgJudge` &lt;boolean&gt; 是否延迟背景判断，默认 `false`。
   - `options.container` &lt;DOM Object&gt; 延迟运行 js 时使用的容器，默认 `null`。
   - `options.cssSelectorsPrefix` &lt;string&gt; css 选择器前缀，默认 `''`。
-  - `opt.defaultLightTextColor` &lt;string&gt; 非 Dark Mode 下字体颜色，默认 `#191919`。
-  - `opt.defaultLightBgColor` &lt;string&gt; 非 Dark Mode 下背景颜色，默认 `#fff`。
-  - `opt.defaultDarkTextColor` &lt;string&gt; Dark Mode 下字体颜色，默认 `#a3a3a3`。
-  - `opt.defaultDarkBgColor` &lt;string&gt; Dark Mode 下背景颜色，默认 `#191919`。
+  - `options.defaultLightTextColor` &lt;string&gt; 非 Dark Mode 下字体颜色，默认 `#191919`。
+  - `options.defaultLightBgColor` &lt;string&gt; 非 Dark Mode 下背景颜色，默认 `#fff`。
+  - `options.defaultDarkTextColor` &lt;string&gt; Dark Mode 下字体颜色，默认 `#a3a3a3`。
+  - `options.defaultDarkBgColor` &lt;string&gt; Dark Mode 下背景颜色，默认 `#191919`。
 
 运行 Dark Mode 转换算法。**注意：可多次运行转换，但配置只可设置一次。**
 
 ```javascript
 Darkmode.run(document.body.querySelectorAll('*'), {
-  mode: 'dark' // 强制指定深色模式
+  mode: 'dark', // 强制指定深色模式
+  ... // 其它配置项
 });
 ```
 
@@ -40,12 +42,28 @@ Darkmode.run(document.body.querySelectorAll('*'), {
 
 ```javascript
 Darkmode.init({
-  error: e => { // 发生error时
-    console.log(e);
+  begin: isSwitch => { // Dark Mode 转换开始时触发的回调，isSwitch表示是否在切换 Dark Mode
+    console.log('begin');
   },
-  whitelist: {
-    tagName: ['a'] // 不转换a标签
-  }
+  showFirstPage: () => { // 首屏处理完成时触发的回调
+    console.log('showFirstPage');
+  },
+  error: err => { // 发生error时触发的回调，err为错误对象
+    console.error(err);
+  },
+  mode: 'dark', // 强制指定深色模式
+  whitelist: { // 节点白名单，在白名单内的 DOM 将不会被转换
+    tagName: ['a'], // 不转换a标签节点
+    attribute: ['data-no-dark'], // 不转换带data-no-dark属性的节点
+  },
+  needJudgeFirstPage: true, // 是否需要判断首屏
+  delayBgJudge: false, // 是否延迟背景判断
+  container: null, // 延迟运行 js 时使用的容器
+  cssSelectorsPrefix: '', // css 选择器前缀
+  defaultLightTextColor: '#191919', // 非 Dark Mode 下字体颜色
+  defaultLightBgColor: '#fff', // 非 Dark Mode 下背景颜色
+  defaultDarkTextColor: '#a3a3a3', // Dark Mode 下字体颜色
+  defaultDarkBgColor: '#191919', // Dark Mode 下背景颜色
 });
 ```
 
@@ -57,6 +75,20 @@ Darkmode.init({
 
 ```javascript
 Darkmode.convertBg(document.body.querySelectorAll('*'));
+```
+
+### `Darkmode.updateStyle(node, styles)`
+
+- `node` &lt;DOM Object&gt; 要更新的节点。
+- `styles` &lt;Object&gt; 更新的样式键值对对象，如：`{ color: '#ddd' }`。
+
+更新节点 Dark Mode 样式。
+
+```javascript
+Darkmode.updateStyle(node, {
+  color: '#191919',
+  backgroundColor: '#fff',
+});
 ```
 
 ### `Darkmode.getContrast(color1, color2) => contrast`

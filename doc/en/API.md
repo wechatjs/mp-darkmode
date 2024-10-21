@@ -15,6 +15,7 @@ API
   - `options.mode` &lt;string&gt; The specified color mode (dark | light), if specified, the system color will not be monitored.
   - `options.whitelist` &lt;Object&gt; The DOM in whitelist will not be processed.
     - `options.whitelist.tagName` &lt;string Array&gt; The whitelist for tag name.
+    - `options.whitelist.attribute` &lt;string Array&gt; The whitelist for attributes.
   - `options.needJudgeFirstPage` &lt;boolean&gt; Whether to judge the first screen. Default `true`.
   - `options.delayBgJudge` &lt;boolean&gt; Whether to delay background judgment. Default `false`.
   - `options.container` &lt;DOM Object&gt; The container to use when delaying running js. Default `null`.
@@ -28,7 +29,8 @@ Run Dark Mode conversion algorithm. **Note: The conversion can be run multiple t
 
 ```javascript
 Darkmode.run(document.body.querySelectorAll('*'), {
-  mode: 'dark' // force dark mode
+  mode: 'dark', // force dark mode
+  ... // other configuration items
 });
 ```
 
@@ -40,12 +42,28 @@ Initialize Dark Mode configuration. **Note: The configuration can only be set on
 
 ```javascript
 Darkmode.init({
-  error: e => { // an error occurred
-    console.log(e);
+  begin: isSwitch => { // callback triggered when Dark Mode conversion starts. The isSwitch means whether to switch to Dark Mode
+    console.log('begin');
   },
+  showFirstPage: () => { // callback triggered when the first page render finish
+    console.log('showFirstPage');
+  },
+  error: err => { // an error occurred
+    console.log(err);
+  },
+  mode: 'dark', // force dark mode
   whitelist: {
-    tagName: ['a'] // ignore <a>
-  }
+    tagName: ['a'], // ignore <a>
+    attribute: ['data-no-dark'], // ignore data-no-dark attribute
+  },
+  needJudgeFirstPage: true, // whether to judge the first screen
+  delayBgJudge: false, // whether to delay background judgment
+  container: null, // the container to use when delaying running js
+  cssSelectorsPrefix: '', // css selector prefix
+  defaultLightTextColor: '#191919', // font color in non-Dark Mode
+  defaultLightBgColor: '#fff', // background color in non-Dark Mode
+  defaultDarkTextColor: '#a3a3a3', // font color in Dark Mode
+  defaultDarkBgColor: '#191919', // background color in Dark Mode
 });
 ```
 
@@ -57,6 +75,20 @@ Processing background. When `delayBgJudge = true` in the configuration item, you
 
 ```javascript
 Darkmode.convertBg(document.body.querySelectorAll('*'));
+```
+
+### `Darkmode.updateStyle(node, styles)`
+
+- `node` &lt;DOM Object&gt; The node to be updated.
+- `styles` &lt;Object&gt; The key-value pair object to be updated. eg: `{ color: '#ddd' }`.
+
+Update the Dark Mode style of the specified node.
+
+```javascript
+Darkmode.updateStyle(node, {
+  color: '#191919',
+  backgroundColor: '#fff',
+});
 ```
 
 ### `Darkmode.getContrast(color1, color2) => contrast`

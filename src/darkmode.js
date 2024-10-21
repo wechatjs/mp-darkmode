@@ -12,6 +12,7 @@
  * @param {string}     opt.mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
  * @param {Object}     opt.whitelist             节点白名单
  * @param {Array}      opt.whitelist.tagName     标签名列表
+ * @param {Array}      opt.whitelist.attribute   属性列表
  * @param {boolean}    opt.needJudgeFirstPage    是否需要判断首屏
  * @param {boolean}    opt.delayBgJudge          是否延迟背景判断
  * @param {DOM Object} opt.container             延迟运行js时使用的容器
@@ -24,12 +25,17 @@
  * @function convertBg 处理背景
  * @param {DOM Object Array} nodes 要处理的节点列表
  *
- * @function extend 挂载插件
- * @param {Array} pluginList 插件列表
- *
  * @function updateStyle 更新节点Dark Mode样式
  * @param {DOM Object} node   要更新的节点
  * @param {Object}     styles 更新的样式键值对对象，如：{ color: '#ddd' }
+ *
+ * @function getContrast 获取两个颜色的对比度
+ * @param {string} color1 要计算颜色对比度的颜色1，支持css颜色格式
+ * @param {string} color2 要计算颜色对比度的颜色2，支持css颜色格式
+ * @return {number} contrast 颜色对比度，取值范围为`[1, 21]`
+ *
+ * @function extend 挂载插件
+ * @param {Array} pluginList 插件列表
  *
  */
 
@@ -148,10 +154,16 @@ export function init(opt = {}) {
   config.hasInit = true; // 记录为配置已设置
 
   const tagName = config.whitelist.tagName;
-  opt.whitelist && opt.whitelist.tagName instanceof Array && opt.whitelist.tagName.forEach(item => {
-    item = item.toUpperCase();
-    tagName.indexOf(item) === -1 && tagName.push(item);
-  });
+  const attribute = config.whitelist.attribute;
+  if (opt.whitelist) {
+    opt.whitelist.tagName instanceof Array && opt.whitelist.tagName.forEach(item => {
+      item = item.toUpperCase();
+      tagName.indexOf(item) === -1 && tagName.push(item);
+    });
+    opt.whitelist.attribute instanceof Array && opt.whitelist.attribute.forEach(item => {
+      attribute.indexOf(item) === -1 && attribute.push(item);
+    });
+  }
 
   if (['dark', 'light'].indexOf(opt.mode) > -1) {
     config.set('string', opt, 'mode');
@@ -191,10 +203,6 @@ export function convertBg(nodes) {
   });
 };
 
-export function extend(pluginList) {
-  pluginList.forEach(plugin => plugins.extend(plugin));
-};
-
 export function updateStyle(node, styles) {
   if (!cssUtils.isFinish) return; // 没有运行过Dark Mode处理逻辑则无需运行
   cssUtils.addCss(sdk.convert(node, styles ? Object.keys(styles).map(key => [key, styles[key]]) : undefined, true), false);
@@ -203,4 +211,8 @@ export function updateStyle(node, styles) {
 
 export function getContrast(color1, color2) {
   return sdk.getContrast(color1, color2);
-}
+};
+
+export function extend(pluginList) {
+  pluginList.forEach(plugin => plugins.extend(plugin));
+};

@@ -41,7 +41,8 @@ const config = {
 
   mode: '',
   whitelist: {
-    tagName: ['MPCPS', 'IFRAME']
+    tagName: ['MPCPS', 'IFRAME'],
+    attribute: [],
   },
   needJudgeFirstPage: true,
   delayBgJudge: false,

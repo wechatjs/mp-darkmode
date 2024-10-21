@@ -48,12 +48,16 @@ Darkmode.run(document.body.querySelectorAll('*')); // process all DOM nodes unde
   - `options.error` &lt;Function&gt; Callback triggered when an error occurs.
     - `err` &lt;Error&gt; Error object.
   - `options.mode` &lt;string&gt; The specified color mode (dark | light), if specified, the system color will not be monitored.
+  - ...
+  - ...
+  - ...
 
 Run Dark Mode conversion algorithm.
 
 ```javascript
 Darkmode.run(document.body.querySelectorAll('*'), {
-  mode: 'dark' // force dark mode
+  mode: 'dark', // force dark mode
+  ... // other configuration items
 });
 ```
 

@@ -13,7 +13,7 @@
  * @param {Function} callback 回调
  *
  * @method update 更新队列的节点对象，主要解决前后节点不一致的问题
- * @param {DOM Object Array} nodes 要更新的节点对象列表
+ * @param {DOM Object Array} els 要更新的节点对象列表
  *
  */
 
@@ -53,12 +53,12 @@ export default class TextNodeQueue {
     }
   }
 
-  update(nodes) {
+  update(els) {
     this._queue.forEach(item => {
       if (!item.updated) {
-        Array.prototype.some.call(nodes, node => {
-          if (node.nodeType === 1 && node.classList.contains(item.className)) {
-            item.el = node;
+        Array.prototype.some.call(els, el => {
+          if (el.nodeType === 1 && el.classList.contains(item.className)) {
+            item.el = el;
             item.updated = true;
             return true;
           }

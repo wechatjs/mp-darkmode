@@ -11,6 +11,15 @@
 
 // dependencies
 import Color from 'color';
+const ColorParser = color => {
+  let res = null;
+  try {
+    res = Color(color);
+  } catch (e) {
+    console.log(`ignore the invalid color: \`${color}\``);
+  }
+  return res;
+};
 import ColorName from 'color-name';
 ColorName.windowtext = [0, 0, 0]; // 补上这个colorName
 ColorName.transparent = [255, 255, 255, 0]; // 支持透明，暂定用白色透明度0来表示
@@ -75,15 +84,22 @@ const mixColor = colors => {
   if (!colors || colors.length < 1) return '';
   if (colors.length === 1) return colors[0];
 
-  let retColor = colors.shift();
-  let nextColor = colors.shift();
-  while (nextColor) {
-    const nextColorObj = Color(nextColor);
-    retColor = Color(retColor).mix(nextColorObj, nextColorObj.alpha());
-    nextColor = colors.shift();
+  let retColorStr = colors.shift();
+  let nextColorStr = colors.shift();
+  while (nextColorStr) {
+    const retColor = ColorParser(retColorStr);
+    const nextColor = ColorParser(nextColorStr);
+    if (!retColor && nextColor) { // 如果当前色值非法，混入色值合法，则直接使用混入色值
+      retColorStr = nextColorStr;
+    } else if (!retColor && !nextColor) { // 如果两个色值都非法，则使用下一批色值
+      retColorStr = colors.shift() || '';
+    } else if (retColor && nextColor) { // 如果两个色值都合法，执行mix
+      retColorStr = retColor.mix(nextColor, nextColor.alpha());
+    } // 如果当前色值合法，混入色值非法，无需处理
+    nextColorStr = colors.shift();
   }
 
-  return retColor;
+  return retColorStr;
 };
 
 // 处理-webkit-fill-color和-webkit-text-stroke-color，返回处理后的色值，无则返回空字符串
@@ -132,9 +148,9 @@ const getContrast = (rgb1, rgb2) => {
 
 export default class SDK {
   _idx = 0; // 索引值
-  _defaultDarkTextColorRgb = Color(config.defaultDarkTextColor).rgb().array();
-  _defaultDarkBgColorRgb = Color(config.defaultDarkBgColor).rgb().array();
-  _defaultDarkBgColorHSL = Color(config.defaultDarkBgColor).hsl().array();
+  _defaultDarkTextColorRgb = ColorParser(config.defaultDarkTextColor).rgb().array();
+  _defaultDarkBgColorRgb = ColorParser(config.defaultDarkBgColor).rgb().array();
+  _defaultDarkBgColorHSL = ColorParser(config.defaultDarkBgColor).hsl().array();
   _defaultDarkTextColorBrightness = getColorPerceivedBrightness(this._defaultDarkTextColorRgb);
   _defaultDarkBgColorBrightness = getColorPerceivedBrightness(this._defaultDarkBgColorRgb);
   _defaultDarkBgColorHslBrightness = this._defaultDarkBgColorHSL[2];
@@ -244,25 +260,28 @@ export default class SDK {
       newColor = this._adjustBackgroundBrightness(color);
 
       if (!options.hasInlineColor) {
-        const parentTextColor = el[ORIGINAL_COLORATTR] || config.defaultLightTextColor;
-        const ret = this._adjustBrightness(Color(parentTextColor), el, {
-          isTextColor: true,
-          parentElementBgColorStr: newColor || color
-        }, isUpdate);
-        if (ret.newColor) {
-          extStyle += cssUtils.genCssKV('color', ret.newColor);
-        } else {
-          extStyle += cssUtils.genCssKV('color', parentTextColor);
+        const parentTextColorStr = el[ORIGINAL_COLORATTR] || config.defaultLightTextColor;
+        const parentTextColor = ColorParser(parentTextColorStr);
+        if (parentTextColor) {
+          const ret = this._adjustBrightness(parentTextColor, el, {
+            isTextColor: true,
+            parentElementBgColorStr: newColor || color
+          }, isUpdate);
+          if (ret.newColor) {
+            extStyle += cssUtils.genCssKV('color', ret.newColor);
+          } else {
+            extStyle += cssUtils.genCssKV('color', parentTextColor);
+          }
         }
       }
     } else if (options.isTextColor || options.isBorderColor) { // 字体色、边框色
       const parentElementBgColorStr = options.parentElementBgColorStr
         || (options.isTextColor && el[BGCOLORATTR])
         || config.defaultDarkBgColor;
-      const parentElementBgColor = Color(parentElementBgColorStr);
+      const parentElementBgColor = ColorParser(parentElementBgColorStr);
 
       // 无背景图片
-      if (!el[BGIMAGEATTR]) {
+      if (parentElementBgColor && !el[BGIMAGEATTR]) {
         newColor = this._adjustTextBrightness(color, parentElementBgColor);
         plugins.emit(`afterConvertTextColor${isUpdate ? 'ByUpdateStyle' : ''}`, el, {
           // fontColor: color,
@@ -303,6 +322,7 @@ export default class SDK {
       const nodeName = el.nodeName;
 
       if (config.whitelist.tagName.indexOf(nodeName) > -1) return '';
+      if (config.whitelist.attribute.some(attribute => el.hasAttribute(attribute))) return '';
 
       const styles = el.style;
 
@@ -372,21 +392,27 @@ export default class SDK {
 
       if (TABLE_NAME.indexOf(nodeName) > -1 && !hasInlineBackground) { // 如果table没有内联样式
         this._try(() => {
-          let color = hasTableClass(el); // 获取class对应的lm色值
-          if (!color) color = el.getAttribute('bgcolor'); // 如果没有class则获取bgcolor的色值
-          if (color) { // 有色值（class对应的lm色值或者是bgcolor色值），则当做内联样式来处理
-            cssKVList.unshift(['background-color', Color(color).toString()]);
-            hasInlineBackground = true;
+          let colorStr = hasTableClass(el); // 获取class对应的lm色值
+          if (!colorStr) colorStr = el.getAttribute('bgcolor'); // 如果没有class则获取bgcolor的色值
+          if (colorStr) { // 有色值（class对应的lm色值或者是bgcolor色值），则当做内联样式来处理
+            const color = ColorParser(colorStr);
+            if (color) {
+              cssKVList.unshift(['background-color', color.toString()]);
+              hasInlineBackground = true;
+            }
           }
         });
       }
 
       if (nodeName === 'FONT' && !hasInlineColor) { // 如果是font标签且没有内联文本颜色样式
         this._try(() => {
-          const color = el.getAttribute('color'); // 获取color的色值
-          if (color) { // 有色值，则当做内联样式来处理
-            cssKVList.push(['color', Color(color).toString()]);
-            hasInlineColor = true;
+          const colorStr = el.getAttribute('color'); // 获取color的色值
+          if (colorStr) { // 有色值，则当做内联样式来处理
+            const color = ColorParser(colorStr);
+            if (color) {
+              cssKVList.push(['color', color.toString()]);
+              hasInlineColor = true;
+            }
           }
         });
       }
@@ -484,8 +510,8 @@ export default class SDK {
               cssChange = true;
             }
 
-            const matchColor = Color(match);
-            if (matchColor.alpha() >= IGNORE_ALPHA) { // 忽略透明度低的色值
+            const matchColor = ColorParser(match);
+            if (matchColor?.alpha() >= IGNORE_ALPHA) { // 忽略透明度低的色值
               // 使用颜色处理算法
               const ret = this._adjustBrightness(matchColor, el, {
                 isBgColor,
@@ -511,7 +537,8 @@ export default class SDK {
                   }
 
                   // 如果设置背景颜色，取消背景图片的影响
-                  if (isBgColor && Color(retColorStr).alpha() >= IGNORE_ALPHA && dom[BGIMAGEATTR]) {
+                  const retColor = ColorParser(retColorStr);
+                  if (isBgColor && retColor?.alpha() >= IGNORE_ALPHA && dom[BGIMAGEATTR]) {
                     delete dom[BGIMAGEATTR];
                   }
                 });
@@ -552,7 +579,7 @@ export default class SDK {
 
               // background-image
               if (isBackgroundAttr) {
-                tmpCssKvStr = cssUtils.genCssKV(key, `${newValue},linear-gradient(${imgBgColor}, ${imgBgColor})`);
+                tmpCssKvStr = cssUtils.genCssKV(key, imgBgColor ? `${newValue},linear-gradient(${imgBgColor}, ${imgBgColor})` : newValue);
                 if (elBackgroundPositionAttr) {
                   newBackgroundPositionValue = `top left,${elBackgroundPositionAttr}`;
                   cssKV += cssUtils.genCssKV('background-position', `${newBackgroundPositionValue}`);
@@ -570,7 +597,7 @@ export default class SDK {
                 }
               } else {
                 // border-image元素，如果当前元素没有背景颜色，补背景颜色
-                if (!hasInlineBackground) {
+                if (imgBgColor && !hasInlineBackground) {
                   tmpCssKvStr = cssUtils.genCssKV('background-image', `linear-gradient(${imgBgColor}, ${imgBgColor})`);
                   if (dmBgClassName) { // 如果是文字底图，则直接加样式
                     bgCss += cssUtils.genCss(dmBgClassName, tmpCssKvStr);
@@ -633,7 +660,9 @@ export default class SDK {
     return css;
   }
 
-  getContrast(color1, color2) {
-    return getContrast(Color(color1).rgb().array(), Color(color2).rgb().array());
+  getContrast(colorStr1, colorStr2) {
+    const color1 = ColorParser(colorStr1);
+    const color2 = ColorParser(colorStr2);
+    return (color1 && color2) ? getContrast(color1.rgb().array(), color2.rgb().array()) : 0;
   }
 };

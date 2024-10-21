@@ -20,7 +20,7 @@ export const BG_COLOR_DELIMITER = '|';
 
 export const DEFAULT_LIGHT_TEXTCOLOR = '#191919'; // 非Dark Mode下字体颜色
 export const DEFAULT_LIGHT_BGCOLOR = '#fff'; // 非Dark Mode下背景颜色
-export const DEFAULT_DARK_TEXTCOLOR = '#a3a3a3'; // 前景色：rgba(255,255,255,0.6) 背景色：#191919
+export const DEFAULT_DARK_TEXTCOLOR = '#a3a3a3'; // Dark Mode下字体颜色，前景色：rgba(255,255,255,0.6) 背景色：#191919
 export const DEFAULT_DARK_BGCOLOR = '#191919'; // Dark Mode下背景颜色
 
 export const WHITE_LIKE_COLOR_BRIGHTNESS = 250; // 接近白色的感知亮度阈值

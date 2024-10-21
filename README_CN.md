@@ -48,12 +48,16 @@ Darkmode.run(document.body.querySelectorAll('*')); // 处理body下的所有DOM�
   - `options.error` &lt;Function&gt; 发生 error 时触发的回调。
     - `err` &lt;Error&gt; 错误对象。
   - `options.mode` &lt;string&gt; 强制指定的颜色模式（ dark | light ），指定了就不监听系统颜色。
+  - ...
+  - ...
+  - ...
 
 运行 Dark Mode 转换算法。
 
 ```javascript
 Darkmode.run(document.body.querySelectorAll('*'), {
-  mode: 'dark' // 强制指定深色模式
+  mode: 'dark', // 强制指定深色模式
+  ... // 其它配置项
 });
 ```
 
