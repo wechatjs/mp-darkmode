@@ -124,7 +124,8 @@ export class DomUtils {
   }
 
   hasDelay() {
-    return this._delayEls.length > 0;
+    if (this._els.length) return false; // 有节点，即不含延迟处理的节点
+    return this._delayEls.length > 0 || config.container !== null; // 否则需要判断延迟节点的列表和容器
   }
 
   addFirstPageNode(el) {
