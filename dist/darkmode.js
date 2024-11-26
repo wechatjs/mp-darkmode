@@ -2509,6 +2509,7 @@ function init() {
   _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('string', opt, 'defaultLightBgColor');
   _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('string', opt, 'defaultDarkTextColor');
   _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('string', opt, 'defaultDarkBgColor');
+  _modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].init();
 
   if (!_modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].mode && mql === null && window.matchMedia) {
     // 匹配媒体查询
@@ -3611,19 +3612,19 @@ var SDK = /*#__PURE__*/function () {
 
     _defineProperty(this, "_idx", 0);
 
-    _defineProperty(this, "_defaultDarkTextColorRgb", ColorParser(_config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkTextColor).rgb().array());
+    _defineProperty(this, "_defaultDarkTextColorRgb", null);
 
-    _defineProperty(this, "_defaultDarkBgColorRgb", ColorParser(_config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor).rgb().array());
+    _defineProperty(this, "_defaultDarkBgColorRgb", null);
 
-    _defineProperty(this, "_defaultDarkBgColorHSL", ColorParser(_config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor).hsl().array());
+    _defineProperty(this, "_defaultDarkBgColorHSL", null);
 
-    _defineProperty(this, "_defaultDarkTextColorBrightness", getColorPerceivedBrightness(this._defaultDarkTextColorRgb));
+    _defineProperty(this, "_defaultDarkTextColorBrightness", null);
 
-    _defineProperty(this, "_defaultDarkBgColorBrightness", getColorPerceivedBrightness(this._defaultDarkBgColorRgb));
+    _defineProperty(this, "_defaultDarkBgColorBrightness", null);
 
-    _defineProperty(this, "_defaultDarkBgColorHslBrightness", this._defaultDarkBgColorHSL[2]);
+    _defineProperty(this, "_defaultDarkBgColorHslBrightness", null);
 
-    _defineProperty(this, "_maxLimitOffsetBrightness", this._defaultDarkTextColorBrightness - this._defaultDarkBgColorBrightness);
+    _defineProperty(this, "_maxLimitOffsetBrightness", null);
 
     _defineProperty(this, "isDarkmode", false);
   }
@@ -3779,6 +3780,17 @@ var SDK = /*#__PURE__*/function () {
         console.log('An error occurred when running the dark mode conversion algorithm\n', e);
         typeof _config__WEBPACK_IMPORTED_MODULE_3__["default"].error === 'function' && _config__WEBPACK_IMPORTED_MODULE_3__["default"].error(e);
       }
+    }
+  }, {
+    key: "init",
+    value: function init() {
+      this._defaultDarkTextColorRgb = ColorParser(_config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkTextColor).rgb().array();
+      this._defaultDarkBgColorRgb = ColorParser(_config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor).rgb().array();
+      this._defaultDarkBgColorHSL = ColorParser(_config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor).hsl().array();
+      this._defaultDarkTextColorBrightness = getColorPerceivedBrightness(this._defaultDarkTextColorRgb);
+      this._defaultDarkBgColorBrightness = getColorPerceivedBrightness(this._defaultDarkBgColorRgb);
+      this._defaultDarkBgColorHslBrightness = this._defaultDarkBgColorHSL[2];
+      this._maxLimitOffsetBrightness = this._defaultDarkTextColorBrightness - this._defaultDarkBgColorBrightness;
     }
   }, {
     key: "convert",

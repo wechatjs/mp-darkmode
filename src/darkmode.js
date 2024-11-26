@@ -182,6 +182,8 @@ export function init(opt = {}) {
   config.set('string', opt, 'defaultDarkTextColor');
   config.set('string', opt, 'defaultDarkBgColor');
 
+  sdk.init();
+
   if (!config.mode && mql === null && window.matchMedia) {
     // 匹配媒体查询
     mql = window.matchMedia(MEDIA_QUERY);

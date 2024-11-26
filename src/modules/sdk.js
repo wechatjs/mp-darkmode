@@ -148,13 +148,13 @@ const getContrast = (rgb1, rgb2) => {
 
 export default class SDK {
   _idx = 0; // 索引值
-  _defaultDarkTextColorRgb = ColorParser(config.defaultDarkTextColor).rgb().array();
-  _defaultDarkBgColorRgb = ColorParser(config.defaultDarkBgColor).rgb().array();
-  _defaultDarkBgColorHSL = ColorParser(config.defaultDarkBgColor).hsl().array();
-  _defaultDarkTextColorBrightness = getColorPerceivedBrightness(this._defaultDarkTextColorRgb);
-  _defaultDarkBgColorBrightness = getColorPerceivedBrightness(this._defaultDarkBgColorRgb);
-  _defaultDarkBgColorHslBrightness = this._defaultDarkBgColorHSL[2];
-  _maxLimitOffsetBrightness = this._defaultDarkTextColorBrightness - this._defaultDarkBgColorBrightness;
+  _defaultDarkTextColorRgb = null;
+  _defaultDarkBgColorRgb = null;
+  _defaultDarkBgColorHSL = null;
+  _defaultDarkTextColorBrightness = null;
+  _defaultDarkBgColorBrightness = null;
+  _defaultDarkBgColorHslBrightness = null;
+  _maxLimitOffsetBrightness = null;
 
   isDarkmode = false; // 当前是否需要运行Darkmode处理
 
@@ -309,6 +309,16 @@ export default class SDK {
       console.log('An error occurred when running the dark mode conversion algorithm\n', e);
       typeof config.error === 'function' && config.error(e);
     }
+  }
+
+  init() {
+    this._defaultDarkTextColorRgb = ColorParser(config.defaultDarkTextColor).rgb().array();
+    this._defaultDarkBgColorRgb = ColorParser(config.defaultDarkBgColor).rgb().array();
+    this._defaultDarkBgColorHSL = ColorParser(config.defaultDarkBgColor).hsl().array();
+    this._defaultDarkTextColorBrightness = getColorPerceivedBrightness(this._defaultDarkTextColorRgb);
+    this._defaultDarkBgColorBrightness = getColorPerceivedBrightness(this._defaultDarkBgColorRgb);
+    this._defaultDarkBgColorHslBrightness = this._defaultDarkBgColorHSL[2];
+    this._maxLimitOffsetBrightness = this._defaultDarkTextColorBrightness - this._defaultDarkBgColorBrightness;
   }
 
   convert(el, cssKVList, isUpdate) {
