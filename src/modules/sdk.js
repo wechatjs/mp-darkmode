@@ -43,6 +43,8 @@ import {
   LOW_BLACKWHITE_HSL_BRIGHTNESS,
   IGNORE_ALPHA,
 
+  CSS_PROP_SERIES,
+  CSS_PROP_LIST,
   TABLE_NAME,
 
   IMPORTANT_REGEXP,
@@ -347,8 +349,8 @@ export default class SDK {
       let hasInlineColor = false; // 是否有自定义字体颜色
       let hasInlineBackground = false;
       let hasInlineBackgroundImage = false;
-      let elBackgroundPositionAttr;
-      let elBackgroundSizeAttr;
+      let elBackgroundPositionAttr = null;
+      let elBackgroundSizeAttr = null;
 
       cssKVList = cssKVList.filter(([key, value]) => {
         if (key === 'color') {
@@ -367,28 +369,7 @@ export default class SDK {
         }
 
         // 过滤掉一些key
-        return [
-          '-webkit-border-image',
-          'border-image',
-          'color',
-          'background-color',
-          'background-image',
-          'background',
-          'border',
-          'border-top',
-          'border-right',
-          'border-bottom',
-          'border-left',
-          'border-color',
-          'border-top-color',
-          'border-right-color',
-          'border-bottom-color',
-          'border-left-color',
-          '-webkit-text-fill-color',
-          '-webkit-text-stroke',
-          '-webkit-text-stroke-color',
-          'text-shadow'
-        ].indexOf(key) > -1;
+        return CSS_PROP_LIST.indexOf(key) > -1;
       }).sort(([key1], [key2]) => { // color属性放在最后
         if (key1 === 'color') {
           return 1;
@@ -488,10 +469,10 @@ export default class SDK {
         let cssChange = false;
 
         // 找出色值来处理
-        const isBgColor = /^background/.test(key);
-        const isTextShadow = key === 'text-shadow';
-        const textColorIdx = ['-webkit-text-stroke-color', 'color', '-webkit-text-fill-color'].indexOf(key);
-        const isBorderColor = /^border/.test(key);
+        const isBgColor = CSS_PROP_SERIES.BG_COLOR.indexOf(key) > -1;
+        const isTextShadow = CSS_PROP_SERIES.TEXT_SHADOW.indexOf(key) > -1;
+        const textColorIdx = CSS_PROP_SERIES.TEXT_COLOR.indexOf(key);
+        const isBorderColor = CSS_PROP_SERIES.BORDER_COLOR.indexOf(key) > -1;
         const isGradient = /gradient/.test(value);
         const gradientColors = [];
         let extStyle = '';
@@ -535,7 +516,7 @@ export default class SDK {
               extStyle += ret.extStyle;
 
               // 对背景颜色和文字颜色做继承传递，用于文字亮度计算
-              if (isBgColor || textColorIdx > 0) { // 不处理-webkit-text-stroke-color
+              if (isBgColor || textColorIdx >= 5) { // 只处理color及之后的属性
                 const retColorStr = retColor ? retColor.toString() : match;
                 replaceIndex === 0 && getChildrenAndIt(el).forEach(dom => {
                   if (isBgColor) {
@@ -571,14 +552,13 @@ export default class SDK {
           if ((isBackgroundAttr || isBorderImageAttr) && /url\([^)]*\)/i.test(value)) {
             cssChange = true;
             const imgBgColor = mixColor((el[ORIGINAL_BGCOLORATTR] || config.defaultLightBgColor).split(BG_COLOR_DELIMITER));
+            // const imgBgColor = el[BGCOLORATTR] || config.defaultLightBgColor;
 
             // 在背景图片下加一层原背景颜色：
             // background-image使用多层背景(注意background-position也要多加一层 https://www.w3.org/TR/css-backgrounds-3/#layering)；
             // border-image不支持多层背景，需要添加background-color
             value = value.replace(/^(.*?)url\(([^)]*)\)(.*)$/i, matches => {
               let newValue = matches;
-              let newBackgroundPositionValue = '';
-              let newBackgroundSizeValue = '';
               let tmpCssKvStr = '';
 
               if (!el[BGIMAGEATTR]) { // 避免重复set
@@ -591,14 +571,12 @@ export default class SDK {
               if (isBackgroundAttr) {
                 tmpCssKvStr = cssUtils.genCssKV(key, imgBgColor ? `${newValue},linear-gradient(${imgBgColor}, ${imgBgColor})` : newValue);
                 if (elBackgroundPositionAttr) {
-                  newBackgroundPositionValue = `top left,${elBackgroundPositionAttr}`;
-                  cssKV += cssUtils.genCssKV('background-position', `${newBackgroundPositionValue}`);
-                  tmpCssKvStr += cssUtils.genCssKV('background-position', `${newBackgroundPositionValue},top left`);
+                  cssKV += cssUtils.genCssKV('background-position', elBackgroundPositionAttr);
+                  tmpCssKvStr += cssUtils.genCssKV('background-position', imgBgColor ? `${elBackgroundPositionAttr},top left` : elBackgroundPositionAttr);
                 }
                 if (elBackgroundSizeAttr) {
-                  newBackgroundSizeValue = `100%,${elBackgroundSizeAttr}`;
-                  cssKV += cssUtils.genCssKV('background-size', `${newBackgroundSizeValue}`);
-                  tmpCssKvStr += cssUtils.genCssKV('background-size', `${newBackgroundSizeValue},100%`);
+                  cssKV += cssUtils.genCssKV('background-size', elBackgroundSizeAttr);
+                  tmpCssKvStr += cssUtils.genCssKV('background-size', imgBgColor ? `${elBackgroundSizeAttr},100%` : elBackgroundSizeAttr);
                 }
                 if (dmBgClassName) { // 如果是文字底图，则直接加样式
                   bgCss += cssUtils.genCss(dmBgClassName, tmpCssKvStr);

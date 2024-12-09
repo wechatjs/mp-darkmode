@@ -35,6 +35,61 @@ export const PAGE_HEIGHT = (window.getInnerHeight && window.getInnerHeight())
   || window.innerHeight
   || document.documentElement.clientHeight;
 
+export const CSS_PROP_SERIES = { // 支持的css属性，按类型做分类
+  BG_COLOR: [
+    'background-color',
+    'background-image',
+    'background',
+  ],
+  TEXT_SHADOW: [
+    'text-shadow',
+  ],
+  TEXT_COLOR: [
+    '-webkit-text-stroke',
+    '-webkit-text-stroke-color',
+    'text-decoration',
+    'text-decoration-color',
+    'text-emphasis-color',
+    'color',
+    '-webkit-text-fill-color',
+  ],
+  BORDER_COLOR: [
+    'border-image',
+    '-webkit-border-image',
+    'border',
+    'border-top',
+    'border-right',
+    'border-bottom',
+    'border-left',
+    'border-color',
+    'border-top-color',
+    'border-right-color',
+    'border-bottom-color',
+    'border-left-color',
+    'border-block-color',
+    'border-block-start-color',
+    'border-block-end-color',
+    'border-inline-color',
+    'border-inline-start-color',
+    'border-inline-end-color',
+    'outline',
+    'outline-color',
+    'box-shadow', // TODO: 不知道为啥之前没处理，后面需要留意下
+    'column-rule',
+    'column-rule-color',
+  ],
+  // SVG_COLOR: [ // TODO: SVG后面再处理
+  //   'fill',
+  //   'stroke',
+  //   'stop-color',
+  //   'flood-color',
+  //   'lighting-color',
+  // ],
+  // FILTER: [ // TODO: filter后面再考虑要不要处理
+  //   'filter'
+  // ],
+};
+export const CSS_PROP_LIST = Object.keys(CSS_PROP_SERIES).map(key => CSS_PROP_SERIES[key].join('|')).join('|').split('|'); // 支持的css属性平铺列表
 export const TABLE_NAME = ['TABLE', 'TR', 'TD', 'TH']; // 支持bgcolor属性的table标签列表
 
 export const IMPORTANT_REGEXP = / !important$/; // !important

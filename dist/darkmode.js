@@ -2763,7 +2763,7 @@ var config = {
 /*!*********************************!*\
   !*** ./src/modules/constant.js ***!
   \*********************************/
-/*! exports provided: MEDIA_QUERY, CLASS_PREFIX, DM_CLASSNAME_REGEXP, HTML_CLASS, COLORATTR, BGCOLORATTR, ORIGINAL_COLORATTR, ORIGINAL_BGCOLORATTR, BGIMAGEATTR, BG_COLOR_DELIMITER, DEFAULT_LIGHT_TEXTCOLOR, DEFAULT_LIGHT_BGCOLOR, DEFAULT_DARK_TEXTCOLOR, DEFAULT_DARK_BGCOLOR, WHITE_LIKE_COLOR_BRIGHTNESS, MAX_LIMIT_BGCOLOR_BRIGHTNESS, MIN_LIMIT_OFFSET_BRIGHTNESS, HIGH_BGCOLOR_BRIGHTNESS, HIGH_BLACKWHITE_HSL_BRIGHTNESS, LOW_BLACKWHITE_HSL_BRIGHTNESS, IGNORE_ALPHA, PAGE_HEIGHT, TABLE_NAME, IMPORTANT_REGEXP, SEMICOLON_PLACEHOLDER, SEMICOLON_PLACEHOLDER_REGEXP */
+/*! exports provided: MEDIA_QUERY, CLASS_PREFIX, DM_CLASSNAME_REGEXP, HTML_CLASS, COLORATTR, BGCOLORATTR, ORIGINAL_COLORATTR, ORIGINAL_BGCOLORATTR, BGIMAGEATTR, BG_COLOR_DELIMITER, DEFAULT_LIGHT_TEXTCOLOR, DEFAULT_LIGHT_BGCOLOR, DEFAULT_DARK_TEXTCOLOR, DEFAULT_DARK_BGCOLOR, WHITE_LIKE_COLOR_BRIGHTNESS, MAX_LIMIT_BGCOLOR_BRIGHTNESS, MIN_LIMIT_OFFSET_BRIGHTNESS, HIGH_BGCOLOR_BRIGHTNESS, HIGH_BLACKWHITE_HSL_BRIGHTNESS, LOW_BLACKWHITE_HSL_BRIGHTNESS, IGNORE_ALPHA, PAGE_HEIGHT, CSS_PROP_SERIES, CSS_PROP_LIST, TABLE_NAME, IMPORTANT_REGEXP, SEMICOLON_PLACEHOLDER, SEMICOLON_PLACEHOLDER_REGEXP */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2790,6 +2790,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LOW_BLACKWHITE_HSL_BRIGHTNESS", function() { return LOW_BLACKWHITE_HSL_BRIGHTNESS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IGNORE_ALPHA", function() { return IGNORE_ALPHA; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "PAGE_HEIGHT", function() { return PAGE_HEIGHT; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CSS_PROP_SERIES", function() { return CSS_PROP_SERIES; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CSS_PROP_LIST", function() { return CSS_PROP_LIST; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TABLE_NAME", function() { return TABLE_NAME; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IMPORTANT_REGEXP", function() { return IMPORTANT_REGEXP; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SEMICOLON_PLACEHOLDER", function() { return SEMICOLON_PLACEHOLDER; });
@@ -2835,6 +2837,28 @@ var LOW_BLACKWHITE_HSL_BRIGHTNESS = 22;
 var IGNORE_ALPHA = 0.05; // 忽略的透明度阈值
 
 var PAGE_HEIGHT = window.getInnerHeight && window.getInnerHeight() || window.innerHeight || document.documentElement.clientHeight;
+var CSS_PROP_SERIES = {
+  // 支持的css属性，按类型做分类
+  BG_COLOR: ['background-color', 'background-image', 'background'],
+  TEXT_SHADOW: ['text-shadow'],
+  TEXT_COLOR: ['-webkit-text-stroke', '-webkit-text-stroke-color', 'text-decoration', 'text-decoration-color', 'text-emphasis-color', 'color', '-webkit-text-fill-color'],
+  BORDER_COLOR: ['border-image', '-webkit-border-image', 'border', 'border-top', 'border-right', 'border-bottom', 'border-left', 'border-color', 'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color', 'border-block-color', 'border-block-start-color', 'border-block-end-color', 'border-inline-color', 'border-inline-start-color', 'border-inline-end-color', 'outline', 'outline-color', 'box-shadow', // TODO: 不知道为啥之前没处理，后面需要留意下
+  'column-rule', 'column-rule-color'] // SVG_COLOR: [ // TODO: SVG后面再处理
+  //   'fill',
+  //   'stroke',
+  //   'stop-color',
+  //   'flood-color',
+  //   'lighting-color',
+  // ],
+  // FILTER: [ // TODO: filter后面再考虑要不要处理
+  //   'filter'
+  // ],
+
+};
+var CSS_PROP_LIST = Object.keys(CSS_PROP_SERIES).map(function (key) {
+  return CSS_PROP_SERIES[key].join('|');
+}).join('|').split('|'); // 支持的css属性平铺列表
+
 var TABLE_NAME = ['TABLE', 'TR', 'TD', 'TH']; // 支持bgcolor属性的table标签列表
 
 var IMPORTANT_REGEXP = / !important$/; // !important
@@ -3827,8 +3851,8 @@ var SDK = /*#__PURE__*/function () {
 
         var hasInlineBackground = false;
         var hasInlineBackgroundImage = false;
-        var elBackgroundPositionAttr;
-        var elBackgroundSizeAttr;
+        var elBackgroundPositionAttr = null;
+        var elBackgroundSizeAttr = null;
         cssKVList = cssKVList.filter(function (_ref) {
           var _ref2 = _slicedToArray(_ref, 2),
               key = _ref2[0],
@@ -3851,7 +3875,7 @@ var SDK = /*#__PURE__*/function () {
           } // 过滤掉一些key
 
 
-          return ['-webkit-border-image', 'border-image', 'color', 'background-color', 'background-image', 'background', 'border', 'border-top', 'border-right', 'border-bottom', 'border-left', 'border-color', 'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color', '-webkit-text-fill-color', '-webkit-text-stroke', '-webkit-text-stroke-color', 'text-shadow'].indexOf(key) > -1;
+          return _constant__WEBPACK_IMPORTED_MODULE_2__["CSS_PROP_LIST"].indexOf(key) > -1;
         }).sort(function (_ref3, _ref4) {
           var _ref5 = _slicedToArray(_ref3, 1),
               key1 = _ref5[0];
@@ -3997,10 +4021,10 @@ var SDK = /*#__PURE__*/function () {
             var oldValue = value;
             var cssChange = false; // 找出色值来处理
 
-            var isBgColor = /^background/.test(key);
-            var isTextShadow = key === 'text-shadow';
-            var textColorIdx = ['-webkit-text-stroke-color', 'color', '-webkit-text-fill-color'].indexOf(key);
-            var isBorderColor = /^border/.test(key);
+            var isBgColor = _constant__WEBPACK_IMPORTED_MODULE_2__["CSS_PROP_SERIES"].BG_COLOR.indexOf(key) > -1;
+            var isTextShadow = _constant__WEBPACK_IMPORTED_MODULE_2__["CSS_PROP_SERIES"].TEXT_SHADOW.indexOf(key) > -1;
+            var textColorIdx = _constant__WEBPACK_IMPORTED_MODULE_2__["CSS_PROP_SERIES"].TEXT_COLOR.indexOf(key);
+            var isBorderColor = _constant__WEBPACK_IMPORTED_MODULE_2__["CSS_PROP_SERIES"].BORDER_COLOR.indexOf(key) > -1;
             var isGradient = /gradient/.test(value);
             var gradientColors = [];
             var extStyle = '';
@@ -4046,8 +4070,8 @@ var SDK = /*#__PURE__*/function () {
                   var retColor = !hasInlineBackgroundImage && ret.newColor;
                   extStyle += ret.extStyle; // 对背景颜色和文字颜色做继承传递，用于文字亮度计算
 
-                  if (isBgColor || textColorIdx > 0) {
-                    // 不处理-webkit-text-stroke-color
+                  if (isBgColor || textColorIdx >= 5) {
+                    // 只处理color及之后的属性
                     var retColorStr = retColor ? retColor.toString() : match;
                     replaceIndex === 0 && Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
                       if (isBgColor) {
@@ -4086,14 +4110,13 @@ var SDK = /*#__PURE__*/function () {
 
               if ((isBackgroundAttr || isBorderImageAttr) && /url\([^)]*\)/i.test(value)) {
                 cssChange = true;
-                var imgBgColor = mixColor((el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightBgColor).split(_constant__WEBPACK_IMPORTED_MODULE_2__["BG_COLOR_DELIMITER"])); // 在背景图片下加一层原背景颜色：
+                var imgBgColor = mixColor((el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightBgColor).split(_constant__WEBPACK_IMPORTED_MODULE_2__["BG_COLOR_DELIMITER"])); // const imgBgColor = el[BGCOLORATTR] || config.defaultLightBgColor;
+                // 在背景图片下加一层原背景颜色：
                 // background-image使用多层背景(注意background-position也要多加一层 https://www.w3.org/TR/css-backgrounds-3/#layering)；
                 // border-image不支持多层背景，需要添加background-color
 
                 value = value.replace(/^(.*?)url\(([^)]*)\)(.*)$/i, function (matches) {
                   var newValue = matches;
-                  var newBackgroundPositionValue = '';
-                  var newBackgroundSizeValue = '';
                   var tmpCssKvStr = '';
 
                   if (!el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) {
@@ -4108,15 +4131,13 @@ var SDK = /*#__PURE__*/function () {
                     tmpCssKvStr = _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(key, imgBgColor ? "".concat(newValue, ",linear-gradient(").concat(imgBgColor, ", ").concat(imgBgColor, ")") : newValue);
 
                     if (elBackgroundPositionAttr) {
-                      newBackgroundPositionValue = "top left,".concat(elBackgroundPositionAttr);
-                      cssKV += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-position', "".concat(newBackgroundPositionValue));
-                      tmpCssKvStr += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-position', "".concat(newBackgroundPositionValue, ",top left"));
+                      cssKV += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-position', elBackgroundPositionAttr);
+                      tmpCssKvStr += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-position', imgBgColor ? "".concat(elBackgroundPositionAttr, ",top left") : elBackgroundPositionAttr);
                     }
 
                     if (elBackgroundSizeAttr) {
-                      newBackgroundSizeValue = "100%,".concat(elBackgroundSizeAttr);
-                      cssKV += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-size', "".concat(newBackgroundSizeValue));
-                      tmpCssKvStr += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-size', "".concat(newBackgroundSizeValue, ",100%"));
+                      cssKV += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-size', elBackgroundSizeAttr);
+                      tmpCssKvStr += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-size', imgBgColor ? "".concat(elBackgroundSizeAttr, ",100%") : elBackgroundSizeAttr);
                     }
 
                     if (dmBgClassName) {
