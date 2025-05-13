@@ -8,6 +8,7 @@
  * @attr {string}       mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
  * @attr {Object}       whitelist             节点白名单
  * @attr {string Array} whitelist.tagName     标签名列表
+ * @attr {string Array} whitelist.attribute   属性列表
  * @attr {boolean}      needJudgeFirstPage    是否需要判断首屏
  * @attr {boolean}      delayBgJudge          是否延迟背景判断
  * @attr {DOM Object}   container             延迟运行js时使用的容器
@@ -21,9 +22,11 @@
  * @param {string} type 要处理的节点
  * @param {Object} opt  传入的配置对象
  * @param {string} key  配置名
+ * @return void
  *
  */
 
+// 常量
 import {
   DEFAULT_LIGHT_TEXTCOLOR,
   DEFAULT_LIGHT_BGCOLOR,
@@ -32,26 +35,26 @@ import {
 } from './constant';
 
 const config = {
-  hasInit: false,
+  hasInit: false, // 是否初始化过配置
 
   // hooks
-  begin: null,
-  showFirstPage: null,
-  error: null,
+  begin: null, // 开始处理时触发的回调
+  showFirstPage: null, // 首屏处理完成时触发的回调
+  error: null, // 发生error时触发的回调
 
-  mode: '',
-  whitelist: {
-    tagName: ['MPCPS', 'IFRAME'],
-    attribute: [],
+  mode: '', // 强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
+  whitelist: { // 节点白名单
+    tagName: ['MPCPS', 'IFRAME'], // 标签名列表
+    attribute: [], // 属性列表
   },
-  needJudgeFirstPage: true,
-  delayBgJudge: false,
-  container: null,
-  cssSelectorsPrefix: '',
-  defaultLightTextColor: DEFAULT_LIGHT_TEXTCOLOR,
-  defaultLightBgColor: DEFAULT_LIGHT_BGCOLOR,
-  defaultDarkTextColor: DEFAULT_DARK_TEXTCOLOR,
-  defaultDarkBgColor: DEFAULT_DARK_BGCOLOR,
+  needJudgeFirstPage: true, // 是否需要判断首屏
+  delayBgJudge: false, // 是否延迟背景判断
+  container: null, // 延迟运行js时使用的容器
+  cssSelectorsPrefix: '', // css选择器前缀
+  defaultLightTextColor: DEFAULT_LIGHT_TEXTCOLOR, // 非Dark Mode下字体颜色
+  defaultLightBgColor: DEFAULT_LIGHT_BGCOLOR, // 非Dark Mode下背景颜色
+  defaultDarkTextColor: DEFAULT_DARK_TEXTCOLOR, // Dark Mode下字体颜色
+  defaultDarkBgColor: DEFAULT_DARK_BGCOLOR, // Dark Mode下背景颜色
 
   // 设置配置
   set(type, opt, key) {

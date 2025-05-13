@@ -18,12 +18,15 @@
  * @method addCss 加入css
  * @param {string}  css              css样式
  * @param {boolean} isFirstPageStyle 是否首屏样式
+ * @return void
  *
  * @method writeStyle 写入样式表
  * @param {boolean} isFirstPageStyle 是否首屏样式
+ * @return void
  *
  */
 
+// 常量
 import {
   MEDIA_QUERY,
   HTML_CLASS,
@@ -41,23 +44,27 @@ export default class CssUtils {
   _firstPageStyle = ''; // 首屏样式
   _otherPageStyle = ''; // 非首屏样式
 
-  isFinish = false;
+  isFinish = false; // 是否运行过Dark Mode处理逻辑（写入过非首屏样式表则表示已运行过）
 
   constructor() {}
 
+  // 生成css键值对
   genCssKV(key, val) {
     return `${key}: ${val} !important;`;
   }
 
+  // 生成css，包括css选择器
   genCss(className, cssKV) {
     return `${config.mode === 'dark' ? `html.${HTML_CLASS} ` : ''}${config.cssSelectorsPrefix && `${config.cssSelectorsPrefix} `}.${className}{${cssKV}}`;
   }
 
+  // 加入css
   addCss(css, isFirstPageStyle = false) {
     this[isFirstPageStyle ? '_firstPageStyle' : '_otherPageStyle'] += css;
     plugins.addCss(isFirstPageStyle);
   }
 
+  // 写入样式表
   writeStyle(isFirstPageStyle = false) {
     !isFirstPageStyle && sdk.isDarkmode && (this.isFinish = true); // 在Dark Mode下一旦写入了非首屏样式表，则认为已经运行过Dark Mode处理逻辑
 

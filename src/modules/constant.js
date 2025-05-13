@@ -16,6 +16,7 @@ export const BGCOLORATTR = `data-darkmode-bgcolor-${RANDOM}`; // dm bg-color，�
 export const ORIGINAL_COLORATTR = `data-darkmode-original-color-${RANDOM}`; // lm color，即原色值，单个
 export const ORIGINAL_BGCOLORATTR = `data-darkmode-original-bgcolor-${RANDOM}`; // lm bg-color，即原色值，有多个，用BG_COLOR_DELIMITER分割
 export const BGIMAGEATTR = `data-darkmode-bgimage-${RANDOM}`;
+export const COMPLEMENTARY_BGIMAGECOLORATTR = `data-darkmode-complementary-bgimagecolor-${RANDOM}`; // 背景图片的补色色值，单个
 export const BG_COLOR_DELIMITER = '|';
 
 export const DEFAULT_LIGHT_TEXTCOLOR = '#191919'; // 非Dark Mode下字体颜色
@@ -96,3 +97,6 @@ export const IMPORTANT_REGEXP = / !important$/; // !important
 
 export const SEMICOLON_PLACEHOLDER = '<$#_SEMICOLON_#$>'; // 分号占位符
 export const SEMICOLON_PLACEHOLDER_REGEXP = /<\$#_SEMICOLON_#\$>/g;
+
+export const COLOR_REGEXP = /\brgba?\([^)]+\)/i;
+export const COLOR_REGEXP_GLOBAL = /\brgba?\([^)]+\)/ig;

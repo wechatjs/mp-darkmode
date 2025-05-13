@@ -3,27 +3,34 @@
  *
  * @class SDK
  *
+ * @attr {boolean} isDarkmode 当前是否需要运行Darkmode处理
+ *
+ * @method init 初始化
+ * @return void
+ *
  * @method convert 处理节点
  * @param {DOM Object} el 要处理的节点
  * @return {string} 处理后的css，包含css选择器
  *
+ * @method getContrast 获取两个颜色的对比度
+ * @param {string} colorStr1 颜色1
+ * @param {string} colorStr2 颜色2
+ * @return {number} 颜色对比度，取值范围为`[1, 21]`
+ *
  */
 
-// dependencies
+// 颜色操作相关API
 import Color from 'color';
-const ColorParser = color => {
-  let res = null;
-  try {
-    res = Color(color);
-  } catch (e) {
-    console.log(`ignore the invalid color: \`${color}\``);
-  }
-  return res;
-};
-import ColorName from 'color-name';
-ColorName.windowtext = [0, 0, 0]; // 补上这个colorName
-ColorName.transparent = [255, 255, 255, 0]; // 支持透明，暂定用白色透明度0来表示
+import {
+  ColorParser,
+  parseColorName,
+  parseWebkitFillColorAndStrokeColor,
+  mixColors,
+  getColorPerceivedBrightness,
+  adjustBrightnessTo
+} from './color';
 
+// 常量
 import {
   CLASS_PREFIX,
   DM_CLASSNAME_REGEXP,
@@ -33,6 +40,7 @@ import {
   ORIGINAL_COLORATTR,
   ORIGINAL_BGCOLORATTR,
   BGIMAGEATTR,
+  COMPLEMENTARY_BGIMAGECOLORATTR,
   BG_COLOR_DELIMITER,
 
   WHITE_LIKE_COLOR_BRIGHTNESS,
@@ -50,7 +58,10 @@ import {
   IMPORTANT_REGEXP,
 
   SEMICOLON_PLACEHOLDER,
-  SEMICOLON_PLACEHOLDER_REGEXP
+  SEMICOLON_PLACEHOLDER_REGEXP,
+
+  COLOR_REGEXP,
+  COLOR_REGEXP_GLOBAL
 } from './constant';
 
 // Darkmode配置
@@ -70,84 +81,6 @@ import {
   hasTableClass
 } from './domUtils';
 
-const colorNameReg = new RegExp(Object.keys(ColorName).map(colorName => `\\b${colorName}\\b`).join('|'), 'ig'); // 生成正则表达式来匹配这些colorName
-const colorReg = /\brgba?\([^)]+\)/i;
-const colorRegGlobal = /\brgba?\([^)]+\)/ig;
-const removeImportant = value => value.replace(IMPORTANT_REGEXP, ''); // 清除!important
-const parseColor = (value, parseTransparent) => removeImportant(value).replace(colorNameReg, match => { // 处理颜色，包括清除!important和转换英文定义颜色
-  if (!parseTransparent && match === 'transparent') return match; // 如果不转换transparent，直接返回transparent
-
-  const color = ColorName[match.toLowerCase()];
-  return `${color.length > 3 ? 'rgba' : 'rgb'}(${color.toString()})`;
-});
-
-// 计算mix颜色
-const mixColor = colors => {
-  if (!colors || colors.length < 1) return '';
-  if (colors.length === 1) return colors[0];
-
-  let retColorStr = colors.shift();
-  let nextColorStr = colors.shift();
-  while (nextColorStr) {
-    const retColor = ColorParser(retColorStr);
-    const nextColor = ColorParser(nextColorStr);
-    if (!retColor && nextColor) { // 如果当前色值非法，混入色值合法，则直接使用混入色值
-      retColorStr = nextColorStr;
-    } else if (!retColor && !nextColor) { // 如果两个色值都非法，则使用下一批色值
-      retColorStr = colors.shift() || '';
-    } else if (retColor && nextColor) { // 如果两个色值都合法，执行mix
-      retColorStr = retColor.mix(nextColor, nextColor.alpha());
-    } // 如果当前色值合法，混入色值非法，无需处理
-    nextColorStr = colors.shift();
-  }
-
-  return retColorStr;
-};
-
-// 处理-webkit-fill-color和-webkit-text-stroke-color，返回处理后的色值，无则返回空字符串
-const parseWebkitFillColorAndStrokeColor = value => {
-  const newValue = parseColor(value);
-  return colorReg.test(newValue) ? newValue : '';
-};
-
-// 计算感知亮度
-const getColorPerceivedBrightness = rgb => (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
-
-// 调整为指定感知亮度
-const adjustBrightnessByLimit = (limitBright, rgb) => {
-  const relativeBrightnessRatio = limitBright / getColorPerceivedBrightness(rgb);
-  let newTextR = Math.min(255, rgb[0] * relativeBrightnessRatio);
-  let newTextG = Math.min(255, rgb[1] * relativeBrightnessRatio);
-  let newTextB = Math.min(255, rgb[2] * relativeBrightnessRatio);
-  if (newTextG === 0 || newTextR === 255 || newTextB === 255) {
-    newTextG = (limitBright * 1000 - newTextR * 299 - newTextB * 114) / 587;
-  } else if (newTextR === 0) {
-    newTextR = (limitBright * 1000 - newTextG * 587 - newTextB * 114) / 299;
-  } else if (newTextB === 0 || newTextG === 255) {
-    newTextB = (limitBright * 1000 - newTextR * 299 - newTextG * 587) / 114;
-  }
-  return Color.rgb(newTextR, newTextG, newTextB);
-};
-
-// 计算亮度，用作对比度计算
-const getLuminanace = rgb => {
-  const srgb = rgb.map(val => {
-    val /= 255;
-    return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
-  });
-  return srgb[0] * 0.2126 + srgb[1] * 0.7152 + srgb[2] * 0.0722;
-};
-
-// 计算对比度 https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-procedure
-const getContrast = (rgb1, rgb2) => {
-  const lum1 = getLuminanace(rgb1);
-  const lum2 = getLuminanace(rgb2);
-
-  // 亮色 / 暗色
-  if (lum1 < lum2) return (lum2 + 0.05) / (lum1 + 0.05);
-  return (lum1 + 0.05) / (lum2 + 0.05);
-}
-
 export default class SDK {
   _idx = 0; // 索引值
   _defaultDarkTextColorRgb = null;
@@ -161,77 +94,6 @@ export default class SDK {
   isDarkmode = false; // 当前是否需要运行Darkmode处理
 
   constructor() {}
-
-  _adjustTextBrightness(textColor, bgColor) {
-    const bgColorRgb = bgColor.rgb().array();
-    const bgColorAlpha = bgColor.alpha();
-    const bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorRgb);
-    const bgColorWithOpacityPerceivedBrightness = bgColorPerceivedBrightness * bgColorAlpha
-      + this._defaultDarkBgColorBrightness * (1 - bgColorAlpha);
-    const textColorRgb = textColor.rgb().array();
-    const textColorHSL = textColor.hsl().array();
-    const textColorAlpha = textColor.alpha();
-    const textPerceivedBrightness = getColorPerceivedBrightness(textColorRgb);
-    const offsetPerceivedBrightness = Math.abs(bgColorWithOpacityPerceivedBrightness - textPerceivedBrightness);
-
-    // 用户设置为高亮字体颜色（接近白色亮度），不处理，保持高亮
-    if (textPerceivedBrightness >= WHITE_LIKE_COLOR_BRIGHTNESS) return textColor;
-
-    if (offsetPerceivedBrightness > this._maxLimitOffsetBrightness
-      && bgColorWithOpacityPerceivedBrightness <= this._defaultDarkBgColorBrightness + 2) {
-      return adjustBrightnessByLimit(this._maxLimitOffsetBrightness + bgColorWithOpacityPerceivedBrightness
-        , textColorRgb).alpha(textColorAlpha);
-    }
-
-    // 如果感知亮度差大于阈值，无需调整
-    if (offsetPerceivedBrightness >= MIN_LIMIT_OFFSET_BRIGHTNESS) return textColor;
-
-    if (bgColorWithOpacityPerceivedBrightness >= HIGH_BGCOLOR_BRIGHTNESS) { // 亮背景，调暗字体
-      if (textColorHSL[2] > 90 - HIGH_BLACKWHITE_HSL_BRIGHTNESS) { // 优先调字体的亮度已带到降低感知亮度的目的
-        textColorHSL[2] = 90 - textColorHSL[2];
-        const tmpTextColor = Color.hsl(...textColorHSL).alpha(textColorAlpha);
-        return this._adjustTextBrightness(tmpTextColor, bgColor);
-      }
-      return adjustBrightnessByLimit(Math.min(
-        this._maxLimitOffsetBrightness
-        , bgColorWithOpacityPerceivedBrightness - MIN_LIMIT_OFFSET_BRIGHTNESS
-      ), textColorRgb).alpha(textColorAlpha);
-    } else { // 暗背景，调亮字体
-      if (textColorHSL[2] <= HIGH_BLACKWHITE_HSL_BRIGHTNESS) { // 优先调字体的亮度已带到提高感知亮度的目的
-        textColorHSL[2] = 90 - textColorHSL[2];
-        const tmpTextColor = Color.hsl(...textColorHSL).alpha(textColorAlpha);
-        return this._adjustTextBrightness(tmpTextColor, bgColor);
-      }
-      return adjustBrightnessByLimit(Math.min(
-        this._maxLimitOffsetBrightness
-        , bgColorWithOpacityPerceivedBrightness + MIN_LIMIT_OFFSET_BRIGHTNESS
-      ), textColorRgb).alpha(textColorAlpha);
-    }
-  }
-
-  _adjustBackgroundBrightness(bgColor) {
-    const bgColorRgb = bgColor.rgb().array();
-    const bgColorHsl = bgColor.hsl().array();
-    const bgColorAlpha = bgColor.alpha();
-    const bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorRgb);
-    let newColor = bgColor;
-    if ((bgColorHsl[1] === 0 && bgColorHsl[2] > HIGH_BLACKWHITE_HSL_BRIGHTNESS)
-      || bgColorPerceivedBrightness > WHITE_LIKE_COLOR_BRIGHTNESS) {
-      // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
-      newColor = Color.hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - bgColorHsl[2]));
-    } else if (bgColorPerceivedBrightness > MAX_LIMIT_BGCOLOR_BRIGHTNESS) {
-      // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
-      newColor = adjustBrightnessByLimit(MAX_LIMIT_BGCOLOR_BRIGHTNESS, bgColorRgb).alpha(bgColorAlpha);
-      // const ratio = (MAX_LIMIT_BGCOLOR_BRIGHTNESS * 1000)
-      //   / (bgColorRgb[0] * 299 + bgColorRgb[1] * 587 + bgColorRgb[2] * 114);
-      // newColor = Color.rgb(bgColorRgb[0] * ratio, bgColorRgb[1] * ratio, bgColorRgb[2] * ratio);
-    } else if (bgColorHsl[2] < LOW_BLACKWHITE_HSL_BRIGHTNESS) {
-      // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
-      bgColorHsl[2] = LOW_BLACKWHITE_HSL_BRIGHTNESS;
-      newColor = Color.hsl(...bgColorHsl);
-    }
-    return newColor.alpha(bgColorAlpha).rgb();
-  }
 
   // 调整明度
   _adjustBrightness(color, el, options, isUpdate) {
@@ -254,9 +116,23 @@ export default class SDK {
     let extStyle = '';
 
     if (options.isBgColor) { // 背景色
-      // 如果设置背景颜色，取消背景图片的影响
-      if (el[BGIMAGEATTR] && alpha >= IGNORE_ALPHA) {
-        delete el[BGIMAGEATTR];
+      if (alpha >= IGNORE_ALPHA) {
+        // 如果设置背景颜色，取消背景图片的影响
+        if (el[BGIMAGEATTR]) delete el[BGIMAGEATTR];
+
+        // 如果有背景图片补色
+        if (el[COMPLEMENTARY_BGIMAGECOLORATTR]) {
+          // 背景图片补色和当前背景色一致，则无需处理
+          if (el[COMPLEMENTARY_BGIMAGECOLORATTR] === color.toString()) return {
+            newColor: '',
+            extStyle
+          };
+
+          // 否则取消背景图片补色的影响
+          getChildrenAndIt(el).forEach(dom => {
+            delete dom[COMPLEMENTARY_BGIMAGECOLORATTR];
+          });
+        }
       }
 
       newColor = this._adjustBackgroundBrightness(color);
@@ -304,6 +180,101 @@ export default class SDK {
     };
   }
 
+  // 调整文本明度
+  _adjustTextBrightness(textColor, bgColor) {
+    const bgColorRgb = bgColor.rgb().array();
+    const bgColorAlpha = bgColor.alpha();
+    const bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorRgb);
+    const bgColorWithOpacityPerceivedBrightness = bgColorPerceivedBrightness * bgColorAlpha
+      + this._defaultDarkBgColorBrightness * (1 - bgColorAlpha);
+    const textColorRgb = textColor.rgb().array();
+    const textColorHSL = textColor.hsl().array();
+    const textColorAlpha = textColor.alpha();
+    const textPerceivedBrightness = getColorPerceivedBrightness(textColorRgb);
+    const offsetPerceivedBrightness = Math.abs(bgColorWithOpacityPerceivedBrightness - textPerceivedBrightness);
+
+    // 用户设置为高亮字体颜色（接近白色亮度），不处理，保持高亮
+    if (textPerceivedBrightness >= WHITE_LIKE_COLOR_BRIGHTNESS) return textColor;
+
+    if (offsetPerceivedBrightness > this._maxLimitOffsetBrightness
+      && bgColorWithOpacityPerceivedBrightness <= this._defaultDarkBgColorBrightness + 2) {
+      return adjustBrightnessTo(this._maxLimitOffsetBrightness + bgColorWithOpacityPerceivedBrightness
+        , textColorRgb).alpha(textColorAlpha);
+    }
+
+    // 如果感知亮度差大于阈值，无需调整
+    if (offsetPerceivedBrightness >= MIN_LIMIT_OFFSET_BRIGHTNESS) return textColor;
+
+    if (bgColorWithOpacityPerceivedBrightness >= HIGH_BGCOLOR_BRIGHTNESS) { // 亮背景，调暗字体
+      if (textColorHSL[2] > 90 - HIGH_BLACKWHITE_HSL_BRIGHTNESS) { // 优先调字体的亮度已带到降低感知亮度的目的
+        textColorHSL[2] = 90 - textColorHSL[2];
+        const tmpTextColor = Color.hsl(...textColorHSL).alpha(textColorAlpha);
+        return this._adjustTextBrightness(tmpTextColor, bgColor);
+      }
+      return adjustBrightnessTo(Math.min(
+        this._maxLimitOffsetBrightness
+        , bgColorWithOpacityPerceivedBrightness - MIN_LIMIT_OFFSET_BRIGHTNESS
+      ), textColorRgb).alpha(textColorAlpha);
+    } else { // 暗背景，调亮字体
+      if (textColorHSL[2] <= HIGH_BLACKWHITE_HSL_BRIGHTNESS) { // 优先调字体的亮度已带到提高感知亮度的目的
+        textColorHSL[2] = 90 - textColorHSL[2];
+        const tmpTextColor = Color.hsl(...textColorHSL).alpha(textColorAlpha);
+        return this._adjustTextBrightness(tmpTextColor, bgColor);
+      }
+      return adjustBrightnessTo(Math.min(
+        this._maxLimitOffsetBrightness
+        , bgColorWithOpacityPerceivedBrightness + MIN_LIMIT_OFFSET_BRIGHTNESS
+      ), textColorRgb).alpha(textColorAlpha);
+    }
+  }
+
+  // 调整背景明度
+  _adjustBackgroundBrightness(bgColor) {
+    const bgColorRgb = bgColor.rgb().array();
+    const bgColorHsl = bgColor.hsl().array();
+    const bgColorAlpha = bgColor.alpha();
+    const bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorRgb);
+    let newColor = bgColor;
+    if ((bgColorHsl[1] === 0 && bgColorHsl[2] > HIGH_BLACKWHITE_HSL_BRIGHTNESS)
+      || bgColorPerceivedBrightness > WHITE_LIKE_COLOR_BRIGHTNESS) {
+      // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
+      newColor = Color.hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - bgColorHsl[2]));
+    } else if (bgColorPerceivedBrightness > MAX_LIMIT_BGCOLOR_BRIGHTNESS) {
+      // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
+      newColor = adjustBrightnessTo(MAX_LIMIT_BGCOLOR_BRIGHTNESS, bgColorRgb).alpha(bgColorAlpha);
+      // const ratio = (MAX_LIMIT_BGCOLOR_BRIGHTNESS * 1000)
+      //   / (bgColorRgb[0] * 299 + bgColorRgb[1] * 587 + bgColorRgb[2] * 114);
+      // newColor = Color.rgb(bgColorRgb[0] * ratio, bgColorRgb[1] * ratio, bgColorRgb[2] * ratio);
+    } else if (bgColorHsl[2] < LOW_BLACKWHITE_HSL_BRIGHTNESS) {
+      // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
+      bgColorHsl[2] = LOW_BLACKWHITE_HSL_BRIGHTNESS;
+      newColor = Color.hsl(...bgColorHsl);
+    }
+    return newColor.alpha(bgColorAlpha).rgb();
+  }
+
+  // 叠加渐变色到背景色中，并更新背景色相关属性值以及文本颜色
+  _updateBgWithGradient(gradientColor, el, className, cssKVList, hasInlineColor, isUpdate) {
+    const newBgColor = mixColors([el[BGCOLORATTR] || config.defaultDarkBgColor, gradientColor], 'normal');
+    const newOriginalBgColor = (el[ORIGINAL_BGCOLORATTR] || config.defaultLightBgColor).split(BG_COLOR_DELIMITER).concat(gradientColor.toString()).join(BG_COLOR_DELIMITER);
+    getChildrenAndIt(el).forEach(dom => {
+      dom[BGCOLORATTR] = newBgColor;
+      dom[ORIGINAL_BGCOLORATTR] = newOriginalBgColor;
+    });
+    const lastKV = cssKVList.slice(-1)[0];
+    if (lastKV[0] === 'color') {
+      const ret = this._adjustBrightness(ColorParser(parseColorName(lastKV[1])), el, {
+        isBgColor: false,
+        isTextShadow: false,
+        isTextColor: true,
+        isBorderColor: false,
+        hasInlineColor
+      }, isUpdate);
+      if (ret.newColor) return cssUtils.genCss(className, cssUtils.genCssKV('color', ret.newColor));
+    }
+    return '';
+  }
+
   _try(func) {
     try {
       return func();
@@ -313,6 +284,7 @@ export default class SDK {
     }
   }
 
+  // 初始化
   init() {
     this._defaultDarkTextColorRgb = ColorParser(config.defaultDarkTextColor).rgb().array();
     this._defaultDarkBgColorRgb = ColorParser(config.defaultDarkBgColor).rgb().array();
@@ -323,6 +295,7 @@ export default class SDK {
     this._maxLimitOffsetBrightness = this._defaultDarkTextColorBrightness - this._defaultDarkBgColorBrightness;
   }
 
+  // 处理节点
   convert(el, cssKVList, isUpdate) {
     plugins.resetCss();
     plugins.emit(`beforeConvertNode${isUpdate ? 'ByUpdateStyle' : ''}`, el);
@@ -479,22 +452,22 @@ export default class SDK {
         let gradientMixColor;
 
         // 将英文定义颜色转换为rgb格式
-        value = parseColor(value, isGradient); // 渐变需要处理透明
+        value = parseColorName(value, isGradient); // 渐变需要处理透明
 
-        if (colorReg.test(value)) {
+        if (COLOR_REGEXP.test(value)) {
           if (isGradient) {
             // 把原渐变色取出来
-            let matches = colorRegGlobal.exec(value);
+            let matches = COLOR_REGEXP_GLOBAL.exec(value);
             while (matches) {
               gradientColors.push(matches[0]);
-              matches = colorRegGlobal.exec(value);
+              matches = COLOR_REGEXP_GLOBAL.exec(value);
             }
 
             // 计算出一个mix颜色
-            gradientMixColor = mixColor(gradientColors);
+            gradientMixColor = mixColors(gradientColors);
           }
           let replaceIndex = 0;
-          value = value.replace(colorRegGlobal, match => {
+          value = value.replace(COLOR_REGEXP_GLOBAL, match => {
             // 渐变色统一改成mix纯色
             if (isGradient) {
               match = gradientMixColor;
@@ -551,7 +524,7 @@ export default class SDK {
           const isBorderImageAttr = /^(-webkit-)?border-image/.test(key);
           if ((isBackgroundAttr || isBorderImageAttr) && /url\([^)]*\)/i.test(value)) {
             cssChange = true;
-            const imgBgColor = mixColor((el[ORIGINAL_BGCOLORATTR] || config.defaultLightBgColor).split(BG_COLOR_DELIMITER));
+            const imgBgColor = mixColors((el[ORIGINAL_BGCOLORATTR] || config.defaultLightBgColor).split(BG_COLOR_DELIMITER), 'normal').toString();
             // const imgBgColor = el[BGCOLORATTR] || config.defaultLightBgColor;
 
             // 在背景图片下加一层原背景颜色：
@@ -580,8 +553,15 @@ export default class SDK {
                 }
                 if (dmBgClassName) { // 如果是文字底图，则直接加样式
                   bgCss += cssUtils.genCss(dmBgClassName, tmpCssKvStr);
+                  getChildrenAndIt(el).forEach(dom => {
+                    dom[COMPLEMENTARY_BGIMAGECOLORATTR] = imgBgColor || newValue;
+                  });
                 } else { // 否则背景图入栈
-                  bgStack.push(el, tmpCssKvStr);
+                  bgStack.push(el, tmpCssKvStr, () => {
+                    getChildrenAndIt(el).forEach(dom => {
+                      dom[COMPLEMENTARY_BGIMAGECOLORATTR] = imgBgColor || newValue;
+                    });
+                  });
                 }
               } else {
                 // border-image元素，如果当前元素没有背景颜色，补背景颜色
@@ -609,12 +589,19 @@ export default class SDK {
         }
 
         if (cssChange) {
-          !isUpdate && IMPORTANT_REGEXP.test(oldValue) && (styles[key] = removeImportant(oldValue)); // 清除inline style的!important
+          !isUpdate && IMPORTANT_REGEXP.test(oldValue) && (styles[key] = oldValue.replace(IMPORTANT_REGEXP, '')); // 清除inline style的!important
           if (isGradient) {
-            if (dmBgClassName) { // 如果是文字底图，则直接加样式
+            if (dmBgClassName) { // 如果是文字底图，则直接加样式（其实理论上不会走到这里）
               bgCss += cssUtils.genCss(dmBgClassName, cssUtils.genCssKV(key, value));
-            } else { // 否则背景图入栈
-              bgStack.push(el, cssUtils.genCssKV(key, value)); // 渐变入栈
+              if ((/^background/.test(key) && !/url\([^)]*\)/i.test(value))) { // 是无背景图的渐变，需要重新计算背景色
+                css += this._updateBgWithGradient(gradientMixColor, el, dmBgClassName, cssKVList, hasInlineColor, isUpdate);
+              }
+            } else { // 否则渐变入栈
+              bgStack.push(el, cssUtils.genCssKV(key, value), item => { // 渐变入栈
+                if ((/^background/.test(key) && !/url\([^)]*\)/i.test(value))) { // 是无背景图的渐变，需要重新计算背景色
+                  css += this._updateBgWithGradient(gradientMixColor, el, item.className, cssKVList, hasInlineColor, isUpdate);
+                }
+              });
             }
           } else {
             cssKV += cssUtils.genCssKV(key, value);
@@ -638,6 +625,7 @@ export default class SDK {
         } else {
           bgStack.contains(el, item => {
             css += cssUtils.genCss(item.className, item.cssKV);
+            typeof item.cb === 'function' && item.cb(item);
           });
         }
       }
@@ -648,9 +636,10 @@ export default class SDK {
     return css;
   }
 
+  // 获取两个颜色的对比度
   getContrast(colorStr1, colorStr2) {
     const color1 = ColorParser(colorStr1);
     const color2 = ColorParser(colorStr2);
-    return (color1 && color2) ? getContrast(color1.rgb().array(), color2.rgb().array()) : 0;
+    return (color1 && color2) ? color1.contrast(color2) : 0;
   }
 };

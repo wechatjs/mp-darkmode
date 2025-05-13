@@ -9,13 +9,16 @@
  * @method push 背景节点入栈
  * @param {DOM Object} el    背景节点对象
  * @param {string}     cssKV css键值对
+ * @return void
  *
  * @method contains 判断节点是否在背景节点的区域
  * @param {DOM Object} el       要判断的节点对象（非背景节点）
  * @param {Function}   callback 如果在背景节点区域内，则执行该回调函数
+ * @return void
  *
  * @method update 更新堆栈的节点对象，主要解决前后节点不一致的问题
  * @param {DOM Object Array} els 要更新的节点对象列表
+ * @return void
  *
  */
 
@@ -31,17 +34,20 @@ export default class BgNodeStack {
     this.classNameReg = new RegExp(`${this._prefix}\\d+`);
   }
 
-  push(el, cssKV) {
+  // 背景节点入栈
+  push(el, cssKV, cb) {
     const className = `${this._prefix}${this._idx++}`;
     el.classList.add(className);
     this._stack.unshift({
       el,
       className,
       cssKV,
-      updated: !config.delayBgJudge
+      updated: !config.delayBgJudge,
+      cb
     });
   }
 
+  // 判断节点是否在背景节点的区域
   contains(el, callback) {
     const rect = el.getBoundingClientRect();
     const idxStack = [];
@@ -68,6 +74,7 @@ export default class BgNodeStack {
     }
   }
 
+  // 更新堆栈的节点对象，主要解决前后节点不一致的问题
   update(els) {
     this._stack.forEach(item => {
       if (!item.updated) {

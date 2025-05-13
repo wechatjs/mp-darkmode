@@ -19,6 +19,9 @@
       border-radius: 20px;
       overflow: hidden;
     }
+    .rich_media_area_primary {
+      overflow-x: scroll;
+    }
     .rich_media_area_primary_inner {
       display: flex;
     }
@@ -78,9 +81,9 @@
     var begin, fp;
 
     // online对比版本
-    var container_online = document.getElementById('dark_online');
+    var containerOnline = document.getElementById('dark_online');
     begin = new Date();
-    Darkmode_online.run(container_online.querySelectorAll('*'), { // 运行Dark Mode转换算法
+    DarkmodeOnline.run(containerOnline.querySelectorAll('*'), { // 运行Dark Mode转换算法
       mode: 'dark',
       cssSelectorsPrefix: '#dark_online',
       whitelist: {

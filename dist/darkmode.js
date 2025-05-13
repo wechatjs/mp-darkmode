@@ -96,6 +96,37 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
+/***/ "./node_modules/color-blend/dist/index.modern.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/color-blend/dist/index.modern.js ***!
+  \*******************************************************/
+/*! exports provided: color, colorBurn, colorDodge, darken, difference, exclusion, hardLight, hue, lighten, luminosity, multiply, normal, overlay, saturation, screen, softLight */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "color", function() { return R; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "colorBurn", function() { return H; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "colorDodge", function() { return G; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "darken", function() { return E; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "difference", function() { return L; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "exclusion", function() { return N; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hardLight", function() { return J; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hue", function() { return P; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lighten", function() { return F; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "luminosity", function() { return S; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "multiply", function() { return B; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "normal", function() { return A; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "overlay", function() { return D; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "saturation", function() { return Q; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "screen", function() { return C; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "softLight", function() { return K; });
+function n(n,r,t){return{r:255*t(n.r/255,r.r/255),g:255*t(n.g/255,r.g/255),b:255*t(n.b/255,r.b/255)}}function r(n,r){return r}function t(n,r){return n*r}function u(n,r){return n+r-n*r}function i(n,r){return a(r,n)}function o(n,r){return Math.min(n,r)}function e(n,r){return Math.min(Math.max(n,r),1)}function c(n,r){return 0===n?0:1===r?1:Math.min(1,n/(1-r))}function f(n,r){return 1===n?1:0===r?0:1-Math.min(1,(1-n)/r)}function a(n,r){return r<=.5?t(n,2*r):u(n,2*r-1)}function b(n,r){return r<=.5?n-(1-2*r)*n*(1-n):n+(2*r-1)*((n<=.25?((16*n-12)*n+4)*n:Math.sqrt(n))-n)}function g(n,r){return Math.abs(n-r)}function h(n,r){return n+r-2*n*r}function M(n,r,t){return Math.min(Math.max(n||0,r),t)}function m(n){return{r:M(n.r,0,255),g:M(n.g,0,255),b:M(n.b,0,255),a:M(n.a,0,1)}}function d(n){return{r:255*n.r,g:255*n.g,b:255*n.b,a:n.a}}function p(n){return{r:n.r/255,g:n.g/255,b:n.b/255,a:n.a}}function v(n,r){void 0===r&&(r=0);var t=Math.pow(10,r);return{r:Math.round(n.r*t)/t,g:Math.round(n.g*t)/t,b:Math.round(n.b*t)/t,a:n.a}}function x(n,r,t,u,i,o){return(1-r/t)*u+r/t*Math.round((1-n)*i+n*o)}function O(n,r,t,u,i){void 0===i&&(i={unitInput:!1,unitOutput:!1,roundOutput:!0}),i.unitInput&&(n=d(n),r=d(r)),n=m(n);var o=(r=m(r)).a+n.a-r.a*n.a,e=t(n,r,u),c=m({r:x(n.a,r.a,o,n.r,r.r,e.r),g:x(n.a,r.a,o,n.g,r.g,e.g),b:x(n.a,r.a,o,n.b,r.b,e.b),a:o});return c=i.unitOutput?p(c):i.roundOutput?v(c):function(n){return v(n,9)}(c),c}function s(n,r,t){return d(t(p(n),p(r)))}function I(n){return.3*n.r+.59*n.g+.11*n.b}function q(n,r){var t=r-I(n);return function(n){var r=I(n),t=n.r,u=n.g,i=n.b,o=Math.min(t,u,i),e=Math.max(t,u,i);function c(n){return r+(n-r)*r/(r-o)}function f(n){return r+(n-r)*(1-r)/(e-r)}return o<0&&(t=c(t),u=c(u),i=c(i)),e>1&&(t=f(t),u=f(u),i=f(i)),{r:t,g:u,b:i}}({r:n.r+t,g:n.g+t,b:n.b+t})}function w(n){return Math.max(n.r,n.g,n.b)-Math.min(n.r,n.g,n.b)}function j(n,r){var t=["r","g","b"].sort(function(r,t){return n[r]-n[t]}),u=t[0],i=t[1],o=t[2],e={r:n.r,g:n.g,b:n.b};return e[o]>e[u]?(e[i]=(e[i]-e[u])*r/(e[o]-e[u]),e[o]=r):e[i]=e[o]=0,e[u]=0,e}function k(n,r){return q(j(r,w(n)),I(n))}function l(n,r){return q(j(n,w(r)),I(n))}function y(n,r){return q(r,I(n))}function z(n,r){return q(n,I(r))}function A(t,u){return O(t,u,n,r)}function B(r,u){return O(r,u,n,t)}function C(r,t){return O(r,t,n,u)}function D(r,t){return O(r,t,n,i)}function E(r,t){return O(r,t,n,o)}function F(r,t){return O(r,t,n,e)}function G(r,t){return O(r,t,n,c)}function H(r,t){return O(r,t,n,f)}function J(r,t){return O(r,t,n,a)}function K(r,t){return O(r,t,n,b)}function L(r,t){return O(r,t,n,g)}function N(r,t){return O(r,t,n,h)}function P(n,r){return O(n,r,s,k)}function Q(n,r){return O(n,r,s,l)}function R(n,r){return O(n,r,s,y)}function S(n,r){return O(n,r,s,z)}
+//# sourceMappingURL=index.modern.js.map
+
+
+/***/ }),
+
 /***/ "./node_modules/color-convert/conversions.js":
 /*!***************************************************!*\
   !*** ./node_modules/color-convert/conversions.js ***!
@@ -2329,9 +2360,10 @@ __webpack_require__.r(__webpack_exports__);
 /**
  * @name Darkmode主入口
  *
- * @function run 配置并处理
+ * @function run 初始化Dark Mode配置并运行Dark Mode处理
  * @param {DOM Object Array} nodes 要处理的节点列表
  * @param {Object}           opt   Dark Mode配置，详见init配置说明
+ * @return void
  *
  * @function init 初始化Dark Mode配置
  * @param {Function}   opt.begin                 开始处理时触发的回调
@@ -2349,31 +2381,38 @@ __webpack_require__.r(__webpack_exports__);
  * @param {string}     opt.defaultLightBgColor   非Dark Mode下背景颜色
  * @param {string}     opt.defaultDarkTextColor  Dark Mode下字体颜色
  * @param {string}     opt.defaultDarkBgColor    Dark Mode下背景颜色
+ * @return void
  *
  * @function convertBg 处理背景
  * @param {DOM Object Array} nodes 要处理的节点列表
+ * @return void
  *
  * @function updateStyle 更新节点Dark Mode样式
  * @param {DOM Object} node   要更新的节点
  * @param {Object}     styles 更新的样式键值对对象，如：{ color: '#ddd' }
+ * @return void
  *
  * @function getContrast 获取两个颜色的对比度
  * @param {string} color1 要计算颜色对比度的颜色1，支持css颜色格式
  * @param {string} color2 要计算颜色对比度的颜色2，支持css颜色格式
- * @return {number} contrast 颜色对比度，取值范围为`[1, 21]`
+ * @return {number} 颜色对比度，取值范围为`[1, 21]`
  *
  * @function extend 挂载插件
  * @param {Array} pluginList 插件列表
+ * @return void
  *
  */
 
-var classReg = new RegExp("".concat(_modules_constant__WEBPACK_IMPORTED_MODULE_0__["CLASS_PREFIX"], "[^ ]+"), 'g'); // Darkmode配置
+// 常量
+
+var classReg = new RegExp("".concat(_modules_constant__WEBPACK_IMPORTED_MODULE_0__["CLASS_PREFIX"], "[^ ]+"), 'g');
+
+// Darkmode配置
 
 
- // Dark Mode切换
 
+// Dark Mode切换
 var mql = null;
-
 var switchToDarkmode = function switchToDarkmode(mqlObj) {
   var opt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
     type: 'dom'
@@ -2384,7 +2423,6 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
 
   try {
     _modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].isDarkmode = _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].mode ? _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].mode === 'dark' : mqlObj.matches;
-
     if (opt.type === 'dom') {
       // 处理节点
       _modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].isDarkmode && typeof _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].begin === 'function' && _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].begin(_modules_global__WEBPACK_IMPORTED_MODULE_2__["domUtils"].hasDelay());
@@ -2402,24 +2440,20 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
             var rect = node.getBoundingClientRect();
             var top = rect.top;
             var bottom = rect.bottom;
-
             if (top <= 0 && bottom <= 0) {
               // 首屏前面
               _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].addCss(_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].convert(node)); // 写入非首屏样式
             } else if (top > 0 && top < _modules_constant__WEBPACK_IMPORTED_MODULE_0__["PAGE_HEIGHT"] || bottom > 0 && bottom < _modules_constant__WEBPACK_IMPORTED_MODULE_0__["PAGE_HEIGHT"]) {
               // 首屏
               _modules_global__WEBPACK_IMPORTED_MODULE_2__["domUtils"].addFirstPageNode(node); // 记录首屏节点
-
               _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].addCss(_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].convert(node), true); // 写入首屏样式
             } else {
               // 首屏后面，理论上，这里最多只会进来一次
               _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].needJudgeFirstPage = false; // 至此，不需要再判断首屏了
+
               // 显示首屏
-
               _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].writeStyle(true); // 写入首屏样式表
-
               _modules_global__WEBPACK_IMPORTED_MODULE_2__["domUtils"].showFirstPageNodes(); // 显示首屏节点
-
               typeof _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].showFirstPage === 'function' && _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].showFirstPage(); // 执行首屏回调
 
               _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].addCss(_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].convert(node)); // 写入非首屏样式
@@ -2427,6 +2461,7 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
           }
         }
       });
+
       _modules_global__WEBPACK_IMPORTED_MODULE_2__["plugins"].loopTimes++;
     } else if (opt.type === 'bg') {
       // 处理背景
@@ -2444,16 +2479,15 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
     }
 
     _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].writeStyle(); // 写入非首屏样式表
-
     _modules_global__WEBPACK_IMPORTED_MODULE_2__["domUtils"].emptyFirstPageNodes(); // 清空记录的首屏节点
 
     if (!_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].isDarkmode) {
       // 非Dark Mode
       // 首次加载页面时为非Dark Mode，标记为不需要判断首屏
-      _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].needJudgeFirstPage = false; // 首次加载页面时为非Dark Mode，标记为不延迟判断背景
+      _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].needJudgeFirstPage = false;
 
+      // 首次加载页面时为非Dark Mode，标记为不延迟判断背景
       _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].delayBgJudge = false;
-
       if (_modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].container === null && opt.type === 'dom' && _modules_global__WEBPACK_IMPORTED_MODULE_2__["domUtils"].length) {
         _modules_global__WEBPACK_IMPORTED_MODULE_2__["domUtils"].delay(); // 将节点转移到延迟处理队列里
       }
@@ -2464,6 +2498,7 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
   }
 };
 
+// 初始化Dark Mode配置并运行Dark Mode处理
 function run(nodes, opt) {
   init(opt); // 初始化配置
 
@@ -2474,6 +2509,8 @@ function run(nodes, opt) {
   });
 }
 ;
+
+// 初始化Dark Mode配置
 function init() {
   var opt = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
   if (_modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].hasInit) return; // 只可设置一次配置
@@ -2482,7 +2519,6 @@ function init() {
 
   var tagName = _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].whitelist.tagName;
   var attribute = _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].whitelist.attribute;
-
   if (opt.whitelist) {
     opt.whitelist.tagName instanceof Array && opt.whitelist.tagName.forEach(function (item) {
       item = item.toUpperCase();
@@ -2492,12 +2528,10 @@ function init() {
       attribute.indexOf(item) === -1 && attribute.push(item);
     });
   }
-
   if (['dark', 'light'].indexOf(opt.mode) > -1) {
     _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('string', opt, 'mode');
     opt.mode === 'dark' && document.getElementsByTagName('html')[0].classList.add(_modules_constant__WEBPACK_IMPORTED_MODULE_0__["HTML_CLASS"]);
   }
-
   _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('function', opt, 'begin');
   _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('function', opt, 'showFirstPage');
   _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('function', opt, 'error');
@@ -2510,20 +2544,20 @@ function init() {
   _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('string', opt, 'defaultDarkTextColor');
   _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('string', opt, 'defaultDarkBgColor');
   _modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].init();
-
   if (!_modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].mode && mql === null && window.matchMedia) {
     // 匹配媒体查询
     mql = window.matchMedia(_modules_constant__WEBPACK_IMPORTED_MODULE_0__["MEDIA_QUERY"]);
     mql.addListener(switchToDarkmode); // 监听
   }
 }
+
 ;
+
+// 处理背景
 function convertBg(nodes) {
   _modules_global__WEBPACK_IMPORTED_MODULE_2__["domUtils"].set(nodes);
-
   if (_modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].container !== null) {
     _modules_global__WEBPACK_IMPORTED_MODULE_2__["bgStack"].update(nodes); // 更新背景堆栈
-
     _modules_global__WEBPACK_IMPORTED_MODULE_2__["tnQueue"].update(nodes); // 更新文字队列
   }
 
@@ -2533,19 +2567,24 @@ function convertBg(nodes) {
   });
 }
 ;
+
+// 更新节点Dark Mode样式
 function updateStyle(node, styles) {
   if (!_modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].isFinish) return; // 没有运行过Dark Mode处理逻辑则无需运行
-
   _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].addCss(_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].convert(node, styles ? Object.keys(styles).map(function (key) {
     return [key, styles[key]];
   }) : undefined, true), false);
   _modules_global__WEBPACK_IMPORTED_MODULE_2__["cssUtils"].writeStyle();
 }
 ;
+
+// 获取两个颜色的对比度
 function getContrast(color1, color2) {
   return _modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].getContrast(color1, color2);
 }
 ;
+
+// 挂载插件
 function extend(pluginList) {
   pluginList.forEach(function (plugin) {
     return _modules_global__WEBPACK_IMPORTED_MODULE_2__["plugins"].extend(plugin);
@@ -2567,13 +2606,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return BgNodeStack; });
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./config */ "./src/modules/config.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * @name 需要判断位置的背景节点堆栈
  *
@@ -2585,69 +2620,71 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * @method push 背景节点入栈
  * @param {DOM Object} el    背景节点对象
  * @param {string}     cssKV css键值对
+ * @return void
  *
  * @method contains 判断节点是否在背景节点的区域
  * @param {DOM Object} el       要判断的节点对象（非背景节点）
  * @param {Function}   callback 如果在背景节点区域内，则执行该回调函数
+ * @return void
  *
  * @method update 更新堆栈的节点对象，主要解决前后节点不一致的问题
  * @param {DOM Object Array} els 要更新的节点对象列表
+ * @return void
  *
  */
-// Darkmode配置
 
+// Darkmode配置
 
 var BgNodeStack = /*#__PURE__*/function () {
   // 需要判断位置的背景堆栈，{ el, className, cssKV, updated, rect }
   // 索引值
+
   function BgNodeStack(prefix) {
     _classCallCheck(this, BgNodeStack);
-
     _defineProperty(this, "_stack", []);
-
     _defineProperty(this, "_idx", 0);
-
     this._prefix = prefix;
     this.classNameReg = new RegExp("".concat(this._prefix, "\\d+"));
   }
 
+  // 背景节点入栈
   _createClass(BgNodeStack, [{
     key: "push",
-    value: function push(el, cssKV) {
+    value: function push(el, cssKV, cb) {
       var className = "".concat(this._prefix).concat(this._idx++);
       el.classList.add(className);
-
       this._stack.unshift({
         el: el,
         className: className,
         cssKV: cssKV,
-        updated: !_config__WEBPACK_IMPORTED_MODULE_0__["default"].delayBgJudge
+        updated: !_config__WEBPACK_IMPORTED_MODULE_0__["default"].delayBgJudge,
+        cb: cb
       });
     }
+
+    // 判断节点是否在背景节点的区域
   }, {
     key: "contains",
     value: function contains(el, callback) {
       var rect = el.getBoundingClientRect();
       var idxStack = [];
-
       this._stack.forEach(function (item, i) {
         if (item.updated) {
           if (!item.rect) item.rect = item.el.getBoundingClientRect();
           var bgRect = item.rect;
-
           if (!(rect.top >= bgRect.bottom || rect.bottom <= bgRect.top || rect.left >= bgRect.right || rect.right <= bgRect.left)) {
             // 表示节点在背景图内
             idxStack.unshift(i);
           }
         }
       });
-
       while (idxStack.length) {
         var item = this._stack.splice(idxStack.shift(), 1)[0];
-
         typeof callback === 'function' && callback(item);
       }
     }
+
+    // 更新堆栈的节点对象，主要解决前后节点不一致的问题
   }, {
     key: "update",
     value: function update(els) {
@@ -2659,19 +2696,172 @@ var BgNodeStack = /*#__PURE__*/function () {
               item.updated = true;
               return true;
             }
-
             return false;
           });
         }
       });
     }
   }]);
-
   return BgNodeStack;
 }();
 
-
 ;
+
+/***/ }),
+
+/***/ "./src/modules/color.js":
+/*!******************************!*\
+  !*** ./src/modules/color.js ***!
+  \******************************/
+/*! exports provided: ColorParser, parseColorName, parseWebkitFillColorAndStrokeColor, mixColors, getColorPerceivedBrightness, adjustBrightnessTo */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ColorParser", function() { return ColorParser; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parseColorName", function() { return parseColorName; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parseWebkitFillColorAndStrokeColor", function() { return parseWebkitFillColorAndStrokeColor; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mixColors", function() { return mixColors; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getColorPerceivedBrightness", function() { return getColorPerceivedBrightness; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "adjustBrightnessTo", function() { return adjustBrightnessTo; });
+/* harmony import */ var color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! color */ "./node_modules/color/index.js");
+/* harmony import */ var color__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(color__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var color_name__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! color-name */ "./node_modules/color-name/index.js");
+/* harmony import */ var color_name__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(color_name__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var color_blend__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! color-blend */ "./node_modules/color-blend/dist/index.modern.js");
+/* harmony import */ var _constant__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./constant */ "./src/modules/constant.js");
+/**
+ * @name 颜色操作相关API
+ *
+ * @function ColorParser 实例化Color对象，传参非法时返回null
+ * @param {string} color css色值
+ * @return {Color Object | null} 实例化结果
+ *
+ * @function parseColorName 处理颜色，包括清除!important和转换英文定义颜色
+ * @param {string}  color              css色值
+ * @param {boolean} supportTransparent 是否支持转换transparent
+ * @return {string} 处理后的rgb(a)格式css色值
+ *
+ * @function parseWebkitFillColorAndStrokeColor 处理-webkit-fill-color和-webkit-text-stroke-color，返回处理后的色值，无则返回空字符串
+ * @param {string} color css色值
+ * @return {string} 处理后的rgb(a)格式css色值，无则返回空字符串
+ *
+ * @function mixColors 计算混合颜色
+ * @param {string} colors 用于计算的颜色数组
+ * @param {string} type 使用的混合颜色算法，支持 mix(默认) | normal | multiply | screen | overlay | darken | lighten | colorDodge | colorBurn | hardLight | softLight | difference | exclusion | hue | saturation | color | luminosity
+ * @return {Color Object | null} 混合结果
+ *
+ * @function getColorPerceivedBrightness 计算感知亮度
+ * @param {RGB Array} rgb 要计算的颜色rgb数组，如：[255, 0, 0]
+ * @return {number} 感知亮度
+ *
+ * @function adjustBrightnessTo 调整为指定感知亮度
+ * @param {number}    target 指定的感知亮度值
+ * @param {RGB Array} rgb    要调整的颜色rgb数组，如：[255, 0, 0]
+ * @return {Color Object} 调整后的颜色
+ *
+ */
+
+
+
+color_name__WEBPACK_IMPORTED_MODULE_1___default.a.windowtext = [0, 0, 0]; // 补上这个colorName
+color_name__WEBPACK_IMPORTED_MODULE_1___default.a.transparent = [255, 255, 255, 0]; // 支持透明，暂定用白色透明度0来表示
+
+
+// 常量
+
+var COLOR_NAME_REG = new RegExp(Object.keys(color_name__WEBPACK_IMPORTED_MODULE_1___default.a).map(function (colorName) {
+  return "\\b".concat(colorName, "\\b");
+}).join('|'), 'ig'); // 生成正则表达式来匹配这些colorName
+
+// Color对象 => ColorBlend对象
+var color2ColorBlend = function color2ColorBlend(color) {
+  var obj = color.object();
+  obj.a = obj.alpha || 1;
+  delete obj.alpha;
+  return obj;
+};
+
+// ColorBlend对象 => Color对象
+var colorBlend2Color = function colorBlend2Color(colorBlend) {
+  colorBlend.alpha = colorBlend.a;
+  delete colorBlend.a;
+  return ColorParser(colorBlend);
+};
+
+// 实例化Color对象，传参非法时返回null
+var ColorParser = function ColorParser(color) {
+  var res = null;
+  try {
+    res = color instanceof color__WEBPACK_IMPORTED_MODULE_0___default.a ? color : color__WEBPACK_IMPORTED_MODULE_0___default()(color);
+  } catch (e) {
+    console.log("ignore the invalid color: `".concat(color, "`"));
+  }
+  return res;
+};
+
+// 处理颜色，包括清除!important和转换英文定义颜色
+var parseColorName = function parseColorName(color, supportTransparent) {
+  return color.replace(_constant__WEBPACK_IMPORTED_MODULE_3__["IMPORTANT_REGEXP"], '').replace(COLOR_NAME_REG, function (match) {
+    if (!supportTransparent && match === 'transparent') return match; // 如果不支持转换transparent，直接返回transparent
+
+    var color = color_name__WEBPACK_IMPORTED_MODULE_1___default.a[match.toLowerCase()];
+    return "".concat(color.length > 3 ? 'rgba' : 'rgb', "(").concat(color.toString(), ")");
+  });
+};
+
+// 处理-webkit-fill-color和-webkit-text-stroke-color，返回处理后的色值，无则返回空字符串
+var parseWebkitFillColorAndStrokeColor = function parseWebkitFillColorAndStrokeColor(color) {
+  var newValue = parseColorName(color);
+  return _constant__WEBPACK_IMPORTED_MODULE_3__["COLOR_REGEXP"].test(newValue) ? newValue : '';
+};
+
+// 计算混合颜色
+var mixColors = function mixColors(colors) {
+  var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'mix';
+  if (Object.prototype.toString.call(colors) !== '[object Array]' || colors.length < 1) return null;
+  if (colors.length === 1) return colors[0];
+  var color1 = ColorParser(colors.shift());
+  var color2 = ColorParser(colors.shift());
+  while (color2) {
+    if (!color1 && color2) {
+      // 如果当前色值非法，混入色值合法，则直接使用混入色值
+      color1 = color2;
+    } else if (!color1 && !color2) {
+      // 如果两个色值都非法，则使用下一批色值
+      if (colors.length === 0) break;
+      color1 = ColorParser(colors.shift());
+    } else if (color1 && color2) {
+      // 如果两个色值都合法，执行mix
+      color1 = type === 'mix' ? color1.mix(color2, color2.alpha()) : colorBlend2Color(color_blend__WEBPACK_IMPORTED_MODULE_2__[type](color2ColorBlend(color1), color2ColorBlend(color2)));
+    } // 如果当前色值合法，混入色值非法，无需处理
+
+    if (colors.length === 0) break;
+    color2 = ColorParser(colors.shift());
+  }
+  return color1 || null;
+};
+
+// 计算感知亮度
+var getColorPerceivedBrightness = function getColorPerceivedBrightness(rgb) {
+  return (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
+};
+
+// 调整为指定感知亮度
+var adjustBrightnessTo = function adjustBrightnessTo(target, rgb) {
+  var relativeBrightnessRatio = target / getColorPerceivedBrightness(rgb);
+  var newTextR = Math.min(255, rgb[0] * relativeBrightnessRatio);
+  var newTextG = Math.min(255, rgb[1] * relativeBrightnessRatio);
+  var newTextB = Math.min(255, rgb[2] * relativeBrightnessRatio);
+  if (newTextG === 0 || newTextR === 255 || newTextB === 255) {
+    newTextG = (target * 1000 - newTextR * 299 - newTextB * 114) / 587;
+  } else if (newTextR === 0) {
+    newTextR = (target * 1000 - newTextG * 587 - newTextB * 114) / 299;
+  } else if (newTextB === 0 || newTextG === 255) {
+    newTextB = (target * 1000 - newTextR * 299 - newTextG * 587) / 114;
+  }
+  return color__WEBPACK_IMPORTED_MODULE_0___default.a.rgb(newTextR, newTextG, newTextB);
+};
 
 /***/ }),
 
@@ -2695,6 +2885,7 @@ __webpack_require__.r(__webpack_exports__);
  * @attr {string}       mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
  * @attr {Object}       whitelist             节点白名单
  * @attr {string Array} whitelist.tagName     标签名列表
+ * @attr {string Array} whitelist.attribute   属性列表
  * @attr {boolean}      needJudgeFirstPage    是否需要判断首屏
  * @attr {boolean}      delayBgJudge          是否延迟背景判断
  * @attr {DOM Object}   container             延迟运行js时使用的容器
@@ -2708,49 +2899,65 @@ __webpack_require__.r(__webpack_exports__);
  * @param {string} type 要处理的节点
  * @param {Object} opt  传入的配置对象
  * @param {string} key  配置名
+ * @return void
  *
  */
 
+// 常量
+
 var config = {
   hasInit: false,
+  // 是否初始化过配置
+
   // hooks
   begin: null,
+  // 开始处理时触发的回调
   showFirstPage: null,
+  // 首屏处理完成时触发的回调
   error: null,
+  // 发生error时触发的回调
+
   mode: '',
+  // 强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
   whitelist: {
+    // 节点白名单
     tagName: ['MPCPS', 'IFRAME'],
-    attribute: []
+    // 标签名列表
+    attribute: [] // 属性列表
   },
+
   needJudgeFirstPage: true,
+  // 是否需要判断首屏
   delayBgJudge: false,
+  // 是否延迟背景判断
   container: null,
+  // 延迟运行js时使用的容器
   cssSelectorsPrefix: '',
+  // css选择器前缀
   defaultLightTextColor: _constant__WEBPACK_IMPORTED_MODULE_0__["DEFAULT_LIGHT_TEXTCOLOR"],
+  // 非Dark Mode下字体颜色
   defaultLightBgColor: _constant__WEBPACK_IMPORTED_MODULE_0__["DEFAULT_LIGHT_BGCOLOR"],
+  // 非Dark Mode下背景颜色
   defaultDarkTextColor: _constant__WEBPACK_IMPORTED_MODULE_0__["DEFAULT_DARK_TEXTCOLOR"],
+  // Dark Mode下字体颜色
   defaultDarkBgColor: _constant__WEBPACK_IMPORTED_MODULE_0__["DEFAULT_DARK_BGCOLOR"],
+  // Dark Mode下背景颜色
   // 设置配置
   set: function set(type, opt, key) {
     var value = opt[key];
-
     switch (type) {
       case 'boolean':
         typeof value === 'boolean' && (this[key] = value);
         break;
-
       case 'string':
         typeof value === 'string' && value !== '' && (this[key] = value);
         break;
-
       case 'function':
         typeof value === 'function' && (this[key] = value);
         break;
-
       case 'dom':
         value instanceof HTMLElement && (this[key] = value);
         break;
-
       default:
     }
   }
@@ -2763,7 +2970,7 @@ var config = {
 /*!*********************************!*\
   !*** ./src/modules/constant.js ***!
   \*********************************/
-/*! exports provided: MEDIA_QUERY, CLASS_PREFIX, DM_CLASSNAME_REGEXP, HTML_CLASS, COLORATTR, BGCOLORATTR, ORIGINAL_COLORATTR, ORIGINAL_BGCOLORATTR, BGIMAGEATTR, BG_COLOR_DELIMITER, DEFAULT_LIGHT_TEXTCOLOR, DEFAULT_LIGHT_BGCOLOR, DEFAULT_DARK_TEXTCOLOR, DEFAULT_DARK_BGCOLOR, WHITE_LIKE_COLOR_BRIGHTNESS, MAX_LIMIT_BGCOLOR_BRIGHTNESS, MIN_LIMIT_OFFSET_BRIGHTNESS, HIGH_BGCOLOR_BRIGHTNESS, HIGH_BLACKWHITE_HSL_BRIGHTNESS, LOW_BLACKWHITE_HSL_BRIGHTNESS, IGNORE_ALPHA, PAGE_HEIGHT, CSS_PROP_SERIES, CSS_PROP_LIST, TABLE_NAME, IMPORTANT_REGEXP, SEMICOLON_PLACEHOLDER, SEMICOLON_PLACEHOLDER_REGEXP */
+/*! exports provided: MEDIA_QUERY, CLASS_PREFIX, DM_CLASSNAME_REGEXP, HTML_CLASS, COLORATTR, BGCOLORATTR, ORIGINAL_COLORATTR, ORIGINAL_BGCOLORATTR, BGIMAGEATTR, COMPLEMENTARY_BGIMAGECOLORATTR, BG_COLOR_DELIMITER, DEFAULT_LIGHT_TEXTCOLOR, DEFAULT_LIGHT_BGCOLOR, DEFAULT_DARK_TEXTCOLOR, DEFAULT_DARK_BGCOLOR, WHITE_LIKE_COLOR_BRIGHTNESS, MAX_LIMIT_BGCOLOR_BRIGHTNESS, MIN_LIMIT_OFFSET_BRIGHTNESS, HIGH_BGCOLOR_BRIGHTNESS, HIGH_BLACKWHITE_HSL_BRIGHTNESS, LOW_BLACKWHITE_HSL_BRIGHTNESS, IGNORE_ALPHA, PAGE_HEIGHT, CSS_PROP_SERIES, CSS_PROP_LIST, TABLE_NAME, IMPORTANT_REGEXP, SEMICOLON_PLACEHOLDER, SEMICOLON_PLACEHOLDER_REGEXP, COLOR_REGEXP, COLOR_REGEXP_GLOBAL */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2777,6 +2984,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ORIGINAL_COLORATTR", function() { return ORIGINAL_COLORATTR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ORIGINAL_BGCOLORATTR", function() { return ORIGINAL_BGCOLORATTR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BGIMAGEATTR", function() { return BGIMAGEATTR; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "COMPLEMENTARY_BGIMAGECOLORATTR", function() { return COMPLEMENTARY_BGIMAGECOLORATTR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BG_COLOR_DELIMITER", function() { return BG_COLOR_DELIMITER; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_LIGHT_TEXTCOLOR", function() { return DEFAULT_LIGHT_TEXTCOLOR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_LIGHT_BGCOLOR", function() { return DEFAULT_LIGHT_BGCOLOR; });
@@ -2796,39 +3004,33 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IMPORTANT_REGEXP", function() { return IMPORTANT_REGEXP; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SEMICOLON_PLACEHOLDER", function() { return SEMICOLON_PLACEHOLDER; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SEMICOLON_PLACEHOLDER_REGEXP", function() { return SEMICOLON_PLACEHOLDER_REGEXP; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "COLOR_REGEXP", function() { return COLOR_REGEXP; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "COLOR_REGEXP_GLOBAL", function() { return COLOR_REGEXP_GLOBAL; });
 /**
  * @name 常量
  *
  */
+
 var MEDIA_QUERY = '(prefers-color-scheme: dark)'; // Dark Mode的CSS媒体查询
 
 var CLASS_PREFIX = 'js_darkmode__'; // Dark Mode class前缀
-
 var DM_CLASSNAME_REGEXP = new RegExp("".concat(CLASS_PREFIX, "\\d+"));
 var HTML_CLASS = 'data_color_scheme_dark'; // 强制设置暗黑模式时给html加的class
 
 var RANDOM = "".concat(new Date() * 1).concat(Math.round(Math.random() * 10)); // 生成个随机数，格式为时间戳+随机数
-
 var COLORATTR = "data-darkmode-color-".concat(RANDOM); // dm color，即算法生成的新色值，单个
-
 var BGCOLORATTR = "data-darkmode-bgcolor-".concat(RANDOM); // dm bg-color，即算法生成的新色值，有多个，用BG_COLOR_DELIMITER分割
-
 var ORIGINAL_COLORATTR = "data-darkmode-original-color-".concat(RANDOM); // lm color，即原色值，单个
-
 var ORIGINAL_BGCOLORATTR = "data-darkmode-original-bgcolor-".concat(RANDOM); // lm bg-color，即原色值，有多个，用BG_COLOR_DELIMITER分割
-
 var BGIMAGEATTR = "data-darkmode-bgimage-".concat(RANDOM);
+var COMPLEMENTARY_BGIMAGECOLORATTR = "data-darkmode-complementary-bgimagecolor-".concat(RANDOM); // 背景图片的补色色值，单个
 var BG_COLOR_DELIMITER = '|';
 var DEFAULT_LIGHT_TEXTCOLOR = '#191919'; // 非Dark Mode下字体颜色
-
 var DEFAULT_LIGHT_BGCOLOR = '#fff'; // 非Dark Mode下背景颜色
-
 var DEFAULT_DARK_TEXTCOLOR = '#a3a3a3'; // Dark Mode下字体颜色，前景色：rgba(255,255,255,0.6) 背景色：#191919
-
 var DEFAULT_DARK_BGCOLOR = '#191919'; // Dark Mode下背景颜色
 
 var WHITE_LIKE_COLOR_BRIGHTNESS = 250; // 接近白色的感知亮度阈值
-
 var MAX_LIMIT_BGCOLOR_BRIGHTNESS = 190;
 var MIN_LIMIT_OFFSET_BRIGHTNESS = 65;
 var HIGH_BGCOLOR_BRIGHTNESS = 100;
@@ -2842,8 +3044,10 @@ var CSS_PROP_SERIES = {
   BG_COLOR: ['background-color', 'background-image', 'background'],
   TEXT_SHADOW: ['text-shadow'],
   TEXT_COLOR: ['-webkit-text-stroke', '-webkit-text-stroke-color', 'text-decoration', 'text-decoration-color', 'text-emphasis-color', 'color', '-webkit-text-fill-color'],
-  BORDER_COLOR: ['border-image', '-webkit-border-image', 'border', 'border-top', 'border-right', 'border-bottom', 'border-left', 'border-color', 'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color', 'border-block-color', 'border-block-start-color', 'border-block-end-color', 'border-inline-color', 'border-inline-start-color', 'border-inline-end-color', 'outline', 'outline-color', 'box-shadow', // TODO: 不知道为啥之前没处理，后面需要留意下
-  'column-rule', 'column-rule-color'] // SVG_COLOR: [ // TODO: SVG后面再处理
+  BORDER_COLOR: ['border-image', '-webkit-border-image', 'border', 'border-top', 'border-right', 'border-bottom', 'border-left', 'border-color', 'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color', 'border-block-color', 'border-block-start-color', 'border-block-end-color', 'border-inline-color', 'border-inline-start-color', 'border-inline-end-color', 'outline', 'outline-color', 'box-shadow',
+  // TODO: 不知道为啥之前没处理，后面需要留意下
+  'column-rule', 'column-rule-color']
+  // SVG_COLOR: [ // TODO: SVG后面再处理
   //   'fill',
   //   'stroke',
   //   'stop-color',
@@ -2853,19 +3057,19 @@ var CSS_PROP_SERIES = {
   // FILTER: [ // TODO: filter后面再考虑要不要处理
   //   'filter'
   // ],
-
 };
+
 var CSS_PROP_LIST = Object.keys(CSS_PROP_SERIES).map(function (key) {
   return CSS_PROP_SERIES[key].join('|');
 }).join('|').split('|'); // 支持的css属性平铺列表
-
 var TABLE_NAME = ['TABLE', 'TR', 'TD', 'TH']; // 支持bgcolor属性的table标签列表
 
 var IMPORTANT_REGEXP = / !important$/; // !important
 
 var SEMICOLON_PLACEHOLDER = '<$#_SEMICOLON_#$>'; // 分号占位符
-
 var SEMICOLON_PLACEHOLDER_REGEXP = /<\$#_SEMICOLON_#\$>/g;
+var COLOR_REGEXP = /\brgba?\([^)]+\)/i;
+var COLOR_REGEXP_GLOBAL = /\brgba?\([^)]+\)/ig;
 
 /***/ }),
 
@@ -2883,25 +3087,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./src/modules/config.js");
 /* harmony import */ var _global__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./global */ "./src/modules/global.js");
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
 function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * @name 样式相关操作工具对象
  *
@@ -2922,39 +3116,48 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * @method addCss 加入css
  * @param {string}  css              css样式
  * @param {boolean} isFirstPageStyle 是否首屏样式
+ * @return void
  *
  * @method writeStyle 写入样式表
  * @param {boolean} isFirstPageStyle 是否首屏样式
+ * @return void
  *
  */
- // Darkmode配置
+
+// 常量
 
 
+// Darkmode配置
 
 
 var CssUtils = /*#__PURE__*/function () {
   // 首屏样式
   // 非首屏样式
+
+  // 是否运行过Dark Mode处理逻辑（写入过非首屏样式表则表示已运行过）
+
   function CssUtils() {
     _classCallCheck(this, CssUtils);
-
     _defineProperty(this, "_firstPageStyle", '');
-
     _defineProperty(this, "_otherPageStyle", '');
-
     _defineProperty(this, "isFinish", false);
   }
 
+  // 生成css键值对
   _createClass(CssUtils, [{
     key: "genCssKV",
     value: function genCssKV(key, val) {
       return "".concat(key, ": ").concat(val, " !important;");
     }
+
+    // 生成css，包括css选择器
   }, {
     key: "genCss",
     value: function genCss(className, cssKV) {
       return "".concat(_config__WEBPACK_IMPORTED_MODULE_1__["default"].mode === 'dark' ? "html.".concat(_constant__WEBPACK_IMPORTED_MODULE_0__["HTML_CLASS"], " ") : '').concat(_config__WEBPACK_IMPORTED_MODULE_1__["default"].cssSelectorsPrefix && "".concat(_config__WEBPACK_IMPORTED_MODULE_1__["default"].cssSelectorsPrefix, " "), ".").concat(className, "{").concat(cssKV, "}");
     }
+
+    // 加入css
   }, {
     key: "addCss",
     value: function addCss(css) {
@@ -2962,13 +3165,15 @@ var CssUtils = /*#__PURE__*/function () {
       this[isFirstPageStyle ? '_firstPageStyle' : '_otherPageStyle'] += css;
       _global__WEBPACK_IMPORTED_MODULE_2__["plugins"].addCss(isFirstPageStyle);
     }
+
+    // 写入样式表
   }, {
     key: "writeStyle",
     value: function writeStyle() {
       var isFirstPageStyle = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       !isFirstPageStyle && _global__WEBPACK_IMPORTED_MODULE_2__["sdk"].isDarkmode && (this.isFinish = true); // 在Dark Mode下一旦写入了非首屏样式表，则认为已经运行过Dark Mode处理逻辑
-      // 获取样式表内容
 
+      // 获取样式表内容
       var styles = (_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].isDarkmode ? [{
         target: this,
         key: ['_firstPageStyle', '_otherPageStyle'],
@@ -2983,13 +3188,11 @@ var CssUtils = /*#__PURE__*/function () {
         needMediaQuery: false
       }]).map(function (_ref) {
         var target = _ref.target,
-            _ref$key = _slicedToArray(_ref.key, 2),
-            first = _ref$key[0],
-            other = _ref$key[1],
-            needMediaQuery = _ref.needMediaQuery;
-
+          _ref$key = _slicedToArray(_ref.key, 2),
+          first = _ref$key[0],
+          other = _ref$key[1],
+          needMediaQuery = _ref.needMediaQuery;
         var styleKey = '';
-
         if (!isFirstPageStyle) {
           // 如果是写入非首屏样式表，则连同首屏样式一起写入
           target[other] = target[first] + target[other];
@@ -2998,25 +3201,20 @@ var CssUtils = /*#__PURE__*/function () {
         } else {
           styleKey = first;
         }
-
         var style = target[styleKey];
-
         if (style) {
           target[styleKey] = ''; // 写入样式表后清空内存中的数据
-
           return _config__WEBPACK_IMPORTED_MODULE_1__["default"].mode === 'dark' || !needMediaQuery ? style : "@media ".concat(_constant__WEBPACK_IMPORTED_MODULE_0__["MEDIA_QUERY"], " {").concat(style, "}");
         }
-
         return '';
-      }).join(''); // 写入样式表
+      }).join('');
 
+      // 写入样式表
       styles && document.head.insertAdjacentHTML('beforeend', "<style type=\"text/css\">".concat(styles, "</style>"));
     }
   }]);
-
   return CssUtils;
 }();
-
 
 ;
 
@@ -3038,25 +3236,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./config */ "./src/modules/config.js");
 /* harmony import */ var _global__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./global */ "./src/modules/global.js");
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
 function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
-
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
 /**
  * @name 节点相关操作工具API
  *
@@ -3073,30 +3261,37 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
  * @return {string | null} 判断结果，如果有，返回class对应的lm色值，否则返回null
  *
  */
+
 // Darkmode配置
 
 
+
+// 获取某个节点及它的所有子节点
 function getChildrenAndIt(el) {
   var _ref;
-
   return (_ref = [el]).concat.apply(_ref, _toConsumableArray(el.querySelectorAll('*')));
 }
 ;
-function hasTextNode(el) {
-  var cnt = '';
-  Array.prototype.forEach.call(el.childNodes, function (child) {
-    if (child.nodeType === 3) {
-      cnt += child.nodeValue.replace(/\s/g, ''); // 不考虑空白字符
-    }
-  });
-  return cnt.length > 0;
-}
-; // table的内部样式类对应的lm背景色
 
+// 判断某个节点里是否包含文字节点
+function hasTextNode(el) {
+  // let cnt = '';
+  // Array.prototype.forEach.call(el.childNodes, child => {
+  //   if (child.nodeType === 3) {
+  //     cnt += child.nodeValue.replace(/\s/g, ''); // 不考虑空白字符
+  //   }
+  // });
+  // return cnt.length > 0;
+  return el.textContent.replace(/\s/g, '').length > 0;
+}
+;
+
+// table的内部样式类对应的lm背景色
 var tableClassObj = {
   'ue-table-interlace-color-single': '#fcfcfc',
   'ue-table-interlace-color-double': '#f7faff'
 };
+// 判断table相关元素有没有指定class
 function hasTableClass(el) {
   var color = null;
   Array.prototype.some.call(el.classList, function (className) {
@@ -3104,12 +3299,12 @@ function hasTableClass(el) {
       color = tableClassObj[className];
       return true;
     }
-
     return false;
   });
   return color;
 }
 ;
+
 /**
  * @name 节点相关操作工具对象
  *
@@ -3120,21 +3315,26 @@ function hasTableClass(el) {
  *
  * @method set 设置要处理的节点列表
  * @param {DOM Object Array} els 要处理的节点列表
+ * @return void
  *
  * @method get 获取要处理的节点列表（包含延迟节点、容器节点等逻辑）
  * @return {DOM Object Array} 要处理的节点列表
  *
  * @method delay 将所有要处理的节点转移到延迟处理队列里
+ * @return void
  *
  * @method hasDelay 判断是否包含延迟处理的节点
  * @return {boolean} 判断结果
  *
  * @method addFirstPageNode 添加首屏节点
  * @param {DOM Object} el 要添加的首屏节点
+ * @return void
  *
  * @method showFirstPageNodes 显示所有首屏节点
+ * @return void
  *
  * @method emptyFirstPageNodes 清空记录的首屏节点
+ * @return void
  *
  */
 
@@ -3142,35 +3342,37 @@ var DomUtils = /*#__PURE__*/function () {
   // 要处理的节点列表
   // 首屏节点列表
   // 延迟处理的节点列表
+
   // 是否已显示首屏
+
   function DomUtils() {
     _classCallCheck(this, DomUtils);
-
     _defineProperty(this, "_els", []);
-
     _defineProperty(this, "_firstPageEls", []);
-
     _defineProperty(this, "_delayEls", []);
-
     _defineProperty(this, "showFirstPage", false);
   }
 
+  // 要处理的节点列表长度
   _createClass(DomUtils, [{
     key: "length",
     get: function get() {
       return this._els.length;
     }
+
+    // 设置要处理的节点列表
   }, {
     key: "set",
     value: function set() {
       var els = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
       this._els = els;
     }
+
+    // 获取要处理的节点列表（包含延迟节点、容器节点等逻辑）
   }, {
     key: "get",
     value: function get() {
       var res = [];
-
       if (this._els.length) {
         // 有节点
         res = this._els;
@@ -3186,49 +3388,52 @@ var DomUtils = /*#__PURE__*/function () {
           res = _config__WEBPACK_IMPORTED_MODULE_0__["default"].container.querySelectorAll('*');
         }
       }
-
       return res;
     }
+
+    // 将所有要处理的节点转移到延迟处理队列里
   }, {
     key: "delay",
     value: function delay() {
       var _this = this;
-
       Array.prototype.forEach.call(this._els, function (el) {
         return _this._delayEls.push(el);
       }); // 转移到延迟处理的节点里
-
       this._els = []; // 转移后清空列表
     }
+
+    // 判断是否包含延迟处理的节点
   }, {
     key: "hasDelay",
     value: function hasDelay() {
       if (this._els.length) return false; // 有节点，即不含延迟处理的节点
-
       return this._delayEls.length > 0 || _config__WEBPACK_IMPORTED_MODULE_0__["default"].container !== null; // 否则需要判断延迟节点的列表和容器
     }
+
+    // 添加首屏节点
   }, {
     key: "addFirstPageNode",
     value: function addFirstPageNode(el) {
       this._firstPageEls.push(el);
     }
+
+    // 显示所有首屏节点
   }, {
     key: "showFirstPageNodes",
     value: function showFirstPageNodes() {
       this._firstPageEls.forEach(function (el) {
         return !el.style.visibility && (el.style.visibility = 'visible');
       }); // 显示首屏节点
-
-
       this.showFirstPage = true; // 记录为已显示首屏
     }
+
+    // 清空记录的首屏节点
   }, {
     key: "emptyFirstPageNodes",
     value: function emptyFirstPageNodes() {
       this._firstPageEls = [];
     }
   }]);
-
   return DomUtils;
 }();
 ;
@@ -3261,23 +3466,31 @@ __webpack_require__.r(__webpack_exports__);
  * @name 全局作用域
  *
  */
- // 插件系统
+
+// 常量
 
 
-var plugins = new _plugins__WEBPACK_IMPORTED_MODULE_1__["default"](); // 文本节点队列
+// 插件系统
 
+var plugins = new _plugins__WEBPACK_IMPORTED_MODULE_1__["default"]();
 
-var tnQueue = new _textNodeQueue__WEBPACK_IMPORTED_MODULE_2__["default"]("".concat(_constant__WEBPACK_IMPORTED_MODULE_0__["CLASS_PREFIX"], "text__")); // 需要判断位置的背景节点堆栈
+// 文本节点队列
 
+var tnQueue = new _textNodeQueue__WEBPACK_IMPORTED_MODULE_2__["default"]("".concat(_constant__WEBPACK_IMPORTED_MODULE_0__["CLASS_PREFIX"], "text__"));
 
-var bgStack = new _bgNodeStack__WEBPACK_IMPORTED_MODULE_3__["default"]("".concat(_constant__WEBPACK_IMPORTED_MODULE_0__["CLASS_PREFIX"], "bg__")); // 样式相关操作工具对象
+// 需要判断位置的背景节点堆栈
 
+var bgStack = new _bgNodeStack__WEBPACK_IMPORTED_MODULE_3__["default"]("".concat(_constant__WEBPACK_IMPORTED_MODULE_0__["CLASS_PREFIX"], "bg__"));
 
-var cssUtils = new _cssUtils__WEBPACK_IMPORTED_MODULE_4__["default"](); // 节点相关操作工具对象
+// 样式相关操作工具对象
 
+var cssUtils = new _cssUtils__WEBPACK_IMPORTED_MODULE_4__["default"]();
 
-var domUtils = new _domUtils__WEBPACK_IMPORTED_MODULE_5__["DomUtils"](); // sdk
+// 节点相关操作工具对象
 
+var domUtils = new _domUtils__WEBPACK_IMPORTED_MODULE_5__["DomUtils"]();
+
+// sdk
 
 var sdk = new _sdk__WEBPACK_IMPORTED_MODULE_6__["default"]();
 
@@ -3295,19 +3508,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Plugins; });
 /* harmony import */ var _global__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./global */ "./src/modules/global.js");
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
 /**
  * @name 插件基类
  *
  * @class Plugin
  *
- * @attr {number}  loopTimes  遍历次数（全部节点遍历结束算一次）
+ * @attr {number}  loopTimes  已遍历次数（全部节点遍历结束算一次）
  * @attr {boolean} isDarkmode 是否为Dark Mode
  *
  * @method addCss 添加样式
@@ -3319,36 +3528,40 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
  *
  */
 
+
 var cssNeedMQ = [];
 var cssNoMQ = [];
-
 var Plugin = /*#__PURE__*/function () {
   function Plugin() {
     _classCallCheck(this, Plugin);
   }
 
+  // 遍历次数（全部节点遍历结束算一次）
   _createClass(Plugin, [{
     key: "loopTimes",
     get: function get() {
       return _global__WEBPACK_IMPORTED_MODULE_0__["plugins"].loopTimes;
     }
+
+    // 是否为Dark Mode
   }, {
     key: "isDarkmode",
     get: function get() {
       return _global__WEBPACK_IMPORTED_MODULE_0__["sdk"].isDarkmode;
     }
+
+    // 添加样式
   }, {
     key: "addCss",
     value: function addCss(className, kvList) {
       var needMediaQuery = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
       (needMediaQuery ? cssNeedMQ : cssNoMQ).push(_global__WEBPACK_IMPORTED_MODULE_0__["cssUtils"].genCss(className, kvList.map(function (_ref) {
         var key = _ref.key,
-            value = _ref.value;
+          value = _ref.value;
         return _global__WEBPACK_IMPORTED_MODULE_0__["cssUtils"].genCssKV(key, value);
       }).join('')));
     }
   }]);
-
   return Plugin;
 }();
 /**
@@ -3357,6 +3570,7 @@ var Plugin = /*#__PURE__*/function () {
  * @class Plugins
  *
  * @attr {number} length             已挂载的插件数量
+ * @attr {number} loopTimes          已遍历次数（全部节点遍历结束算一次）
  * @attr {string} firstPageStyle     首屏样式
  * @attr {string} otherPageStyle     非首屏样式
  * @attr {string} firstPageStyleNoMQ 首屏样式（不需要加媒体查询）
@@ -3364,63 +3578,63 @@ var Plugin = /*#__PURE__*/function () {
  *
  * @method extend 挂载插件
  * @param {Function} plugin 插件构造函数
+ * @return void
  *
  * @method emit 执行插件钩子
  * @param {string} name 钩子名称
  * @param {Any}    args 钩子参数
+ * @return void
  *
  * @method addCss 写入插件样式
  * @param {boolean} isFirstPageStyle 是否首屏样式
+ * @return void
  *
  * @method resetCss 重置插件样式
+ * @return void
  *
  */
-
-
 var Plugins = /*#__PURE__*/function () {
   // 已挂载的插件列表
+
   // 已挂载的插件数量
-  // 已遍历次数
+  // 已遍历次数（全部节点遍历结束算一次）
   // 首屏样式
   // 非首屏样式
   // 首屏样式（不需要加媒体查询）
   // 非首屏样式（不需要加媒体查询）
+
   function Plugins() {
     _classCallCheck(this, Plugins);
-
     _defineProperty(this, "_plugins", []);
-
     _defineProperty(this, "length", 0);
-
     _defineProperty(this, "loopTimes", 0);
-
     _defineProperty(this, "firstPageStyle", '');
-
     _defineProperty(this, "otherPageStyle", '');
-
     _defineProperty(this, "firstPageStyleNoMQ", '');
-
     _defineProperty(this, "otherPageStyleNoMQ", '');
   }
 
+  // 挂载插件
   _createClass(Plugins, [{
     key: "extend",
     value: function extend(plugin) {
       this._plugins.push(new (plugin(Plugin))());
-
       this.length++;
     }
+
+    // 执行插件钩子
   }, {
     key: "emit",
     value: function emit(name) {
       for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
         args[_key - 1] = arguments[_key];
       }
-
       this._plugins.forEach(function (plugin) {
         typeof plugin[name] === 'function' && plugin[name].apply(plugin, args);
       });
     }
+
+    // 写入插件样式
   }, {
     key: "addCss",
     value: function addCss(isFirstPageStyle) {
@@ -3432,6 +3646,8 @@ var Plugins = /*#__PURE__*/function () {
         this.otherPageStyleNoMQ += cssNoMQ.join('');
       }
     }
+
+    // 重置插件样式
   }, {
     key: "resetCss",
     value: function resetCss() {
@@ -3439,10 +3655,8 @@ var Plugins = /*#__PURE__*/function () {
       cssNoMQ = [];
     }
   }]);
-
   return Plugins;
 }();
-
 
 ;
 
@@ -3460,272 +3674,79 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return SDK; });
 /* harmony import */ var color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! color */ "./node_modules/color/index.js");
 /* harmony import */ var color__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(color__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var color_name__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! color-name */ "./node_modules/color-name/index.js");
-/* harmony import */ var color_name__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(color_name__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _color__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./color */ "./src/modules/color.js");
 /* harmony import */ var _constant__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./constant */ "./src/modules/constant.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./config */ "./src/modules/config.js");
 /* harmony import */ var _global__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./global */ "./src/modules/global.js");
 /* harmony import */ var _domUtils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./domUtils */ "./src/modules/domUtils.js");
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
 function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
 function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
-
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * @name 算法SDK
  *
  * @class SDK
  *
+ * @attr {boolean} isDarkmode 当前是否需要运行Darkmode处理
+ *
+ * @method init 初始化
+ * @return void
+ *
  * @method convert 处理节点
  * @param {DOM Object} el 要处理的节点
  * @return {string} 处理后的css，包含css选择器
  *
+ * @method getContrast 获取两个颜色的对比度
+ * @param {string} colorStr1 颜色1
+ * @param {string} colorStr2 颜色2
+ * @return {number} 颜色对比度，取值范围为`[1, 21]`
+ *
  */
-// dependencies
+
+// 颜色操作相关API
 
 
-var ColorParser = function ColorParser(color) {
-  var res = null;
 
-  try {
-    res = color__WEBPACK_IMPORTED_MODULE_0___default()(color);
-  } catch (e) {
-    console.log("ignore the invalid color: `".concat(color, "`"));
-  }
-
-  return res;
-};
+// 常量
 
 
-color_name__WEBPACK_IMPORTED_MODULE_1___default.a.windowtext = [0, 0, 0]; // 补上这个colorName
-
-color_name__WEBPACK_IMPORTED_MODULE_1___default.a.transparent = [255, 255, 255, 0]; // 支持透明，暂定用白色透明度0来表示
-
- // Darkmode配置
+// Darkmode配置
 
 
- // 节点相关操作工具API
 
-
-var colorNameReg = new RegExp(Object.keys(color_name__WEBPACK_IMPORTED_MODULE_1___default.a).map(function (colorName) {
-  return "\\b".concat(colorName, "\\b");
-}).join('|'), 'ig'); // 生成正则表达式来匹配这些colorName
-
-var colorReg = /\brgba?\([^)]+\)/i;
-var colorRegGlobal = /\brgba?\([^)]+\)/ig;
-
-var removeImportant = function removeImportant(value) {
-  return value.replace(_constant__WEBPACK_IMPORTED_MODULE_2__["IMPORTANT_REGEXP"], '');
-}; // 清除!important
-
-
-var parseColor = function parseColor(value, parseTransparent) {
-  return removeImportant(value).replace(colorNameReg, function (match) {
-    // 处理颜色，包括清除!important和转换英文定义颜色
-    if (!parseTransparent && match === 'transparent') return match; // 如果不转换transparent，直接返回transparent
-
-    var color = color_name__WEBPACK_IMPORTED_MODULE_1___default.a[match.toLowerCase()];
-    return "".concat(color.length > 3 ? 'rgba' : 'rgb', "(").concat(color.toString(), ")");
-  });
-}; // 计算mix颜色
-
-
-var mixColor = function mixColor(colors) {
-  if (!colors || colors.length < 1) return '';
-  if (colors.length === 1) return colors[0];
-  var retColorStr = colors.shift();
-  var nextColorStr = colors.shift();
-
-  while (nextColorStr) {
-    var retColor = ColorParser(retColorStr);
-    var nextColor = ColorParser(nextColorStr);
-
-    if (!retColor && nextColor) {
-      // 如果当前色值非法，混入色值合法，则直接使用混入色值
-      retColorStr = nextColorStr;
-    } else if (!retColor && !nextColor) {
-      // 如果两个色值都非法，则使用下一批色值
-      retColorStr = colors.shift() || '';
-    } else if (retColor && nextColor) {
-      // 如果两个色值都合法，执行mix
-      retColorStr = retColor.mix(nextColor, nextColor.alpha());
-    } // 如果当前色值合法，混入色值非法，无需处理
-
-
-    nextColorStr = colors.shift();
-  }
-
-  return retColorStr;
-}; // 处理-webkit-fill-color和-webkit-text-stroke-color，返回处理后的色值，无则返回空字符串
-
-
-var parseWebkitFillColorAndStrokeColor = function parseWebkitFillColorAndStrokeColor(value) {
-  var newValue = parseColor(value);
-  return colorReg.test(newValue) ? newValue : '';
-}; // 计算感知亮度
-
-
-var getColorPerceivedBrightness = function getColorPerceivedBrightness(rgb) {
-  return (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
-}; // 调整为指定感知亮度
-
-
-var adjustBrightnessByLimit = function adjustBrightnessByLimit(limitBright, rgb) {
-  var relativeBrightnessRatio = limitBright / getColorPerceivedBrightness(rgb);
-  var newTextR = Math.min(255, rgb[0] * relativeBrightnessRatio);
-  var newTextG = Math.min(255, rgb[1] * relativeBrightnessRatio);
-  var newTextB = Math.min(255, rgb[2] * relativeBrightnessRatio);
-
-  if (newTextG === 0 || newTextR === 255 || newTextB === 255) {
-    newTextG = (limitBright * 1000 - newTextR * 299 - newTextB * 114) / 587;
-  } else if (newTextR === 0) {
-    newTextR = (limitBright * 1000 - newTextG * 587 - newTextB * 114) / 299;
-  } else if (newTextB === 0 || newTextG === 255) {
-    newTextB = (limitBright * 1000 - newTextR * 299 - newTextG * 587) / 114;
-  }
-
-  return color__WEBPACK_IMPORTED_MODULE_0___default.a.rgb(newTextR, newTextG, newTextB);
-}; // 计算亮度，用作对比度计算
-
-
-var getLuminanace = function getLuminanace(rgb) {
-  var srgb = rgb.map(function (val) {
-    val /= 255;
-    return val <= 0.03928 ? val / 12.92 : Math.pow((val + 0.055) / 1.055, 2.4);
-  });
-  return srgb[0] * 0.2126 + srgb[1] * 0.7152 + srgb[2] * 0.0722;
-}; // 计算对比度 https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-procedure
-
-
-var _getContrast = function getContrast(rgb1, rgb2) {
-  var lum1 = getLuminanace(rgb1);
-  var lum2 = getLuminanace(rgb2); // 亮色 / 暗色
-
-  if (lum1 < lum2) return (lum2 + 0.05) / (lum1 + 0.05);
-  return (lum1 + 0.05) / (lum2 + 0.05);
-};
+// 节点相关操作工具API
 
 var SDK = /*#__PURE__*/function () {
   // 索引值
+
   // 当前是否需要运行Darkmode处理
+
   function SDK() {
     _classCallCheck(this, SDK);
-
     _defineProperty(this, "_idx", 0);
-
     _defineProperty(this, "_defaultDarkTextColorRgb", null);
-
     _defineProperty(this, "_defaultDarkBgColorRgb", null);
-
     _defineProperty(this, "_defaultDarkBgColorHSL", null);
-
     _defineProperty(this, "_defaultDarkTextColorBrightness", null);
-
     _defineProperty(this, "_defaultDarkBgColorBrightness", null);
-
     _defineProperty(this, "_defaultDarkBgColorHslBrightness", null);
-
     _defineProperty(this, "_maxLimitOffsetBrightness", null);
-
     _defineProperty(this, "isDarkmode", false);
   }
 
+  // 调整明度
   _createClass(SDK, [{
-    key: "_adjustTextBrightness",
-    value: function _adjustTextBrightness(textColor, bgColor) {
-      var bgColorRgb = bgColor.rgb().array();
-      var bgColorAlpha = bgColor.alpha();
-      var bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorRgb);
-      var bgColorWithOpacityPerceivedBrightness = bgColorPerceivedBrightness * bgColorAlpha + this._defaultDarkBgColorBrightness * (1 - bgColorAlpha);
-      var textColorRgb = textColor.rgb().array();
-      var textColorHSL = textColor.hsl().array();
-      var textColorAlpha = textColor.alpha();
-      var textPerceivedBrightness = getColorPerceivedBrightness(textColorRgb);
-      var offsetPerceivedBrightness = Math.abs(bgColorWithOpacityPerceivedBrightness - textPerceivedBrightness); // 用户设置为高亮字体颜色（接近白色亮度），不处理，保持高亮
-
-      if (textPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_2__["WHITE_LIKE_COLOR_BRIGHTNESS"]) return textColor;
-
-      if (offsetPerceivedBrightness > this._maxLimitOffsetBrightness && bgColorWithOpacityPerceivedBrightness <= this._defaultDarkBgColorBrightness + 2) {
-        return adjustBrightnessByLimit(this._maxLimitOffsetBrightness + bgColorWithOpacityPerceivedBrightness, textColorRgb).alpha(textColorAlpha);
-      } // 如果感知亮度差大于阈值，无需调整
-
-
-      if (offsetPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_2__["MIN_LIMIT_OFFSET_BRIGHTNESS"]) return textColor;
-
-      if (bgColorWithOpacityPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BGCOLOR_BRIGHTNESS"]) {
-        // 亮背景，调暗字体
-        if (textColorHSL[2] > 90 - _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BLACKWHITE_HSL_BRIGHTNESS"]) {
-          // 优先调字体的亮度已带到降低感知亮度的目的
-          textColorHSL[2] = 90 - textColorHSL[2];
-          var tmpTextColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl.apply(color__WEBPACK_IMPORTED_MODULE_0___default.a, _toConsumableArray(textColorHSL)).alpha(textColorAlpha);
-          return this._adjustTextBrightness(tmpTextColor, bgColor);
-        }
-
-        return adjustBrightnessByLimit(Math.min(this._maxLimitOffsetBrightness, bgColorWithOpacityPerceivedBrightness - _constant__WEBPACK_IMPORTED_MODULE_2__["MIN_LIMIT_OFFSET_BRIGHTNESS"]), textColorRgb).alpha(textColorAlpha);
-      } else {
-        // 暗背景，调亮字体
-        if (textColorHSL[2] <= _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BLACKWHITE_HSL_BRIGHTNESS"]) {
-          // 优先调字体的亮度已带到提高感知亮度的目的
-          textColorHSL[2] = 90 - textColorHSL[2];
-
-          var _tmpTextColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl.apply(color__WEBPACK_IMPORTED_MODULE_0___default.a, _toConsumableArray(textColorHSL)).alpha(textColorAlpha);
-
-          return this._adjustTextBrightness(_tmpTextColor, bgColor);
-        }
-
-        return adjustBrightnessByLimit(Math.min(this._maxLimitOffsetBrightness, bgColorWithOpacityPerceivedBrightness + _constant__WEBPACK_IMPORTED_MODULE_2__["MIN_LIMIT_OFFSET_BRIGHTNESS"]), textColorRgb).alpha(textColorAlpha);
-      }
-    }
-  }, {
-    key: "_adjustBackgroundBrightness",
-    value: function _adjustBackgroundBrightness(bgColor) {
-      var bgColorRgb = bgColor.rgb().array();
-      var bgColorHsl = bgColor.hsl().array();
-      var bgColorAlpha = bgColor.alpha();
-      var bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorRgb);
-      var newColor = bgColor;
-
-      if (bgColorHsl[1] === 0 && bgColorHsl[2] > _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BLACKWHITE_HSL_BRIGHTNESS"] || bgColorPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_2__["WHITE_LIKE_COLOR_BRIGHTNESS"]) {
-        // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
-        newColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - bgColorHsl[2]));
-      } else if (bgColorPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_2__["MAX_LIMIT_BGCOLOR_BRIGHTNESS"]) {
-        // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
-        newColor = adjustBrightnessByLimit(_constant__WEBPACK_IMPORTED_MODULE_2__["MAX_LIMIT_BGCOLOR_BRIGHTNESS"], bgColorRgb).alpha(bgColorAlpha); // const ratio = (MAX_LIMIT_BGCOLOR_BRIGHTNESS * 1000)
-        //   / (bgColorRgb[0] * 299 + bgColorRgb[1] * 587 + bgColorRgb[2] * 114);
-        // newColor = Color.rgb(bgColorRgb[0] * ratio, bgColorRgb[1] * ratio, bgColorRgb[2] * ratio);
-      } else if (bgColorHsl[2] < _constant__WEBPACK_IMPORTED_MODULE_2__["LOW_BLACKWHITE_HSL_BRIGHTNESS"]) {
-        // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
-        bgColorHsl[2] = _constant__WEBPACK_IMPORTED_MODULE_2__["LOW_BLACKWHITE_HSL_BRIGHTNESS"];
-        newColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl.apply(color__WEBPACK_IMPORTED_MODULE_0___default.a, _toConsumableArray(bgColorHsl));
-      }
-
-      return newColor.alpha(bgColorAlpha).rgb();
-    } // 调整明度
-
-  }, {
     key: "_adjustBrightness",
     value: function _adjustBrightness(color, el, options, isUpdate) {
       // 背景：
@@ -3734,34 +3755,46 @@ var SDK = /*#__PURE__*/function () {
       // 黑白灰色（h=0，s=0）亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS时，做取反处理；
       // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，取MAX_LIMIT_BGCOLOR_BRIGHTNESS；
       // 其他亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS时，设为LOW_BLACKWHITE_HSL_BRIGHTNESS。
+
       // 字体、边框：
       // 处理原则：根据调整后的背景颜色和最小亮度差值算出字体颜色，接近白色字体颜色保持不变，带背景图片子元素字体颜色不变
       // 处理方法：亮度小于HIGH_BLACKWHITE_HSL_BRIGHTNESS时，用（90%-该亮度），大于等于HIGH_BLACKWHITE_HSL_BRIGHTNESS则保持不变；
+
       // 字体阴影
       // 处理方法：按照背景的处理方法来处理
+
       var alpha = color.alpha();
       var newColor;
       var extStyle = '';
-
       if (options.isBgColor) {
         // 背景色
-        // 如果设置背景颜色，取消背景图片的影响
-        if (el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]] && alpha >= _constant__WEBPACK_IMPORTED_MODULE_2__["IGNORE_ALPHA"]) {
-          delete el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]];
+        if (alpha >= _constant__WEBPACK_IMPORTED_MODULE_2__["IGNORE_ALPHA"]) {
+          // 如果设置背景颜色，取消背景图片的影响
+          if (el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) delete el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]];
+
+          // 如果有背景图片补色
+          if (el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]]) {
+            // 背景图片补色和当前背景色一致，则无需处理
+            if (el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]] === color.toString()) return {
+              newColor: '',
+              extStyle: extStyle
+            };
+
+            // 否则取消背景图片补色的影响
+            Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
+              delete dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]];
+            });
+          }
         }
-
         newColor = this._adjustBackgroundBrightness(color);
-
         if (!options.hasInlineColor) {
           var parentTextColorStr = el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightTextColor;
-          var parentTextColor = ColorParser(parentTextColorStr);
-
+          var parentTextColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(parentTextColorStr);
           if (parentTextColor) {
             var ret = this._adjustBrightness(parentTextColor, el, {
               isTextColor: true,
               parentElementBgColorStr: newColor || color
             }, isUpdate);
-
             if (ret.newColor) {
               extStyle += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('color', ret.newColor);
             } else {
@@ -3772,8 +3805,9 @@ var SDK = /*#__PURE__*/function () {
       } else if (options.isTextColor || options.isBorderColor) {
         // 字体色、边框色
         var parentElementBgColorStr = options.parentElementBgColorStr || options.isTextColor && el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor;
-        var parentElementBgColor = ColorParser(parentElementBgColorStr); // 无背景图片
+        var parentElementBgColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(parentElementBgColorStr);
 
+        // 无背景图片
         if (parentElementBgColor && !el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) {
           newColor = this._adjustTextBrightness(color, parentElementBgColor);
           _global__WEBPACK_IMPORTED_MODULE_4__["plugins"].emit("afterConvertTextColor".concat(isUpdate ? 'ByUpdateStyle' : ''), el, {
@@ -3795,6 +3829,99 @@ var SDK = /*#__PURE__*/function () {
         extStyle: extStyle
       };
     }
+
+    // 调整文本明度
+  }, {
+    key: "_adjustTextBrightness",
+    value: function _adjustTextBrightness(textColor, bgColor) {
+      var bgColorRgb = bgColor.rgb().array();
+      var bgColorAlpha = bgColor.alpha();
+      var bgColorPerceivedBrightness = Object(_color__WEBPACK_IMPORTED_MODULE_1__["getColorPerceivedBrightness"])(bgColorRgb);
+      var bgColorWithOpacityPerceivedBrightness = bgColorPerceivedBrightness * bgColorAlpha + this._defaultDarkBgColorBrightness * (1 - bgColorAlpha);
+      var textColorRgb = textColor.rgb().array();
+      var textColorHSL = textColor.hsl().array();
+      var textColorAlpha = textColor.alpha();
+      var textPerceivedBrightness = Object(_color__WEBPACK_IMPORTED_MODULE_1__["getColorPerceivedBrightness"])(textColorRgb);
+      var offsetPerceivedBrightness = Math.abs(bgColorWithOpacityPerceivedBrightness - textPerceivedBrightness);
+
+      // 用户设置为高亮字体颜色（接近白色亮度），不处理，保持高亮
+      if (textPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_2__["WHITE_LIKE_COLOR_BRIGHTNESS"]) return textColor;
+      if (offsetPerceivedBrightness > this._maxLimitOffsetBrightness && bgColorWithOpacityPerceivedBrightness <= this._defaultDarkBgColorBrightness + 2) {
+        return Object(_color__WEBPACK_IMPORTED_MODULE_1__["adjustBrightnessTo"])(this._maxLimitOffsetBrightness + bgColorWithOpacityPerceivedBrightness, textColorRgb).alpha(textColorAlpha);
+      }
+
+      // 如果感知亮度差大于阈值，无需调整
+      if (offsetPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_2__["MIN_LIMIT_OFFSET_BRIGHTNESS"]) return textColor;
+      if (bgColorWithOpacityPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BGCOLOR_BRIGHTNESS"]) {
+        // 亮背景，调暗字体
+        if (textColorHSL[2] > 90 - _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BLACKWHITE_HSL_BRIGHTNESS"]) {
+          // 优先调字体的亮度已带到降低感知亮度的目的
+          textColorHSL[2] = 90 - textColorHSL[2];
+          var tmpTextColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl.apply(color__WEBPACK_IMPORTED_MODULE_0___default.a, _toConsumableArray(textColorHSL)).alpha(textColorAlpha);
+          return this._adjustTextBrightness(tmpTextColor, bgColor);
+        }
+        return Object(_color__WEBPACK_IMPORTED_MODULE_1__["adjustBrightnessTo"])(Math.min(this._maxLimitOffsetBrightness, bgColorWithOpacityPerceivedBrightness - _constant__WEBPACK_IMPORTED_MODULE_2__["MIN_LIMIT_OFFSET_BRIGHTNESS"]), textColorRgb).alpha(textColorAlpha);
+      } else {
+        // 暗背景，调亮字体
+        if (textColorHSL[2] <= _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BLACKWHITE_HSL_BRIGHTNESS"]) {
+          // 优先调字体的亮度已带到提高感知亮度的目的
+          textColorHSL[2] = 90 - textColorHSL[2];
+          var _tmpTextColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl.apply(color__WEBPACK_IMPORTED_MODULE_0___default.a, _toConsumableArray(textColorHSL)).alpha(textColorAlpha);
+          return this._adjustTextBrightness(_tmpTextColor, bgColor);
+        }
+        return Object(_color__WEBPACK_IMPORTED_MODULE_1__["adjustBrightnessTo"])(Math.min(this._maxLimitOffsetBrightness, bgColorWithOpacityPerceivedBrightness + _constant__WEBPACK_IMPORTED_MODULE_2__["MIN_LIMIT_OFFSET_BRIGHTNESS"]), textColorRgb).alpha(textColorAlpha);
+      }
+    }
+
+    // 调整背景明度
+  }, {
+    key: "_adjustBackgroundBrightness",
+    value: function _adjustBackgroundBrightness(bgColor) {
+      var bgColorRgb = bgColor.rgb().array();
+      var bgColorHsl = bgColor.hsl().array();
+      var bgColorAlpha = bgColor.alpha();
+      var bgColorPerceivedBrightness = Object(_color__WEBPACK_IMPORTED_MODULE_1__["getColorPerceivedBrightness"])(bgColorRgb);
+      var newColor = bgColor;
+      if (bgColorHsl[1] === 0 && bgColorHsl[2] > _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BLACKWHITE_HSL_BRIGHTNESS"] || bgColorPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_2__["WHITE_LIKE_COLOR_BRIGHTNESS"]) {
+        // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
+        newColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - bgColorHsl[2]));
+      } else if (bgColorPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_2__["MAX_LIMIT_BGCOLOR_BRIGHTNESS"]) {
+        // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
+        newColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["adjustBrightnessTo"])(_constant__WEBPACK_IMPORTED_MODULE_2__["MAX_LIMIT_BGCOLOR_BRIGHTNESS"], bgColorRgb).alpha(bgColorAlpha);
+        // const ratio = (MAX_LIMIT_BGCOLOR_BRIGHTNESS * 1000)
+        //   / (bgColorRgb[0] * 299 + bgColorRgb[1] * 587 + bgColorRgb[2] * 114);
+        // newColor = Color.rgb(bgColorRgb[0] * ratio, bgColorRgb[1] * ratio, bgColorRgb[2] * ratio);
+      } else if (bgColorHsl[2] < _constant__WEBPACK_IMPORTED_MODULE_2__["LOW_BLACKWHITE_HSL_BRIGHTNESS"]) {
+        // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
+        bgColorHsl[2] = _constant__WEBPACK_IMPORTED_MODULE_2__["LOW_BLACKWHITE_HSL_BRIGHTNESS"];
+        newColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl.apply(color__WEBPACK_IMPORTED_MODULE_0___default.a, _toConsumableArray(bgColorHsl));
+      }
+      return newColor.alpha(bgColorAlpha).rgb();
+    }
+
+    // 叠加渐变色到背景色中，并更新背景色相关属性值以及文本颜色
+  }, {
+    key: "_updateBgWithGradient",
+    value: function _updateBgWithGradient(gradientColor, el, className, cssKVList, hasInlineColor, isUpdate) {
+      var newBgColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor, gradientColor], 'normal');
+      var newOriginalBgColor = (el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightBgColor).split(_constant__WEBPACK_IMPORTED_MODULE_2__["BG_COLOR_DELIMITER"]).concat(gradientColor.toString()).join(_constant__WEBPACK_IMPORTED_MODULE_2__["BG_COLOR_DELIMITER"]);
+      Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
+        dom[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] = newBgColor;
+        dom[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] = newOriginalBgColor;
+      });
+      var lastKV = cssKVList.slice(-1)[0];
+      if (lastKV[0] === 'color') {
+        var ret = this._adjustBrightness(Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(Object(_color__WEBPACK_IMPORTED_MODULE_1__["parseColorName"])(lastKV[1])), el, {
+          isBgColor: false,
+          isTextShadow: false,
+          isTextColor: true,
+          isBorderColor: false,
+          hasInlineColor: hasInlineColor
+        }, isUpdate);
+        if (ret.newColor) return _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(className, _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('color', ret.newColor));
+      }
+      return '';
+    }
   }, {
     key: "_try",
     value: function _try(func) {
@@ -3805,26 +3932,28 @@ var SDK = /*#__PURE__*/function () {
         typeof _config__WEBPACK_IMPORTED_MODULE_3__["default"].error === 'function' && _config__WEBPACK_IMPORTED_MODULE_3__["default"].error(e);
       }
     }
+
+    // 初始化
   }, {
     key: "init",
     value: function init() {
-      this._defaultDarkTextColorRgb = ColorParser(_config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkTextColor).rgb().array();
-      this._defaultDarkBgColorRgb = ColorParser(_config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor).rgb().array();
-      this._defaultDarkBgColorHSL = ColorParser(_config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor).hsl().array();
-      this._defaultDarkTextColorBrightness = getColorPerceivedBrightness(this._defaultDarkTextColorRgb);
-      this._defaultDarkBgColorBrightness = getColorPerceivedBrightness(this._defaultDarkBgColorRgb);
+      this._defaultDarkTextColorRgb = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(_config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkTextColor).rgb().array();
+      this._defaultDarkBgColorRgb = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(_config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor).rgb().array();
+      this._defaultDarkBgColorHSL = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(_config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor).hsl().array();
+      this._defaultDarkTextColorBrightness = Object(_color__WEBPACK_IMPORTED_MODULE_1__["getColorPerceivedBrightness"])(this._defaultDarkTextColorRgb);
+      this._defaultDarkBgColorBrightness = Object(_color__WEBPACK_IMPORTED_MODULE_1__["getColorPerceivedBrightness"])(this._defaultDarkBgColorRgb);
       this._defaultDarkBgColorHslBrightness = this._defaultDarkBgColorHSL[2];
       this._maxLimitOffsetBrightness = this._defaultDarkTextColorBrightness - this._defaultDarkBgColorBrightness;
     }
+
+    // 处理节点
   }, {
     key: "convert",
     value: function convert(el, cssKVList, isUpdate) {
       var _this = this;
-
       _global__WEBPACK_IMPORTED_MODULE_4__["plugins"].resetCss();
       _global__WEBPACK_IMPORTED_MODULE_4__["plugins"].emit("beforeConvertNode".concat(isUpdate ? 'ByUpdateStyle' : ''), el);
       var css = ''; // css
-
       var bgCss = ''; // 文字底图css
 
       if (this.isDarkmode || isUpdate) {
@@ -3834,7 +3963,6 @@ var SDK = /*#__PURE__*/function () {
           return el.hasAttribute(attribute);
         })) return '';
         var styles = el.style;
-
         if (!cssKVList) {
           // 没有传入cssKVList就从内联样式中提取
           // styles.cssText 读出来的颜色统一是rgba格式，除了用英文定义颜色（如：black、white）
@@ -3846,43 +3974,36 @@ var SDK = /*#__PURE__*/function () {
             });
           });
         }
-
         var hasInlineColor = false; // 是否有自定义字体颜色
-
         var hasInlineBackground = false;
         var hasInlineBackgroundImage = false;
         var elBackgroundPositionAttr = null;
         var elBackgroundSizeAttr = null;
         cssKVList = cssKVList.filter(function (_ref) {
           var _ref2 = _slicedToArray(_ref, 2),
-              key = _ref2[0],
-              value = _ref2[1];
-
+            key = _ref2[0],
+            value = _ref2[1];
           if (key === 'color') {
             hasInlineColor = true;
           } else if (/background/i.test(key)) {
             hasInlineBackground = true;
-
             if (key === 'background-position') {
               elBackgroundPositionAttr = value;
             } else if (key === 'background-size') {
               elBackgroundSizeAttr = value;
             }
           }
-
           if ((/background/i.test(key) || /^(-webkit-)?border-image/.test(key)) && /url\([^)]*\)/i.test(value)) {
             hasInlineBackgroundImage = true;
-          } // 过滤掉一些key
+          }
 
-
+          // 过滤掉一些key
           return _constant__WEBPACK_IMPORTED_MODULE_2__["CSS_PROP_LIST"].indexOf(key) > -1;
         }).sort(function (_ref3, _ref4) {
           var _ref5 = _slicedToArray(_ref3, 1),
-              key1 = _ref5[0];
-
+            key1 = _ref5[0];
           var _ref6 = _slicedToArray(_ref4, 1),
-              key2 = _ref6[0];
-
+            key2 = _ref6[0];
           // color属性放在最后
           if (key1 === 'color') {
             return 1;
@@ -3893,21 +4014,16 @@ var SDK = /*#__PURE__*/function () {
             // 把-webkit-text的属性放在最前面
             return 1;
           }
-
           return -1;
         });
-
         if (_constant__WEBPACK_IMPORTED_MODULE_2__["TABLE_NAME"].indexOf(nodeName) > -1 && !hasInlineBackground) {
           // 如果table没有内联样式
           this._try(function () {
             var colorStr = Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["hasTableClass"])(el); // 获取class对应的lm色值
-
             if (!colorStr) colorStr = el.getAttribute('bgcolor'); // 如果没有class则获取bgcolor的色值
-
             if (colorStr) {
               // 有色值（class对应的lm色值或者是bgcolor色值），则当做内联样式来处理
-              var color = ColorParser(colorStr);
-
+              var color = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(colorStr);
               if (color) {
                 cssKVList.unshift(['background-color', color.toString()]);
                 hasInlineBackground = true;
@@ -3915,60 +4031,52 @@ var SDK = /*#__PURE__*/function () {
             }
           });
         }
-
         if (nodeName === 'FONT' && !hasInlineColor) {
           // 如果是font标签且没有内联文本颜色样式
           this._try(function () {
             var colorStr = el.getAttribute('color'); // 获取color的色值
-
             if (colorStr) {
               // 有色值，则当做内联样式来处理
-              var color = ColorParser(colorStr);
-
+              var color = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(colorStr);
               if (color) {
                 cssKVList.push(['color', color.toString()]);
                 hasInlineColor = true;
               }
             }
           });
-        } // 处理-webkit-text相关样式
+        }
 
-
+        // 处理-webkit-text相关样式
         var webkitFillColor = '';
         var webkitStrokeColor = '';
         var webkitTextLen = 0;
         cssKVList.some(function (_ref7, idx) {
           var _ref8 = _slicedToArray(_ref7, 2),
-              key = _ref8[0],
-              value = _ref8[1];
-
+            key = _ref8[0],
+            value = _ref8[1];
           return _this._try(function () {
             if (key.indexOf('-webkit-text') !== 0) {
               // 遍历到非-webkit-text样式
               webkitTextLen = idx; // 记录-webkit-text相关样式的长度
-
               return true; // 结束遍历
             }
 
             switch (key) {
               case '-webkit-text-fill-color':
-                webkitFillColor = parseWebkitFillColorAndStrokeColor(value);
+                webkitFillColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["parseWebkitFillColorAndStrokeColor"])(value);
                 break;
-
               case '-webkit-text-stroke':
                 {
                   // 有-webkit-text-stroke时就不会有-webkit-text-stroke-color
                   var newValue = value.split(' ');
-                  newValue.length === 2 && (webkitStrokeColor = parseWebkitFillColorAndStrokeColor(newValue[1]));
+                  newValue.length === 2 && (webkitStrokeColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["parseWebkitFillColorAndStrokeColor"])(newValue[1]));
                   break;
                 }
-
               case '-webkit-text-stroke-color':
                 // 有-webkit-text-stroke-color时就不会有-webkit-text-stroke
-                webkitStrokeColor = parseWebkitFillColorAndStrokeColor(value);
+                webkitStrokeColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["parseWebkitFillColorAndStrokeColor"])(value);
                 break;
             }
-
             return false; // 继续遍历
           });
         });
@@ -3984,43 +4092,36 @@ var SDK = /*#__PURE__*/function () {
             hasInlineColor = true;
           }
         }
-
         if (webkitTextLen) {
           cssKVList.splice(0, webkitTextLen); // 删掉-webkit-text相关样式
-
           webkitStrokeColor && cssKVList.unshift(['-webkit-text-stroke-color', webkitStrokeColor]); // 如果有-webkit-text-stroke-color，则插入到最前面
         }
 
         var dmClassName = '';
         var dmBgClassName = '';
-
         if (isUpdate && el.className && typeof el.className === 'string') {
           // 先提取dm className
           var matches = el.className.match(_constant__WEBPACK_IMPORTED_MODULE_2__["DM_CLASSNAME_REGEXP"]);
-
           if (matches) {
             dmClassName = matches[0];
-          } // 再提取dm bg className
+          }
 
-
+          // 再提取dm bg className
           matches = el.className.match(_global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].classNameReg);
-
           if (matches) {
             dmBgClassName = matches[0];
           }
         }
-
         var cssKV = ''; // css键值对
-
         cssKVList.forEach(function (_ref9) {
           var _ref10 = _slicedToArray(_ref9, 2),
-              key = _ref10[0],
-              value = _ref10[1];
-
+            key = _ref10[0],
+            value = _ref10[1];
           return _this._try(function () {
             var oldValue = value;
-            var cssChange = false; // 找出色值来处理
+            var cssChange = false;
 
+            // 找出色值来处理
             var isBgColor = _constant__WEBPACK_IMPORTED_MODULE_2__["CSS_PROP_SERIES"].BG_COLOR.indexOf(key) > -1;
             var isTextShadow = _constant__WEBPACK_IMPORTED_MODULE_2__["CSS_PROP_SERIES"].TEXT_SHADOW.indexOf(key) > -1;
             var textColorIdx = _constant__WEBPACK_IMPORTED_MODULE_2__["CSS_PROP_SERIES"].TEXT_COLOR.indexOf(key);
@@ -4028,34 +4129,31 @@ var SDK = /*#__PURE__*/function () {
             var isGradient = /gradient/.test(value);
             var gradientColors = [];
             var extStyle = '';
-            var gradientMixColor; // 将英文定义颜色转换为rgb格式
+            var gradientMixColor;
 
-            value = parseColor(value, isGradient); // 渐变需要处理透明
+            // 将英文定义颜色转换为rgb格式
+            value = Object(_color__WEBPACK_IMPORTED_MODULE_1__["parseColorName"])(value, isGradient); // 渐变需要处理透明
 
-            if (colorReg.test(value)) {
+            if (_constant__WEBPACK_IMPORTED_MODULE_2__["COLOR_REGEXP"].test(value)) {
               if (isGradient) {
                 // 把原渐变色取出来
-                var _matches = colorRegGlobal.exec(value);
-
+                var _matches = _constant__WEBPACK_IMPORTED_MODULE_2__["COLOR_REGEXP_GLOBAL"].exec(value);
                 while (_matches) {
                   gradientColors.push(_matches[0]);
-                  _matches = colorRegGlobal.exec(value);
-                } // 计算出一个mix颜色
+                  _matches = _constant__WEBPACK_IMPORTED_MODULE_2__["COLOR_REGEXP_GLOBAL"].exec(value);
+                }
 
-
-                gradientMixColor = mixColor(gradientColors);
+                // 计算出一个mix颜色
+                gradientMixColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])(gradientColors);
               }
-
               var replaceIndex = 0;
-              value = value.replace(colorRegGlobal, function (match) {
+              value = value.replace(_constant__WEBPACK_IMPORTED_MODULE_2__["COLOR_REGEXP_GLOBAL"], function (match) {
                 // 渐变色统一改成mix纯色
                 if (isGradient) {
                   match = gradientMixColor;
                   cssChange = true;
                 }
-
-                var matchColor = ColorParser(match);
-
+                var matchColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(match);
                 if ((matchColor === null || matchColor === void 0 ? void 0 : matchColor.alpha()) >= _constant__WEBPACK_IMPORTED_MODULE_2__["IGNORE_ALPHA"]) {
                   // 忽略透明度低的色值
                   // 使用颜色处理算法
@@ -4066,10 +4164,10 @@ var SDK = /*#__PURE__*/function () {
                     isBorderColor: isBorderColor,
                     hasInlineColor: hasInlineColor
                   }, isUpdate);
-
                   var retColor = !hasInlineBackgroundImage && ret.newColor;
-                  extStyle += ret.extStyle; // 对背景颜色和文字颜色做继承传递，用于文字亮度计算
+                  extStyle += ret.extStyle;
 
+                  // 对背景颜色和文字颜色做继承传递，用于文字亮度计算
                   if (isBgColor || textColorIdx >= 5) {
                     // 只处理color及之后的属性
                     var retColorStr = retColor ? retColor.toString() : match;
@@ -4080,78 +4178,75 @@ var SDK = /*#__PURE__*/function () {
                       } else {
                         dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COLORATTR"]] = retColorStr;
                         dom[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]] = match;
-                      } // 如果设置背景颜色，取消背景图片的影响
+                      }
 
-
-                      var retColor = ColorParser(retColorStr);
-
+                      // 如果设置背景颜色，取消背景图片的影响
+                      var retColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(retColorStr);
                       if (isBgColor && (retColor === null || retColor === void 0 ? void 0 : retColor.alpha()) >= _constant__WEBPACK_IMPORTED_MODULE_2__["IGNORE_ALPHA"] && dom[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) {
                         delete dom[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]];
                       }
                     });
                   }
-
                   retColor && (cssChange = true);
                   replaceIndex++;
                   return retColor || match;
                 }
-
                 return match;
               }).replace(/\s?!\s?important/ig, '');
             }
-
             extStyle && (cssKV += extStyle);
-
             if (!(el instanceof SVGElement)) {
               // 先不处理SVG
               // 背景图片、边框图片
               var isBackgroundAttr = /^background/.test(key);
               var isBorderImageAttr = /^(-webkit-)?border-image/.test(key);
-
               if ((isBackgroundAttr || isBorderImageAttr) && /url\([^)]*\)/i.test(value)) {
                 cssChange = true;
-                var imgBgColor = mixColor((el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightBgColor).split(_constant__WEBPACK_IMPORTED_MODULE_2__["BG_COLOR_DELIMITER"])); // const imgBgColor = el[BGCOLORATTR] || config.defaultLightBgColor;
+                var imgBgColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])((el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightBgColor).split(_constant__WEBPACK_IMPORTED_MODULE_2__["BG_COLOR_DELIMITER"]), 'normal').toString();
+                // const imgBgColor = el[BGCOLORATTR] || config.defaultLightBgColor;
+
                 // 在背景图片下加一层原背景颜色：
                 // background-image使用多层背景(注意background-position也要多加一层 https://www.w3.org/TR/css-backgrounds-3/#layering)；
                 // border-image不支持多层背景，需要添加background-color
-
                 value = value.replace(/^(.*?)url\(([^)]*)\)(.*)$/i, function (matches) {
                   var newValue = matches;
                   var tmpCssKvStr = '';
-
                   if (!el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) {
                     // 避免重复set
                     Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
                       dom[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]] = true;
                     });
-                  } // background-image
+                  }
 
-
+                  // background-image
                   if (isBackgroundAttr) {
                     tmpCssKvStr = _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(key, imgBgColor ? "".concat(newValue, ",linear-gradient(").concat(imgBgColor, ", ").concat(imgBgColor, ")") : newValue);
-
                     if (elBackgroundPositionAttr) {
                       cssKV += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-position', elBackgroundPositionAttr);
                       tmpCssKvStr += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-position', imgBgColor ? "".concat(elBackgroundPositionAttr, ",top left") : elBackgroundPositionAttr);
                     }
-
                     if (elBackgroundSizeAttr) {
                       cssKV += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-size', elBackgroundSizeAttr);
                       tmpCssKvStr += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-size', imgBgColor ? "".concat(elBackgroundSizeAttr, ",100%") : elBackgroundSizeAttr);
                     }
-
                     if (dmBgClassName) {
                       // 如果是文字底图，则直接加样式
                       bgCss += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(dmBgClassName, tmpCssKvStr);
+                      Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
+                        dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]] = imgBgColor || newValue;
+                      });
                     } else {
                       // 否则背景图入栈
-                      _global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].push(el, tmpCssKvStr);
+                      _global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].push(el, tmpCssKvStr, function () {
+                        Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
+                          dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]] = imgBgColor || newValue;
+                        });
+                      });
                     }
                   } else {
                     // border-image元素，如果当前元素没有背景颜色，补背景颜色
                     if (imgBgColor && !hasInlineBackground) {
                       tmpCssKvStr = _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-image', "linear-gradient(".concat(imgBgColor, ", ").concat(imgBgColor, ")"));
-
                       if (dmBgClassName) {
                         // 如果是文字底图，则直接加样式
                         bgCss += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(dmBgClassName, tmpCssKvStr);
@@ -4163,8 +4258,9 @@ var SDK = /*#__PURE__*/function () {
                   }
 
                   return newValue;
-                }); // 没有设置自定义字体颜色，则使用非 Dark Mode 下默认字体颜色
+                });
 
+                // 没有设置自定义字体颜色，则使用非 Dark Mode 下默认字体颜色
                 if (!hasInlineColor) {
                   var textColor = el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightTextColor;
                   cssKV += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('color', textColor);
@@ -4174,17 +4270,25 @@ var SDK = /*#__PURE__*/function () {
                 }
               }
             }
-
             if (cssChange) {
-              !isUpdate && _constant__WEBPACK_IMPORTED_MODULE_2__["IMPORTANT_REGEXP"].test(oldValue) && (styles[key] = removeImportant(oldValue)); // 清除inline style的!important
-
+              !isUpdate && _constant__WEBPACK_IMPORTED_MODULE_2__["IMPORTANT_REGEXP"].test(oldValue) && (styles[key] = oldValue.replace(_constant__WEBPACK_IMPORTED_MODULE_2__["IMPORTANT_REGEXP"], '')); // 清除inline style的!important
               if (isGradient) {
                 if (dmBgClassName) {
-                  // 如果是文字底图，则直接加样式
+                  // 如果是文字底图，则直接加样式（其实理论上不会走到这里）
                   bgCss += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(dmBgClassName, _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(key, value));
+                  if (/^background/.test(key) && !/url\([^)]*\)/i.test(value)) {
+                    // 是无背景图的渐变，需要重新计算背景色
+                    css += _this._updateBgWithGradient(gradientMixColor, el, dmBgClassName, cssKVList, hasInlineColor, isUpdate);
+                  }
                 } else {
-                  // 否则背景图入栈
-                  _global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].push(el, _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(key, value)); // 渐变入栈
+                  // 否则渐变入栈
+                  _global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].push(el, _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(key, value), function (item) {
+                    // 渐变入栈
+                    if (/^background/.test(key) && !/url\([^)]*\)/i.test(value)) {
+                      // 是无背景图的渐变，需要重新计算背景色
+                      css += _this._updateBgWithGradient(gradientMixColor, el, item.className, cssKVList, hasInlineColor, isUpdate);
+                    }
+                  });
                 }
               } else {
                 cssKV += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(key, value);
@@ -4192,17 +4296,14 @@ var SDK = /*#__PURE__*/function () {
             }
           });
         });
-
         if (cssKV) {
           // 有处理过或者是背景图片就加class以及css
           if (!dmClassName) {
             dmClassName = "".concat(_constant__WEBPACK_IMPORTED_MODULE_2__["CLASS_PREFIX"]).concat(this._idx++);
             el.classList.add(dmClassName);
           }
-
           css += cssKV ? _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(dmClassName, cssKV) : '';
         }
-
         css += bgCss; // 追加文字底图样式，要在添加cssKV之后添加，避免被覆盖
 
         if (!isUpdate && Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["hasTextNode"])(el)) {
@@ -4213,26 +4314,26 @@ var SDK = /*#__PURE__*/function () {
           } else {
             _global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].contains(el, function (item) {
               css += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(item.className, item.cssKV);
+              typeof item.cb === 'function' && item.cb(item);
             });
           }
         }
       }
-
       _global__WEBPACK_IMPORTED_MODULE_4__["plugins"].emit("afterConvertNode".concat(isUpdate ? 'ByUpdateStyle' : ''), el);
       return css;
     }
+
+    // 获取两个颜色的对比度
   }, {
     key: "getContrast",
     value: function getContrast(colorStr1, colorStr2) {
-      var color1 = ColorParser(colorStr1);
-      var color2 = ColorParser(colorStr2);
-      return color1 && color2 ? _getContrast(color1.rgb().array(), color2.rgb().array()) : 0;
+      var color1 = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(colorStr1);
+      var color2 = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(colorStr2);
+      return color1 && color2 ? color1.contrast(color2) : 0;
     }
   }]);
-
   return SDK;
 }();
-
 
 ;
 
@@ -4250,15 +4351,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return TextNodeQueue; });
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./config */ "./src/modules/config.js");
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 /**
  * @name 文本节点队列
  *
@@ -4269,59 +4365,62 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  *
  * @method push 文本节点入队
  * @param {DOM Object} el 文本节点对象
+ * @return void
  *
  * @method forEach 遍历，遍历过的文本节点出队
  * @param {Function} callback 回调
+ * @return void
  *
  * @method update 更新队列的节点对象，主要解决前后节点不一致的问题
  * @param {DOM Object Array} els 要更新的节点对象列表
+ * @return void
  *
  */
-// Darkmode配置
 
+// Darkmode配置
 
 var TextNodeQueue = /*#__PURE__*/function () {
   // 文本节点队列，{ el, className, updated }
   // 索引值
+
   function TextNodeQueue(prefix) {
     _classCallCheck(this, TextNodeQueue);
-
     _defineProperty(this, "_queue", []);
-
     _defineProperty(this, "_idx", 0);
-
     this._prefix = prefix;
   }
 
+  // 文本节点入队
   _createClass(TextNodeQueue, [{
     key: "push",
     value: function push(el) {
       var className = "".concat(this._prefix).concat(this._idx++);
       el.classList.add(className);
-
       this._queue.push({
         el: el,
         className: className,
         updated: !_config__WEBPACK_IMPORTED_MODULE_0__["default"].delayBgJudge
       });
     }
+
+    // 遍历，遍历过的文本节点出队
   }, {
     key: "forEach",
     value: function forEach(callback) {
       var idxStack = [];
-
       this._queue.forEach(function (item, idx) {
         if (item.updated) {
           idxStack.unshift(idx);
           _typeof(callback) && callback(item.el);
         }
       });
-
       while (idxStack.length) {
         // 处理完之后删除部分节点
         this._queue.splice(idxStack.shift(), 1);
       }
     }
+
+    // 更新队列的节点对象，主要解决前后节点不一致的问题
   }, {
     key: "update",
     value: function update(els) {
@@ -4333,17 +4432,14 @@ var TextNodeQueue = /*#__PURE__*/function () {
               item.updated = true;
               return true;
             }
-
             return false;
           });
         }
       });
     }
   }]);
-
   return TextNodeQueue;
 }();
-
 
 ;
 

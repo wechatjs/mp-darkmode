@@ -8,12 +8,15 @@
  *
  * @method push 文本节点入队
  * @param {DOM Object} el 文本节点对象
+ * @return void
  *
  * @method forEach 遍历，遍历过的文本节点出队
  * @param {Function} callback 回调
+ * @return void
  *
  * @method update 更新队列的节点对象，主要解决前后节点不一致的问题
  * @param {DOM Object Array} els 要更新的节点对象列表
+ * @return void
  *
  */
 
@@ -28,6 +31,7 @@ export default class TextNodeQueue {
     this._prefix = prefix;
   }
 
+  // 文本节点入队
   push(el) {
     const className = `${this._prefix}${this._idx++}`;
     el.classList.add(className);
@@ -38,6 +42,7 @@ export default class TextNodeQueue {
     });
   }
 
+  // 遍历，遍历过的文本节点出队
   forEach(callback) {
     const idxStack = [];
 
@@ -53,6 +58,7 @@ export default class TextNodeQueue {
     }
   }
 
+  // 更新队列的节点对象，主要解决前后节点不一致的问题
   update(els) {
     this._queue.forEach(item => {
       if (!item.updated) {

@@ -3,6 +3,7 @@
  *
  */
 
+// 常量
 import {
   CLASS_PREFIX
 } from './constant';
