@@ -3775,7 +3775,10 @@ var SDK = /*#__PURE__*/function () {
           // 如果有背景图片补色
           if (el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]]) {
             // 背景图片补色和当前背景色一致，则无需处理
-            if (el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]] === color.toString()) return {
+            // 根据最小可觉差Just-noticeable difference(即JND，表示人类或动物对于某一特定的感官刺激所能察觉的最小改变）和韦伯-费希纳定律，在特定条件下，人类能感知小至 0.5% - 2% 的变化，0.5%换算成对比度为1.1
+            // https://zh.wikipedia.org/wiki/%E6%9C%80%E5%B0%8F%E5%8F%AF%E8%A6%BA%E5%B7%AE 最小可觉差wiki
+            // https://zh.wikipedia.org/wiki/%E9%9F%8B%E4%BC%AF-%E8%B2%BB%E5%B8%8C%E7%B4%8D%E5%AE%9A%E7%90%86 韦伯-费希纳定理wiki
+            if (el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]] === color.toString() || this.getContrast(el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]], color.toString()) < 1.1) return {
               newColor: '',
               extStyle: extStyle
             };

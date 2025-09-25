@@ -4,7 +4,7 @@ mp-darkmode
 ==============================
 [![NPM version][npm-image]][npm-url]
 
-微信公众平台图文 Dark Mode 转换算法。
+微信公众平台 Dark Mode 转换算法。
 
 ## 安装
 
@@ -75,7 +75,11 @@ Darkmode.extend([pluginA, pluginB, pluginC]);
 
 ## 处理原则
 
-详见[图文富文本内容 Dark Mode 处理原则](./doc/cn/principle.md)。
+详见[Dark Mode 处理原则](./doc/cn/principle.md)。
+
+## 最佳实践
+
+详见[Dark Mode 最佳实践](./doc/cn/bestPractices.md)。
 
 ## 贡献
 
