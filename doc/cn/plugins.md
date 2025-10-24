@@ -84,7 +84,7 @@ this.addCss('test_class2', [{
 
 #### `beforeConvertNode(el)`
 
-- `el` &lt;DOM Object&gt; 当前转换的 DOM 节点。
+- `el` &lt;HTMLElement&gt; 当前转换的 DOM 节点。
 
 节点开始转换前的钩子。
 
@@ -92,7 +92,7 @@ this.addCss('test_class2', [{
 
 #### `afterConvertTextColor(el, opt)`
 
-- `el` &lt;DOM Object&gt; 当前转换的 DOM 节点。
+- `el` &lt;HTMLElement&gt; 当前转换的 DOM 节点。
 - `opt` &lt;Object&gt; 文本颜色对象。
   - `opt.fontColor` &lt;Color Object&gt; 文本前景色 `Color` 对象。
   - `opt.bgColor` &lt;Color Object&gt; 文本背景色 `Color` 对象。
@@ -103,6 +103,6 @@ this.addCss('test_class2', [{
 
 #### `afterConvertNode(el)`
 
-- `el` &lt;DOM Object&gt; 当前转换的 DOM 节点。
+- `el` &lt;HTMLElement&gt; 当前转换的 DOM 节点。
 
 节点转换结束后的钩子。

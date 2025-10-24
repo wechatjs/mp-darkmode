@@ -5,7 +5,7 @@ API
 
 ### `Darkmode.run(nodes[, options])`
 
-- `nodes` &lt;DOM Object Array&gt; 要进行 Dark Mode 转换的 DOM 节点数组。
+- `nodes` &lt;HTMLElement[]&gt; 要进行 Dark Mode 转换的 DOM 节点数组。
 - `options` &lt;Object&gt; Dark Mode 转换算法配置项。
   - `options.begin` &lt;Function&gt; Dark Mode 转换开始时触发的回调。
     - `isSwitch` &lt;boolean&gt; 是否切换 Dark Mode 时进行转换。
@@ -18,14 +18,17 @@ API
     - `options.whitelist.attribute` &lt;string Array&gt; 属性列表。
   - `options.needJudgeFirstPage` &lt;boolean&gt; 是否需要判断首屏，默认 `true`。
   - `options.delayBgJudge` &lt;boolean&gt; 是否延迟背景判断，默认 `false`。
-  - `options.container` &lt;DOM Object&gt; 延迟运行 js 时使用的容器，默认 `null`。
+  - `options.noEmit` &lt;boolean&gt; 是否不产出&lt;style&gt;，默认 `false`。
+  - `options.container` &lt;HTMLElement&gt; 延迟运行 js 时使用的容器，默认 `null`。
   - `options.cssSelectorsPrefix` &lt;string&gt; css 选择器前缀，默认 `''`。
-  - `options.defaultLightTextColor` &lt;string&gt; 非 Dark Mode 下字体颜色，默认 `#191919`。
-  - `options.defaultLightBgColor` &lt;string&gt; 非 Dark Mode 下背景颜色，默认 `#fff`。
-  - `options.defaultDarkTextColor` &lt;string&gt; Dark Mode 下字体颜色，默认 `#a3a3a3`。
+  - `options.defaultLightWebviewColor` &lt;string&gt; Light Mode 下 webview 颜色，默认 `#fff`。
+  - `options.defaultLightBgColor` &lt;string&gt; Light Mode 下背景颜色，默认 `#fff`。
+  - `options.defaultLightTextColor` &lt;string&gt; Light Mode 下字体颜色，默认 `#191919`。
+  - `options.defaultDarkWebviewColor` &lt;string&gt; Dark Mode 下 webview 颜色，默认 `#000`。
   - `options.defaultDarkBgColor` &lt;string&gt; Dark Mode 下背景颜色，默认 `#191919`。
+  - `options.defaultDarkTextColor` &lt;string&gt; Dark Mode 下字体颜色，默认 `#a3a3a3`。
 
-运行 Dark Mode 转换算法。**注意：可多次运行转换，但配置只可设置一次。**
+初始化并运行 Dark Mode 转换算法。**注意：可多次运行转换算法，但配置只可设置一次。**
 
 ```javascript
 Darkmode.run(document.body.querySelectorAll('*'), {
@@ -38,7 +41,7 @@ Darkmode.run(document.body.querySelectorAll('*'), {
 
 - `options` 和 `Darkmode.run()` 中的 `options` 参数一致。
 
-初始化 Dark Mode 配置。**注意：配置只可设置一次。**
+你也可以只初始化 Dark Mode 配置，后续等某个时间再运行转换算法。**注意：为了避免因不同配置而导致转换产出的差异，配置只可设置一次。**
 
 ```javascript
 Darkmode.init({
@@ -60,16 +63,18 @@ Darkmode.init({
   delayBgJudge: false, // 是否延迟背景判断
   container: null, // 延迟运行 js 时使用的容器
   cssSelectorsPrefix: '', // css 选择器前缀
-  defaultLightTextColor: '#191919', // 非 Dark Mode 下字体颜色
-  defaultLightBgColor: '#fff', // 非 Dark Mode 下背景颜色
-  defaultDarkTextColor: '#a3a3a3', // Dark Mode 下字体颜色
+  defaultLightWebviewColor: '#fff', // Light Mode 下 webview 颜色
+  defaultLightBgColor: '#fff', // Light Mode 下背景颜色
+  defaultLightTextColor: '#191919', // Light Mode 下字体颜色
+  defaultDarkWebviewColor: '#000', // Dark Mode 下 webview 颜色
   defaultDarkBgColor: '#191919', // Dark Mode 下背景颜色
+  defaultDarkTextColor: '#a3a3a3', // Dark Mode 下字体颜色
 });
 ```
 
 ### `Darkmode.convertBg(nodes)`
 
-- `nodes` &lt;DOM Object Array&gt; 要处理的背景节点列表（可包含非背景节点）。
+- `nodes` &lt;HTMLElement[]&gt; 要处理的背景节点列表（可包含非背景节点）。
 
 处理背景。当配置项中的 `delayBgJudge = true` 时，可手动指定运行背景判断的时机。
 
@@ -79,7 +84,7 @@ Darkmode.convertBg(document.body.querySelectorAll('*'));
 
 ### `Darkmode.updateStyle(node, styles)`
 
-- `node` &lt;DOM Object&gt; 要更新的节点。
+- `node` &lt;HTMLElement&gt; 要更新的节点。
 - `styles` &lt;Object&gt; 更新的样式键值对对象，如：`{ color: '#ddd' }`。
 
 更新节点 Dark Mode 样式。
@@ -111,4 +116,34 @@ Darkmode.getContrast('#fff', '#000'); // return 21
 
 ```javascript
 Darkmode.extend([pluginA, pluginB, pluginC]);
+```
+
+### `Darkmode.reset(nodes)`
+
+- `nodes` &lt;HTMLElement[]&gt; 已进行 Dark Mode 转换的 DOM 节点数组。
+
+重置，会移除算法添加的 Dark Mode 样式，并卸载已挂载的插件。
+
+```javascript
+Darkmode.reset(document.body.querySelectorAll('*'));
+```
+
+### `Darkmode.validate(container[, options, filter])`
+
+- `container` &lt;HTMLElement&gt; 要校验的容器节点。
+- `options` &lt;Object&gt; 校验配置。
+  - `options.minContrast` &lt;number&gt; 文字与背景色的最小对比度。
+- `filter` &lt;Function&gt; 过滤器，返回 `true` 则跳过该节点。
+  - `node` &lt;HTMLElement&gt; 被校验的节点。
+- return `result` &lt;Object Array&gt; 校验不通过的结果列表。
+  - `reselt[].dom` &lt;HTMLElement&gt; 校验不通过的节点。
+  - `reselt[].key` &lt;string&gt; 校验不通过的原因。
+  - `reselt[].violateRules` &lt;string&gt; 校验不通过的描述。
+
+校验 Dark Mode 算法转换后的效果。
+
+```javascript
+const result = Darkmode.validate(document.body, {
+  minContrast: 1.5
+}, node => node.classList.has('dm-ignore'));
 ```

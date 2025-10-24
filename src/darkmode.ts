@@ -2,35 +2,21 @@
  * @name Darkmode主入口
  *
  * @function run 初始化Dark Mode配置并运行Dark Mode处理
- * @param {DOM Object Array} nodes 要处理的节点列表
- * @param {Object}           opt   Dark Mode配置，详见init配置说明
+ * @param {HTMLElement[]} nodes    要处理的节点列表
+ * @param {ConfigOption}  [opt={}] Dark Mode配置，详见init配置说明
  * @return void
  *
  * @function init 初始化Dark Mode配置
- * @param {Function}   opt.begin                 开始处理时触发的回调
- * @param {Function}   opt.showFirstPage         首屏处理完成时触发的回调
- * @param {Function}   opt.error                 发生error时触发的回调
- * @param {string}     opt.mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
- * @param {Object}     opt.whitelist             节点白名单
- * @param {Array}      opt.whitelist.tagName     标签名列表
- * @param {Array}      opt.whitelist.attribute   属性列表
- * @param {boolean}    opt.needJudgeFirstPage    是否需要判断首屏
- * @param {boolean}    opt.delayBgJudge          是否延迟背景判断
- * @param {DOM Object} opt.container             延迟运行js时使用的容器
- * @param {string}     opt.cssSelectorsPrefix    css选择器前缀
- * @param {string}     opt.defaultLightTextColor 非Dark Mode下字体颜色
- * @param {string}     opt.defaultLightBgColor   非Dark Mode下背景颜色
- * @param {string}     opt.defaultDarkTextColor  Dark Mode下字体颜色
- * @param {string}     opt.defaultDarkBgColor    Dark Mode下背景颜色
+ * @param {ConfigOption} [opt={}] Dark Mode配置
  * @return void
  *
  * @function convertBg 处理背景
- * @param {DOM Object Array} nodes 要处理的节点列表
+ * @param {HTMLElement[]} nodes 要处理的节点列表
  * @return void
  *
  * @function updateStyle 更新节点Dark Mode样式
- * @param {DOM Object} node   要更新的节点
- * @param {Object}     styles 更新的样式键值对对象，如：{ color: '#ddd' }
+ * @param {HTMLElement}            node   要更新的节点
+ * @param {Record<string, string>} styles 更新的样式键值对对象，如：{ color: '#ddd' }
  * @return void
  *
  * @function getContrast 获取两个颜色的对比度
@@ -42,14 +28,41 @@
  * @param {Array} pluginList 插件列表
  * @return void
  *
+ * @function reset 重置
+ * @param {HTMLElement[]} [nodes] 要重置的节点列表
+ * @return void
+ *
+ * @function validate 校验
+ * @param {HTMLElement}    container 要校验的容器节点
+ * @param {ValidateOption} opt       校验配置
+ * @param {ValidateFilter} [filter]  过滤器
+ * @return {ValidateResult[]} 校验结果
+ *
  */
+
+import type {
+  ConfigOption,
+  ValidateOption,
+  ValidateFilter,
+  ValidateResult,
+  PluginConstructor,
+} from './darkmode.d';
 
 // 常量
 import {
   MEDIA_QUERY,
   CLASS_PREFIX,
   HTML_CLASS,
-  PAGE_HEIGHT
+
+  COLORATTR,
+  BGCOLORATTR,
+  ORIGINAL_COLORATTR,
+  ORIGINAL_BGCOLORATTR,
+  BGIMAGEATTR,
+  BGGRADIENT_MIXCOLORATTR,
+  COMPLEMENTARY_BGIMAGECOLORATTR,
+
+  PAGE_HEIGHT,
 } from './modules/constant';
 const classReg = new RegExp(`${CLASS_PREFIX}[^ ]+`, 'g');
 
@@ -62,12 +75,22 @@ import {
   bgStack, // 需要判断位置的背景节点堆栈
   cssUtils, // 样式相关操作工具对象
   domUtils, // 节点相关操作工具对象
-  sdk
+  sdk, // SDK
+  validator, // 校验器
 } from './modules/global';
 
+import {
+  getChildrenAndIt
+} from './modules/domUtils';
+
+interface SwitchToDarkmodeOptions {
+  force?: boolean;
+  type: 'dom' | 'bg';
+}
+
 // Dark Mode切换
-let mql = null;
-const switchToDarkmode = (mqlObj, opt = {
+let mql: MediaQueryList | null = null;
+const switchToDarkmode = (mqlObj: MediaQueryList | null, opt: SwitchToDarkmodeOptions = {
   type: 'dom'
 }) => {
   opt.force && (cssUtils.isFinish = false); // 如果是强制运行Dark Mode处理逻辑，则重置为未运行
@@ -75,10 +98,15 @@ const switchToDarkmode = (mqlObj, opt = {
   if (cssUtils.isFinish) return; // 已运行过Dark Mode处理逻辑则不再运行
 
   try {
-    sdk.isDarkmode = config.mode ? (config.mode === 'dark') : mqlObj.matches;
+    if (config.mode) {
+      sdk.isDarkmode = config.mode === 'dark';
+    } else {
+      if (!mqlObj) return;
+      sdk.isDarkmode = mqlObj.matches;
+    }
 
     if (opt.type === 'dom') { // 处理节点
-      sdk.isDarkmode && typeof config.begin === 'function' && config.begin(domUtils.hasDelay());
+      sdk.isDarkmode && config.begin?.(domUtils.hasDelay());
 
       Array.prototype.forEach.call(domUtils.get(), node => {
         if (sdk.isDarkmode && node.className && typeof node.className === 'string') {
@@ -103,7 +131,7 @@ const switchToDarkmode = (mqlObj, opt = {
               // 显示首屏
               cssUtils.writeStyle(true); // 写入首屏样式表
               domUtils.showFirstPageNodes(); // 显示首屏节点
-              typeof config.showFirstPage === 'function' && config.showFirstPage(); // 执行首屏回调
+              config.showFirstPage?.(); // 执行首屏回调
 
               cssUtils.addCss(sdk.convert(node)); // 写入非首屏样式
             }
@@ -113,38 +141,63 @@ const switchToDarkmode = (mqlObj, opt = {
 
       plugins.loopTimes++;
     } else if (opt.type === 'bg') { // 处理背景
-      sdk.isDarkmode && tnQueue.forEach(text => bgStack.contains(text, bg => {
+      sdk.isDarkmode && tnQueue.forEach((text: HTMLElement) => bgStack.contains(text, bg => {
         cssUtils.addCss(cssUtils.genCss(bg.className, bg.cssKV)); // 写入非首屏样式
+        typeof bg.cb === 'function' && bg.cb(bg);
+
+        // 还得处理该背景下的所有节点
+        const { el } = bg;
+        const inheritAttrs = [
+          [COLORATTR, (el as any)[COLORATTR] ?? null],
+          [BGCOLORATTR, (el as any)[BGCOLORATTR] ?? null],
+          [ORIGINAL_COLORATTR, (el as any)[ORIGINAL_COLORATTR] ?? null],
+          [ORIGINAL_BGCOLORATTR, (el as any)[ORIGINAL_BGCOLORATTR] ?? null],
+          [BGIMAGEATTR, (el as any)[BGIMAGEATTR] ?? null],
+          [COMPLEMENTARY_BGIMAGECOLORATTR, (el as any)[COMPLEMENTARY_BGIMAGECOLORATTR] ?? null],
+        ];
+        const children = getChildrenAndIt(el, true);
+        children.forEach(child => { // 重置继承属性
+          inheritAttrs.forEach(([attr, value]) => {
+            if (value === null) {
+              delete (child as any)[attr];
+            } else {
+              (child as any)[attr] = value;
+            }
+          });
+        });
+        children.forEach(child => { // 重新运行Dark Mode处理逻辑
+          cssUtils.addCss(sdk.convert(child, undefined, false, true));
+        });
       }));
     }
 
     if (config.needJudgeFirstPage || (!config.needJudgeFirstPage && !domUtils.showFirstPage)) {
       // config.needJudgeFirstPage === ture，表示需要判断首屏但是正文长度没超过一屏
       // config.needJudgeFirstPage === false && domUtils.showFirstPage === false，表示不需要判断首屏且没有做首屏优化
-      typeof config.showFirstPage === 'function' && config.showFirstPage(); // 执行首屏回调
+      config.showFirstPage?.(); // 执行首屏回调
     }
     cssUtils.writeStyle(); // 写入非首屏样式表
     domUtils.emptyFirstPageNodes(); // 清空记录的首屏节点
 
-    if (!sdk.isDarkmode) { // 非Dark Mode
-      // 首次加载页面时为非Dark Mode，标记为不需要判断首屏
+    if (!sdk.isDarkmode) { // Light Mode
+      // 首次加载页面时为Light Mode，标记为不需要判断首屏
       config.needJudgeFirstPage = false;
 
-      // 首次加载页面时为非Dark Mode，标记为不延迟判断背景
+      // 首次加载页面时为Light Mode，标记为不延迟判断背景
       config.delayBgJudge = false;
 
       if (config.container === null && opt.type === 'dom' && domUtils.length) {
         domUtils.delay(); // 将节点转移到延迟处理队列里
       }
     }
-  } catch (e) {
+  } catch (e: any) {
     console.log('An error occurred when running the dark mode conversion algorithm\n', e);
-    typeof config.error === 'function' && config.error(e);
+    config.error?.(e);
   }
 };
 
 // 初始化Dark Mode配置并运行Dark Mode处理
-export function run(nodes, opt) {
+export function run(nodes: HTMLElement[], opt: ConfigOption = {}) {
   init(opt); // 初始化配置
 
   domUtils.set(nodes);
@@ -156,8 +209,11 @@ export function run(nodes, opt) {
 };
 
 // 初始化Dark Mode配置
-export function init(opt = {}) {
-  if (config.hasInit) return; // 只可设置一次配置
+export function init(opt: ConfigOption = {}) {
+  if (config.hasInit) { // 只可设置一次配置
+    console.log('Dark Mode can only be initialized once');
+    return;
+  }
 
   config.hasInit = true; // 记录为配置已设置
 
@@ -173,7 +229,7 @@ export function init(opt = {}) {
     });
   }
 
-  if (['dark', 'light'].indexOf(opt.mode) > -1) {
+  if (opt.mode && ['dark', 'light'].indexOf(opt.mode) > -1) {
     config.set('string', opt, 'mode');
     opt.mode === 'dark' && document.getElementsByTagName('html')[0].classList.add(HTML_CLASS);
   }
@@ -183,24 +239,22 @@ export function init(opt = {}) {
   config.set('function', opt, 'error');
   config.set('boolean', opt, 'needJudgeFirstPage');
   config.set('boolean', opt, 'delayBgJudge');
+  config.set('boolean', opt, 'noEmit');
   config.set('dom', opt, 'container');
   config.set('string', opt, 'cssSelectorsPrefix');
-  config.set('string', opt, 'defaultLightTextColor');
-  config.set('string', opt, 'defaultLightBgColor');
-  config.set('string', opt, 'defaultDarkTextColor');
-  config.set('string', opt, 'defaultDarkBgColor');
+  config.setDefaultColor(opt);
 
   sdk.init();
 
-  if (!config.mode && mql === null && window.matchMedia) {
+  if (!config.mode && !mql && window.matchMedia) {
     // 匹配媒体查询
     mql = window.matchMedia(MEDIA_QUERY);
-    mql.addListener(switchToDarkmode); // 监听
+    mql.addListener(switchToDarkmode as any); // 监听
   }
 };
 
 // 处理背景
-export function convertBg(nodes) {
+export function convertBg(nodes: HTMLElement[]) {
   domUtils.set(nodes);
 
   if (config.container !== null) {
@@ -212,21 +266,57 @@ export function convertBg(nodes) {
     force: true,
     type: 'bg'
   });
+
+  // 如果延迟背景判断且文字队列为空，则清空背景堆栈
+  config.delayBgJudge && tnQueue.length === 0 && bgStack.clear();
 };
 
 // 更新节点Dark Mode样式
-export function updateStyle(node, styles) {
+export function updateStyle(node: HTMLElement, styles: Record<string, string>) {
   if (!cssUtils.isFinish) return; // 没有运行过Dark Mode处理逻辑则无需运行
-  cssUtils.addCss(sdk.convert(node, styles ? Object.keys(styles).map(key => [key, styles[key]]) : undefined, true), false);
+  cssUtils.addCss(sdk.convert(node, styles ? Object.keys(styles).map(key => [key, styles[key]]) : undefined, true));
   cssUtils.writeStyle();
 };
 
 // 获取两个颜色的对比度
-export function getContrast(color1, color2) {
+export function getContrast(color1: string, color2: string): number {
   return sdk.getContrast(color1, color2);
 };
 
 // 挂载插件
-export function extend(pluginList) {
+export function extend(pluginList: PluginConstructor[]) {
   pluginList.forEach(plugin => plugins.extend(plugin));
+};
+
+// 重置
+export function reset(nodes: HTMLElement[]) {
+  config.reset();
+  plugins.reset();
+  tnQueue.reset();
+  bgStack.reset();
+  cssUtils.reset();
+  domUtils.reset();
+  sdk.reset();
+
+  document.getElementsByTagName('html')[0].classList.remove(HTML_CLASS);
+
+  if (mql) {
+    mql.removeListener(switchToDarkmode as any); // 取消监听
+    mql = null;
+  }
+
+  nodes?.forEach(node => {
+    delete (node as any)[COLORATTR];
+    delete (node as any)[BGCOLORATTR];
+    delete (node as any)[ORIGINAL_COLORATTR];
+    delete (node as any)[ORIGINAL_BGCOLORATTR];
+    delete (node as any)[BGIMAGEATTR];
+    delete (node as any)[BGGRADIENT_MIXCOLORATTR];
+    delete (node as any)[COMPLEMENTARY_BGIMAGECOLORATTR];
+  });
+};
+
+// 校验
+export function validate(container: HTMLElement, opt: ValidateOption, filter?: ValidateFilter): ValidateResult[] {
+  return validator.validate(container, opt, filter);
 };

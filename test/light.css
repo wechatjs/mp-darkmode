@@ -24,9 +24,7 @@
   hyphens: auto;
 }
 .rich_media_area_primary {
-  padding: 20px 16px 12px;
-  padding: calc(20px + constant(safe-area-inset-top)) calc(16px + constant(safe-area-inset-right)) 12px calc(16px + constant(safe-area-inset-left));
-  padding: calc(20px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 12px calc(16px + env(safe-area-inset-left));
+  padding: 0;
   background-color: #fafafa;
 }
 .rich_media_area_primary.voice {
@@ -61,8 +59,8 @@ html {
 body {
   -webkit-touch-callout: none;
   font-family: -apple-system-font, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", Arial, sans-serif;
-  color: #333;
-  background-color: #f2f2f2;
+  color: #191919;
+  background-color: #fff;
   letter-spacing: 0.034em;
 }
 h1,
@@ -184,7 +182,7 @@ a {
 }
 .rich_media_content {
   overflow: hidden;
-  color: #333;
+  color: #191919;
   font-size: 17px;
   word-wrap: break-word;
   -webkit-hyphens: auto;
@@ -2934,9 +2932,6 @@ input.weui-btn_plain-default {
     max-width: 677px;
     margin-left: auto;
     margin-right: auto;
-  }
-  .rich_media_area_primary {
-    padding-top: 32px;
   }
 }
 

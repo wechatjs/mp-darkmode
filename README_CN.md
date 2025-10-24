@@ -43,7 +43,7 @@ Darkmode.run(document.body.querySelectorAll('*')); // 处理body下的所有DOM�
 
 ### `Darkmode.run(nodes[, options])`
 
-- `nodes` &lt;DOM Object Array&gt; 要进行 Dark Mode 转换的 DOM 节点数组。
+- `nodes` &lt;HTMLElement[]&gt; 要进行 Dark Mode 转换的 DOM 节点数组。
 - `options` &lt;Object&gt; Dark Mode 转换算法配置项。
   - `options.error` &lt;Function&gt; 发生 error 时触发的回调。
     - `err` &lt;Error&gt; 错误对象。
