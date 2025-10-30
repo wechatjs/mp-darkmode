@@ -44,8 +44,8 @@
       <div class="rich_media_area_primary">
         <div class="rich_media_area_primary_inner">
           <div>
-            <h2 class="demo_title">Light Mode</h2>
-            <div class="rich_media_wrp article_light">
+            <h2 class="demo_title"><span id="mode_name"></span> Mode <a id="switch_mode" href="javascript:;">切换</a></h2>
+            <div id="original_wrp" class="rich_media_wrp">
               <div class="rich_media_content" id="light">
                 <cases />
               </div>
@@ -78,6 +78,29 @@
   <script type="text/javascript" src="../dist/darkmode.js"></script>
   <!-- <script type="text/javascript" src="../dist/darkmode.min.js"></script> -->
   <script type="text/javascript">
+    // 支持切换未处理逻辑的 LM、DM
+    var LM = 'Light';
+    var DM = 'Dark';
+    var LM_CLASSNAME = 'article_light';
+    var DM_CLASSNAME = 'article_dark';
+    var modeName = document.getElementById('mode_name');
+    var originalWrpClassList = document.getElementById('original_wrp').classList;
+    // modeName.innerText = LM;
+    // originalWrpClassList.add(LM_CLASSNAME);
+    modeName.innerText = DM;
+    originalWrpClassList.add(DM_CLASSNAME);
+    document.getElementById('switch_mode').addEventListener('click', function(e) {
+      if (modeName.innerText === LM) {
+        modeName.innerText = DM;
+        originalWrpClassList.remove(LM_CLASSNAME);
+        originalWrpClassList.add(DM_CLASSNAME);
+      } else {
+        modeName.innerText = LM;
+        originalWrpClassList.remove(DM_CLASSNAME);
+        originalWrpClassList.add(LM_CLASSNAME);
+      }
+    });
+
     var begin, fp;
 
     // online对比版本
@@ -95,9 +118,10 @@
     });
     document.getElementById('dark_online_title').innerText += ' (cost: ' + (new Date() - begin) + 'ms, first page: ' + fp + 'ms)';
 
-    // H5本地版本
     var container = document.getElementById('dark');
     begin = new Date();
+
+    // H5本地版本
     Darkmode.run(container.querySelectorAll('*'), { // 运行Dark Mode转换算法
       mode: 'dark',
       cssSelectorsPrefix: '#dark',
@@ -111,8 +135,6 @@
     document.getElementById('dark_title').innerText += ' (cost: ' + (new Date() - begin) + 'ms, first page: ' + fp + 'ms)';
 
     // 秒开本地版本
-    // var container = document.getElementById('dark');
-    // begin = new Date();
     // Darkmode.init({ // 初始化Dark Mode配置
     //   mode: 'dark',
     //   cssSelectorsPrefix: '#dark',
@@ -131,6 +153,11 @@
     // Array.prototype.forEach.call(container.getElementsByClassName('mp_artical_style_section'), function(el) {
     //   Darkmode.convertBg(el.querySelectorAll('*'));
     // }); // 模拟秒开分批渲染
+
+    // 校验
+    Darkmode.validate(container, function(node) {
+      return node.classList.contains('validate_ignore');
+    });
   </script>
 </body>
 </html>

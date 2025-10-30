@@ -12,7 +12,7 @@ export const HTML_CLASS = 'data_color_scheme_dark'; // 强制设置暗黑模式�
 
 const RANDOM = `${new Date() * 1}${Math.round(Math.random() * 10)}`; // 生成个随机数，格式为时间戳+随机数
 export const COLORATTR = `data-darkmode-color-${RANDOM}`; // dm color，即算法生成的新色值，单个
-export const BGCOLORATTR = `data-darkmode-bgcolor-${RANDOM}`; // dm bg-color，即算法生成的新色值，有多个，用BG_COLOR_DELIMITER分割
+export const BGCOLORATTR = `data-darkmode-bgcolor-${RANDOM}`; // dm bg-color，即算法生成的新色值，单个
 export const ORIGINAL_COLORATTR = `data-darkmode-original-color-${RANDOM}`; // lm color，即原色值，单个
 export const ORIGINAL_BGCOLORATTR = `data-darkmode-original-bgcolor-${RANDOM}`; // lm bg-color，即原色值，有多个，用BG_COLOR_DELIMITER分割
 export const BGIMAGEATTR = `data-darkmode-bgimage-${RANDOM}`;
@@ -100,3 +100,5 @@ export const SEMICOLON_PLACEHOLDER_REGEXP = /<\$#_SEMICOLON_#\$>/g;
 
 export const COLOR_REGEXP = /\brgba?\([^)]+\)/i;
 export const COLOR_REGEXP_GLOBAL = /\brgba?\([^)]+\)/ig;
+
+export const URL_REGEXP = /url\([^)]*\)/i;

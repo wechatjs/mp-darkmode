@@ -65,6 +65,9 @@ import {
   sdk
 } from './modules/global';
 
+// 校验器
+import * as validator from './modules/validator';
+
 // Dark Mode切换
 let mql = null;
 const switchToDarkmode = (mqlObj, opt = {
@@ -229,4 +232,9 @@ export function getContrast(color1, color2) {
 // 挂载插件
 export function extend(pluginList) {
   pluginList.forEach(plugin => plugins.extend(plugin));
+};
+
+// 校验
+export function validate(container, filter) {
+  validator.validate(container, filter);
 };
