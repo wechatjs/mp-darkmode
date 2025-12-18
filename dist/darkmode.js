@@ -2852,6 +2852,7 @@ var mixColors = function mixColors(colors) {
   }
   return color1 || null;
 };
+console.log('fuck', mixColors(['#191919', 'rgba(255,255,255,0.7)'], 'normal'));
 
 // 计算感知亮度
 var getColorPerceivedBrightness = function getColorPerceivedBrightness(rgb) {
@@ -2860,7 +2861,7 @@ var getColorPerceivedBrightness = function getColorPerceivedBrightness(rgb) {
 
 // 调整为指定感知亮度
 var adjustBrightnessTo = function adjustBrightnessTo(target, rgb) {
-  var relativeBrightnessRatio = target / getColorPerceivedBrightness(rgb);
+  var relativeBrightnessRatio = target / (getColorPerceivedBrightness(rgb) || 1);
   var newTextR = Math.min(255, rgb[0] * relativeBrightnessRatio);
   var newTextG = Math.min(255, rgb[1] * relativeBrightnessRatio);
   var newTextB = Math.min(255, rgb[2] * relativeBrightnessRatio);
@@ -3029,7 +3030,7 @@ var CLASS_PREFIX = 'js_darkmode__'; // Dark Mode class前缀
 var DM_CLASSNAME_REGEXP = new RegExp("".concat(CLASS_PREFIX, "\\d+"));
 var HTML_CLASS = 'data_color_scheme_dark'; // 强制设置暗黑模式时给html加的class
 
-var RANDOM = "".concat(new Date() * 1).concat(Math.round(Math.random() * 10)); // 生成个随机数，格式为时间戳+随机数
+var RANDOM = "".concat(new Date() * 1).concat(Math.floor(Math.random() * 10000)); // 生成个随机数，格式为时间戳+随机数
 var COLORATTR = "data-darkmode-color-".concat(RANDOM); // dm color，即算法生成的新色值，单个
 var BGCOLORATTR = "data-darkmode-bgcolor-".concat(RANDOM); // dm bg-color，即算法生成的新色值，单个
 var ORIGINAL_COLORATTR = "data-darkmode-original-color-".concat(RANDOM); // lm color，即原色值，单个
@@ -3802,17 +3803,17 @@ var SDK = /*#__PURE__*/function () {
             });
           }
         }
-        newColor = this._adjustBackgroundBrightness(color);
-        // newColor = this._adjustBackgroundBrightness(color, mixColors([el[BGCOLORATTR] || config.defaultDarkBgColor, color], 'normal'));
-        // newColor = this._adjustBackgroundBrightness(mixColors([el[BGCOLORATTR] || config.defaultLightBgColor, color], 'normal'));
 
+        // newColor = this._adjustBackgroundBrightness(color);
+        newColor = this._adjustBackgroundBrightness(color, Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor, color], 'normal'));
         if (!options.hasInlineColor) {
           var parentTextColorStr = el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightTextColor;
           var parentTextColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(parentTextColorStr);
           if (parentTextColor) {
             var ret = this._adjustBrightness(parentTextColor, el, {
               isTextColor: true,
-              parentElementBgColorStr: newColor || color
+              // parentElementBgColorStr: newColor || color
+              parentElementBgColorStr: Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor, newColor || color], 'normal')
             }, isUpdate);
             if (ret.newColor) {
               extStyle += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('color', ret.newColor);
@@ -3839,7 +3840,7 @@ var SDK = /*#__PURE__*/function () {
         // 字体阴影
         // 无背景图片
         if (!el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) {
-          newColor = this._adjustBackgroundBrightness(color); // 按照背景色的方法来处理
+          newColor = this._adjustBackgroundBrightness(color, Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor, color], 'normal')); // 按照背景色的方法来处理
         }
       }
 
@@ -3893,53 +3894,53 @@ var SDK = /*#__PURE__*/function () {
     }
 
     // 调整背景明度
-  }, {
-    key: "_adjustBackgroundBrightness",
-    value: function _adjustBackgroundBrightness(bgColor) {
-      var bgColorMix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : bgColor;
-      var bgColorRgb = bgColor.rgb().array();
-      var bgColorHsl = bgColor.hsl().array();
-      var bgColorAlpha = bgColor.alpha();
-      var bgColorPerceivedBrightness = Object(_color__WEBPACK_IMPORTED_MODULE_1__["getColorPerceivedBrightness"])(bgColorRgb);
-      var newColor = bgColor;
-      if (bgColorHsl[1] === 0 && bgColorHsl[2] > _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BLACKWHITE_HSL_BRIGHTNESS"] || bgColorPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_2__["WHITE_LIKE_COLOR_BRIGHTNESS"]) {
-        // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
-        newColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - bgColorHsl[2]));
-      } else if (bgColorPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_2__["MAX_LIMIT_BGCOLOR_BRIGHTNESS"]) {
-        // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
-        newColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["adjustBrightnessTo"])(_constant__WEBPACK_IMPORTED_MODULE_2__["MAX_LIMIT_BGCOLOR_BRIGHTNESS"], bgColorRgb).alpha(bgColorAlpha);
-        // const ratio = (MAX_LIMIT_BGCOLOR_BRIGHTNESS * 1000)
-        //   / (bgColorRgb[0] * 299 + bgColorRgb[1] * 587 + bgColorRgb[2] * 114);
-        // newColor = Color.rgb(bgColorRgb[0] * ratio, bgColorRgb[1] * ratio, bgColorRgb[2] * ratio);
-      } else if (bgColorHsl[2] < _constant__WEBPACK_IMPORTED_MODULE_2__["LOW_BLACKWHITE_HSL_BRIGHTNESS"]) {
-        // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
-        bgColorHsl[2] = _constant__WEBPACK_IMPORTED_MODULE_2__["LOW_BLACKWHITE_HSL_BRIGHTNESS"];
-        newColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl.apply(color__WEBPACK_IMPORTED_MODULE_0___default.a, _toConsumableArray(bgColorHsl));
-      }
-      return newColor.alpha(bgColorAlpha).rgb();
-    }
-
-    // _adjustBackgroundBrightness(bgColor, bgColorMix = bgColor) {
+    // _adjustBackgroundBrightness(bgColor) {
     //   const bgColorRgb = bgColor.rgb().array();
     //   const bgColorHsl = bgColor.hsl().array();
-    //   const bgColorMixHsl = bgColorMix.hsl().array();
     //   const bgColorAlpha = bgColor.alpha();
-    //   const bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorMix.rgb().array());
+    //   const bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorRgb);
     //   let newColor = bgColor;
-    //   if ((bgColorMixHsl[1] === 0 && bgColorMixHsl[2] > HIGH_BLACKWHITE_HSL_BRIGHTNESS)
+    //   if ((bgColorHsl[1] === 0 && bgColorHsl[2] > HIGH_BLACKWHITE_HSL_BRIGHTNESS)
     //     || bgColorPerceivedBrightness > WHITE_LIKE_COLOR_BRIGHTNESS) {
     //     // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
     //     newColor = Color.hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - bgColorHsl[2]));
     //   } else if (bgColorPerceivedBrightness > MAX_LIMIT_BGCOLOR_BRIGHTNESS) {
     //     // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
-    //     newColor = adjustBrightnessTo(MAX_LIMIT_BGCOLOR_BRIGHTNESS, bgColor.rgb().array()).alpha(bgColorAlpha);
-    //   } else if (bgColorMixHsl[2] < LOW_BLACKWHITE_HSL_BRIGHTNESS) {
+    //     newColor = adjustBrightnessTo(MAX_LIMIT_BGCOLOR_BRIGHTNESS, bgColorRgb).alpha(bgColorAlpha);
+    //     // const ratio = (MAX_LIMIT_BGCOLOR_BRIGHTNESS * 1000)
+    //     //   / (bgColorRgb[0] * 299 + bgColorRgb[1] * 587 + bgColorRgb[2] * 114);
+    //     // newColor = Color.rgb(bgColorRgb[0] * ratio, bgColorRgb[1] * ratio, bgColorRgb[2] * ratio);
+    //   } else if (bgColorHsl[2] < LOW_BLACKWHITE_HSL_BRIGHTNESS) {
     //     // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
     //     bgColorHsl[2] = LOW_BLACKWHITE_HSL_BRIGHTNESS;
     //     newColor = Color.hsl(...bgColorHsl);
     //   }
     //   return newColor.alpha(bgColorAlpha).rgb();
     // }
+
+    // 调整背景明度
+  }, {
+    key: "_adjustBackgroundBrightness",
+    value: function _adjustBackgroundBrightness(bgColor) {
+      var bgColorMix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : bgColor;
+      var bgColorHsl = bgColor.hsl().array();
+      var bgColorAlpha = bgColor.alpha();
+      var bgColorMixHsl = bgColorMix.hsl().array();
+      var bgColorMixPerceivedBrightness = Object(_color__WEBPACK_IMPORTED_MODULE_1__["getColorPerceivedBrightness"])(bgColorMix.rgb().array());
+      var newColor = bgColor;
+      if (bgColorMixHsl[1] === 0 && bgColorMixHsl[2] > _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BLACKWHITE_HSL_BRIGHTNESS"] || bgColorMixPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_2__["WHITE_LIKE_COLOR_BRIGHTNESS"]) {
+        // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
+        newColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - bgColorHsl[2]));
+      } else if (bgColorMixPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_2__["MAX_LIMIT_BGCOLOR_BRIGHTNESS"]) {
+        // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
+        newColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["adjustBrightnessTo"])(_constant__WEBPACK_IMPORTED_MODULE_2__["MAX_LIMIT_BGCOLOR_BRIGHTNESS"], bgColor.rgb().array()).alpha(bgColorAlpha);
+      } else if (bgColorMixHsl[2] < _constant__WEBPACK_IMPORTED_MODULE_2__["LOW_BLACKWHITE_HSL_BRIGHTNESS"]) {
+        // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
+        bgColorHsl[2] = _constant__WEBPACK_IMPORTED_MODULE_2__["LOW_BLACKWHITE_HSL_BRIGHTNESS"];
+        newColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl.apply(color__WEBPACK_IMPORTED_MODULE_0___default.a, _toConsumableArray(bgColorHsl));
+      }
+      return newColor.alpha(bgColorAlpha).rgb();
+    }
 
     // 叠加渐变色到背景色中，并更新背景色相关属性值以及文本颜色
   }, {
@@ -3985,7 +3986,7 @@ var SDK = /*#__PURE__*/function () {
       this._defaultDarkTextColorBrightness = Object(_color__WEBPACK_IMPORTED_MODULE_1__["getColorPerceivedBrightness"])(this._defaultDarkTextColorRgb);
       this._defaultDarkBgColorBrightness = Object(_color__WEBPACK_IMPORTED_MODULE_1__["getColorPerceivedBrightness"])(this._defaultDarkBgColorRgb);
       this._defaultDarkBgColorHslBrightness = this._defaultDarkBgColorHSL[2];
-      this._maxLimitOffsetBrightness = this._defaultDarkTextColorBrightness - this._defaultDarkBgColorBrightness;
+      this._maxLimitOffsetBrightness = Math.max(this._defaultDarkTextColorBrightness - this._defaultDarkBgColorBrightness, 0);
     }
 
     // 处理节点
@@ -4526,6 +4527,7 @@ function validate(container, filter) {
   var treeWalker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, function (node) {
     if (node.style.display === 'none') return NodeFilter.FILTER_REJECT; // 忽略不可见节点以及其所有子节点
     if (_constant__WEBPACK_IMPORTED_MODULE_0__["URL_REGEXP"].test(node.style.backgroundImage || '') || _constant__WEBPACK_IMPORTED_MODULE_0__["URL_REGEXP"].test(node.style.webkitBorderImage || node.style.borderImage || '')) return NodeFilter.FILTER_REJECT; // 忽略有背景图片的节点以及其所有子节点
+    if (node instanceof SVGElement) return NodeFilter.FILTER_REJECT; // 忽略SVG节点以及其所有子节点
     if (filter !== null && filter !== void 0 && filter(node)) return NodeFilter.FILTER_SKIP; // 忽略filter(node)返回true的节点
     return NodeFilter.FILTER_ACCEPT;
   });

@@ -85,10 +85,10 @@
     var DM_CLASSNAME = 'article_dark';
     var modeName = document.getElementById('mode_name');
     var originalWrpClassList = document.getElementById('original_wrp').classList;
-    // modeName.innerText = LM;
-    // originalWrpClassList.add(LM_CLASSNAME);
-    modeName.innerText = DM;
-    originalWrpClassList.add(DM_CLASSNAME);
+    modeName.innerText = LM;
+    originalWrpClassList.add(LM_CLASSNAME);
+    // modeName.innerText = DM;
+    // originalWrpClassList.add(DM_CLASSNAME);
     document.getElementById('switch_mode').addEventListener('click', function(e) {
       if (modeName.innerText === LM) {
         modeName.innerText = DM;
@@ -109,6 +109,7 @@
     DarkmodeOnline.run(containerOnline.querySelectorAll('*'), { // 运行Dark Mode转换算法
       mode: 'dark',
       cssSelectorsPrefix: '#dark_online',
+      // defaultDarkTextColor: '#bababa',
       whitelist: {
         attribute: ['data-no-dark']
       },
@@ -125,6 +126,7 @@
     Darkmode.run(container.querySelectorAll('*'), { // 运行Dark Mode转换算法
       mode: 'dark',
       cssSelectorsPrefix: '#dark',
+      defaultDarkTextColor: '#989898',
       whitelist: {
         attribute: ['data-no-dark']
       },

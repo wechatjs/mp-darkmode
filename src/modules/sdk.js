@@ -140,9 +140,8 @@ export default class SDK {
         }
       }
 
-      newColor = this._adjustBackgroundBrightness(color);
-      // newColor = this._adjustBackgroundBrightness(color, mixColors([el[BGCOLORATTR] || config.defaultDarkBgColor, color], 'normal'));
-      // newColor = this._adjustBackgroundBrightness(mixColors([el[BGCOLORATTR] || config.defaultLightBgColor, color], 'normal'));
+      // newColor = this._adjustBackgroundBrightness(color);
+      newColor = this._adjustBackgroundBrightness(color, mixColors([el[BGCOLORATTR] || config.defaultDarkBgColor, color], 'normal'));
 
       if (!options.hasInlineColor) {
         const parentTextColorStr = el[ORIGINAL_COLORATTR] || config.defaultLightTextColor;
@@ -150,7 +149,8 @@ export default class SDK {
         if (parentTextColor) {
           const ret = this._adjustBrightness(parentTextColor, el, {
             isTextColor: true,
-            parentElementBgColorStr: newColor || color
+            // parentElementBgColorStr: newColor || color
+            parentElementBgColorStr: mixColors([el[BGCOLORATTR] || config.defaultDarkBgColor, newColor || color], 'normal')
           }, isUpdate);
           if (ret.newColor) {
             extStyle += cssUtils.genCssKV('color', ret.newColor);
@@ -177,7 +177,7 @@ export default class SDK {
     } else if (options.isTextShadow) { // 字体阴影
       // 无背景图片
       if (!el[BGIMAGEATTR]) {
-        newColor = this._adjustBackgroundBrightness(color); // 按照背景色的方法来处理
+        newColor = this._adjustBackgroundBrightness(color, mixColors([el[BGCOLORATTR] || config.defaultDarkBgColor, color], 'normal')); // 按照背景色的方法来处理
       }
     }
 
@@ -236,51 +236,51 @@ export default class SDK {
   }
 
   // 调整背景明度
-  _adjustBackgroundBrightness(bgColor, bgColorMix = bgColor) {
-    const bgColorRgb = bgColor.rgb().array();
-    const bgColorHsl = bgColor.hsl().array();
-    const bgColorAlpha = bgColor.alpha();
-    const bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorRgb);
-    let newColor = bgColor;
-    if ((bgColorHsl[1] === 0 && bgColorHsl[2] > HIGH_BLACKWHITE_HSL_BRIGHTNESS)
-      || bgColorPerceivedBrightness > WHITE_LIKE_COLOR_BRIGHTNESS) {
-      // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
-      newColor = Color.hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - bgColorHsl[2]));
-    } else if (bgColorPerceivedBrightness > MAX_LIMIT_BGCOLOR_BRIGHTNESS) {
-      // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
-      newColor = adjustBrightnessTo(MAX_LIMIT_BGCOLOR_BRIGHTNESS, bgColorRgb).alpha(bgColorAlpha);
-      // const ratio = (MAX_LIMIT_BGCOLOR_BRIGHTNESS * 1000)
-      //   / (bgColorRgb[0] * 299 + bgColorRgb[1] * 587 + bgColorRgb[2] * 114);
-      // newColor = Color.rgb(bgColorRgb[0] * ratio, bgColorRgb[1] * ratio, bgColorRgb[2] * ratio);
-    } else if (bgColorHsl[2] < LOW_BLACKWHITE_HSL_BRIGHTNESS) {
-      // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
-      bgColorHsl[2] = LOW_BLACKWHITE_HSL_BRIGHTNESS;
-      newColor = Color.hsl(...bgColorHsl);
-    }
-    return newColor.alpha(bgColorAlpha).rgb();
-  }
-
-  // _adjustBackgroundBrightness(bgColor, bgColorMix = bgColor) {
+  // _adjustBackgroundBrightness(bgColor) {
   //   const bgColorRgb = bgColor.rgb().array();
   //   const bgColorHsl = bgColor.hsl().array();
-  //   const bgColorMixHsl = bgColorMix.hsl().array();
   //   const bgColorAlpha = bgColor.alpha();
-  //   const bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorMix.rgb().array());
+  //   const bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorRgb);
   //   let newColor = bgColor;
-  //   if ((bgColorMixHsl[1] === 0 && bgColorMixHsl[2] > HIGH_BLACKWHITE_HSL_BRIGHTNESS)
+  //   if ((bgColorHsl[1] === 0 && bgColorHsl[2] > HIGH_BLACKWHITE_HSL_BRIGHTNESS)
   //     || bgColorPerceivedBrightness > WHITE_LIKE_COLOR_BRIGHTNESS) {
   //     // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
   //     newColor = Color.hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - bgColorHsl[2]));
   //   } else if (bgColorPerceivedBrightness > MAX_LIMIT_BGCOLOR_BRIGHTNESS) {
   //     // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
-  //     newColor = adjustBrightnessTo(MAX_LIMIT_BGCOLOR_BRIGHTNESS, bgColor.rgb().array()).alpha(bgColorAlpha);
-  //   } else if (bgColorMixHsl[2] < LOW_BLACKWHITE_HSL_BRIGHTNESS) {
+  //     newColor = adjustBrightnessTo(MAX_LIMIT_BGCOLOR_BRIGHTNESS, bgColorRgb).alpha(bgColorAlpha);
+  //     // const ratio = (MAX_LIMIT_BGCOLOR_BRIGHTNESS * 1000)
+  //     //   / (bgColorRgb[0] * 299 + bgColorRgb[1] * 587 + bgColorRgb[2] * 114);
+  //     // newColor = Color.rgb(bgColorRgb[0] * ratio, bgColorRgb[1] * ratio, bgColorRgb[2] * ratio);
+  //   } else if (bgColorHsl[2] < LOW_BLACKWHITE_HSL_BRIGHTNESS) {
   //     // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
   //     bgColorHsl[2] = LOW_BLACKWHITE_HSL_BRIGHTNESS;
   //     newColor = Color.hsl(...bgColorHsl);
   //   }
   //   return newColor.alpha(bgColorAlpha).rgb();
   // }
+
+  // 调整背景明度
+  _adjustBackgroundBrightness(bgColor, bgColorMix = bgColor) {
+    const bgColorHsl = bgColor.hsl().array();
+    const bgColorAlpha = bgColor.alpha();
+    const bgColorMixHsl = bgColorMix.hsl().array();
+    const bgColorMixPerceivedBrightness = getColorPerceivedBrightness(bgColorMix.rgb().array());
+    let newColor = bgColor;
+    if ((bgColorMixHsl[1] === 0 && bgColorMixHsl[2] > HIGH_BLACKWHITE_HSL_BRIGHTNESS)
+      || bgColorMixPerceivedBrightness > WHITE_LIKE_COLOR_BRIGHTNESS) {
+      // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
+      newColor = Color.hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - bgColorHsl[2]));
+    } else if (bgColorMixPerceivedBrightness > MAX_LIMIT_BGCOLOR_BRIGHTNESS) {
+      // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
+      newColor = adjustBrightnessTo(MAX_LIMIT_BGCOLOR_BRIGHTNESS, bgColor.rgb().array()).alpha(bgColorAlpha);
+    } else if (bgColorMixHsl[2] < LOW_BLACKWHITE_HSL_BRIGHTNESS) {
+      // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
+      bgColorHsl[2] = LOW_BLACKWHITE_HSL_BRIGHTNESS;
+      newColor = Color.hsl(...bgColorHsl);
+    }
+    return newColor.alpha(bgColorAlpha).rgb();
+  }
 
   // 叠加渐变色到背景色中，并更新背景色相关属性值以及文本颜色
   _updateBgWithGradient(gradientColor, el, className, cssKVList, hasInlineColor, isUpdate) {
@@ -321,7 +321,7 @@ export default class SDK {
     this._defaultDarkTextColorBrightness = getColorPerceivedBrightness(this._defaultDarkTextColorRgb);
     this._defaultDarkBgColorBrightness = getColorPerceivedBrightness(this._defaultDarkBgColorRgb);
     this._defaultDarkBgColorHslBrightness = this._defaultDarkBgColorHSL[2];
-    this._maxLimitOffsetBrightness = this._defaultDarkTextColorBrightness - this._defaultDarkBgColorBrightness;
+    this._maxLimitOffsetBrightness = Math.max(this._defaultDarkTextColorBrightness - this._defaultDarkBgColorBrightness, 0);
   }
 
   // 处理节点

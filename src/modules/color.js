@@ -115,7 +115,7 @@ export const getColorPerceivedBrightness = rgb => (rgb[0] * 299 + rgb[1] * 587 +
 
 // 调整为指定感知亮度
 export const adjustBrightnessTo = (target, rgb) => {
-  const relativeBrightnessRatio = target / getColorPerceivedBrightness(rgb);
+  const relativeBrightnessRatio = target / (getColorPerceivedBrightness(rgb) || 1);
   let newTextR = Math.min(255, rgb[0] * relativeBrightnessRatio);
   let newTextG = Math.min(255, rgb[1] * relativeBrightnessRatio);
   let newTextB = Math.min(255, rgb[2] * relativeBrightnessRatio);

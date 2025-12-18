@@ -33,6 +33,7 @@ export function validate(container, filter) {
   const treeWalker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, node => {
     if (node.style.display === 'none') return NodeFilter.FILTER_REJECT; // 忽略不可见节点以及其所有子节点
     if (URL_REGEXP.test(node.style.backgroundImage || '') || URL_REGEXP.test(node.style.webkitBorderImage || node.style.borderImage || '')) return NodeFilter.FILTER_REJECT; // 忽略有背景图片的节点以及其所有子节点
+    if (node instanceof SVGElement) return NodeFilter.FILTER_REJECT; // 忽略SVG节点以及其所有子节点
     if (filter?.(node)) return NodeFilter.FILTER_SKIP; // 忽略filter(node)返回true的节点
     return NodeFilter.FILTER_ACCEPT;
   });
