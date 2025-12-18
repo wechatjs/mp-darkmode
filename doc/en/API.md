@@ -20,12 +20,14 @@ API
   - `options.delayBgJudge` &lt;boolean&gt; Whether to delay background judgment. Default `false`.
   - `options.container` &lt;DOM Object&gt; The container to use when delaying running js. Default `null`.
   - `options.cssSelectorsPrefix` &lt;string&gt; Css selector prefix. Default `''`.
-  - `opt.defaultLightTextColor` &lt;string&gt; Font color in non-Dark Mode. Default `#191919`.
-  - `opt.defaultLightBgColor` &lt;string&gt; Background color in non-Dark Mode. Default `#fff`.
-  - `opt.defaultDarkTextColor` &lt;string&gt; Font color in Dark Mode. Default `#a3a3a3`.
+  - `opt.defaultLightWebviewColor` &lt;string&gt; Webview color in Light Mode. Default `#fff`.
+  - `opt.defaultLightBgColor` &lt;string&gt; Background color in Light Mode. Default `#fff`.
+  - `opt.defaultLightTextColor` &lt;string&gt; Font color in Light Mode. Default `#191919`.
+  - `opt.defaultDarkWebviewColor` &lt;string&gt; Webview color in Dark Mode. Default `#000`.
   - `opt.defaultDarkBgColor` &lt;string&gt; Background color in Dark Mode. Default `#191919`.
+  - `opt.defaultDarkTextColor` &lt;string&gt; Font color in Dark Mode. Default `#a3a3a3`.
 
-Run Dark Mode conversion algorithm. **Note: The conversion can be run multiple times, but the configuration can only be set once.**
+Init and run Dark Mode conversion algorithm. **Note: The conversion can be run multiple times, but it can only be initialized once.**
 
 ```javascript
 Darkmode.run(document.body.querySelectorAll('*'), {
@@ -38,7 +40,7 @@ Darkmode.run(document.body.querySelectorAll('*'), {
 
 - `options` Same as the `options` parameter in `Darkmode.run()`.
 
-Initialize Dark Mode configuration. **Note: The configuration can only be set once.**
+You can also simply initialize the Dark Mode configuration, and run the conversion at another time. **Note: To avoid differences in conversion output due to different configurations, the configuration can only be set once.**
 
 ```javascript
 Darkmode.init({
@@ -60,10 +62,12 @@ Darkmode.init({
   delayBgJudge: false, // whether to delay background judgment
   container: null, // the container to use when delaying running js
   cssSelectorsPrefix: '', // css selector prefix
-  defaultLightTextColor: '#191919', // font color in non-Dark Mode
-  defaultLightBgColor: '#fff', // background color in non-Dark Mode
-  defaultDarkTextColor: '#a3a3a3', // font color in Dark Mode
+  defaultLightWebviewColor: '#fff', // webview color in Light Mode
+  defaultLightBgColor: '#fff', // background color in Light Mode
+  defaultLightTextColor: '#191919', // font color in Light Mode
+  defaultDarkWebviewColor: '#000', // webview color in Dark Mode
   defaultDarkBgColor: '#191919', // background color in Dark Mode
+  defaultDarkTextColor: '#a3a3a3', // font color in Dark Mode
 });
 ```
 

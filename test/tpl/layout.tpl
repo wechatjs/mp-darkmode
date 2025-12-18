@@ -109,7 +109,7 @@
     DarkmodeOnline.run(containerOnline.querySelectorAll('*'), { // 运行Dark Mode转换算法
       mode: 'dark',
       cssSelectorsPrefix: '#dark_online',
-      // defaultDarkTextColor: '#bababa',
+      defaultDarkTextColor: '#989898',
       whitelist: {
         attribute: ['data-no-dark']
       },
@@ -126,7 +126,7 @@
     Darkmode.run(container.querySelectorAll('*'), { // 运行Dark Mode转换算法
       mode: 'dark',
       cssSelectorsPrefix: '#dark',
-      defaultDarkTextColor: '#989898',
+      defaultDarkTextColor: 'rgba(255, 255, 255, 0.55)',
       whitelist: {
         attribute: ['data-no-dark']
       },

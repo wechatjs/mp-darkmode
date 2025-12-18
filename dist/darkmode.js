@@ -2368,21 +2368,23 @@ __webpack_require__.r(__webpack_exports__);
  * @return void
  *
  * @function init 初始化Dark Mode配置
- * @param {Function}   opt.begin                 开始处理时触发的回调
- * @param {Function}   opt.showFirstPage         首屏处理完成时触发的回调
- * @param {Function}   opt.error                 发生error时触发的回调
- * @param {string}     opt.mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
- * @param {Object}     opt.whitelist             节点白名单
- * @param {Array}      opt.whitelist.tagName     标签名列表
- * @param {Array}      opt.whitelist.attribute   属性列表
- * @param {boolean}    opt.needJudgeFirstPage    是否需要判断首屏
- * @param {boolean}    opt.delayBgJudge          是否延迟背景判断
- * @param {DOM Object} opt.container             延迟运行js时使用的容器
- * @param {string}     opt.cssSelectorsPrefix    css选择器前缀
- * @param {string}     opt.defaultLightTextColor 非Dark Mode下字体颜色
- * @param {string}     opt.defaultLightBgColor   非Dark Mode下背景颜色
- * @param {string}     opt.defaultDarkTextColor  Dark Mode下字体颜色
- * @param {string}     opt.defaultDarkBgColor    Dark Mode下背景颜色
+ * @param {Function}   opt.begin                    开始处理时触发的回调
+ * @param {Function}   opt.showFirstPage            首屏处理完成时触发的回调
+ * @param {Function}   opt.error                    发生error时触发的回调
+ * @param {string}     opt.mode                     强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
+ * @param {Object}     opt.whitelist                节点白名单
+ * @param {Array}      opt.whitelist.tagName        标签名列表
+ * @param {Array}      opt.whitelist.attribute      属性列表
+ * @param {boolean}    opt.needJudgeFirstPage       是否需要判断首屏
+ * @param {boolean}    opt.delayBgJudge             是否延迟背景判断
+ * @param {DOM Object} opt.container                延迟运行js时使用的容器
+ * @param {string}     opt.cssSelectorsPrefix       css选择器前缀
+ * @param {string}     opt.defaultLightWebviewColor Light Mode下webview颜色
+ * @param {string}     opt.defaultLightBgColor      Light Mode下背景颜色
+ * @param {string}     opt.defaultLightTextColor    Light Mode下字体颜色
+ * @param {string}     opt.defaultDarkWebviewColor  Dark Mode下webview颜色
+ * @param {string}     opt.defaultDarkBgColor       Dark Mode下背景颜色
+ * @param {string}     opt.defaultDarkTextColor     Dark Mode下字体颜色
  * @return void
  *
  * @function convertBg 处理背景
@@ -2487,11 +2489,11 @@ var switchToDarkmode = function switchToDarkmode(mqlObj) {
     _modules_global__WEBPACK_IMPORTED_MODULE_2__["domUtils"].emptyFirstPageNodes(); // 清空记录的首屏节点
 
     if (!_modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].isDarkmode) {
-      // 非Dark Mode
-      // 首次加载页面时为非Dark Mode，标记为不需要判断首屏
+      // Light Mode
+      // 首次加载页面时为Light Mode，标记为不需要判断首屏
       _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].needJudgeFirstPage = false;
 
-      // 首次加载页面时为非Dark Mode，标记为不延迟判断背景
+      // 首次加载页面时为Light Mode，标记为不延迟判断背景
       _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].delayBgJudge = false;
       if (_modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].container === null && opt.type === 'dom' && _modules_global__WEBPACK_IMPORTED_MODULE_2__["domUtils"].length) {
         _modules_global__WEBPACK_IMPORTED_MODULE_2__["domUtils"].delay(); // 将节点转移到延迟处理队列里
@@ -2518,8 +2520,11 @@ function run(nodes, opt) {
 // 初始化Dark Mode配置
 function init() {
   var opt = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-  if (_modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].hasInit) return; // 只可设置一次配置
-
+  if (_modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].hasInit) {
+    // 只可设置一次配置
+    console.log('Dark Mode can only be initialized once');
+    return;
+  }
   _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].hasInit = true; // 记录为配置已设置
 
   var tagName = _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].whitelist.tagName;
@@ -2544,10 +2549,7 @@ function init() {
   _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('boolean', opt, 'delayBgJudge');
   _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('dom', opt, 'container');
   _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('string', opt, 'cssSelectorsPrefix');
-  _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('string', opt, 'defaultLightTextColor');
-  _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('string', opt, 'defaultLightBgColor');
-  _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('string', opt, 'defaultDarkTextColor');
-  _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].set('string', opt, 'defaultDarkBgColor');
+  _modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].setDefaultColor(opt);
   _modules_global__WEBPACK_IMPORTED_MODULE_2__["sdk"].init();
   if (!_modules_config__WEBPACK_IMPORTED_MODULE_1__["default"].mode && mql === null && window.matchMedia) {
     // 匹配媒体查询
@@ -2852,7 +2854,6 @@ var mixColors = function mixColors(colors) {
   }
   return color1 || null;
 };
-console.log('fuck', mixColors(['#191919', 'rgba(255,255,255,0.7)'], 'normal'));
 
 // 计算感知亮度
 var getColorPerceivedBrightness = function getColorPerceivedBrightness(rgb) {
@@ -2887,25 +2888,28 @@ var adjustBrightnessTo = function adjustBrightnessTo(target, rgb) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _constant__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./constant */ "./src/modules/constant.js");
+/* harmony import */ var _color__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./color */ "./src/modules/color.js");
 /**
  * @name Darkmode配置
  *
- * @attr {boolean}      hasInit               是否初始化过配置
- * @attr {Function}     begin                 开始处理时触发的回调
- * @attr {Function}     showFirstPage         首屏处理完成时触发的回调
- * @attr {Function}     error                 发生error时触发的回调
- * @attr {string}       mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
- * @attr {Object}       whitelist             节点白名单
- * @attr {string Array} whitelist.tagName     标签名列表
- * @attr {string Array} whitelist.attribute   属性列表
- * @attr {boolean}      needJudgeFirstPage    是否需要判断首屏
- * @attr {boolean}      delayBgJudge          是否延迟背景判断
- * @attr {DOM Object}   container             延迟运行js时使用的容器
- * @attr {string}       cssSelectorsPrefix    css选择器前缀
- * @attr {string}       defaultLightTextColor 非Dark Mode下字体颜色
- * @attr {string}       defaultLightBgColor   非Dark Mode下背景颜色
- * @attr {string}       defaultDarkTextColor  Dark Mode下字体颜色
- * @attr {string}       defaultDarkBgColor    Dark Mode下背景颜色
+ * @attr {boolean}      hasInit                  是否初始化过配置
+ * @attr {Function}     begin                    开始处理时触发的回调
+ * @attr {Function}     showFirstPage            首屏处理完成时触发的回调
+ * @attr {Function}     error                    发生error时触发的回调
+ * @attr {string}       mode                     强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
+ * @attr {Object}       whitelist                节点白名单
+ * @attr {string Array} whitelist.tagName        标签名列表
+ * @attr {string Array} whitelist.attribute      属性列表
+ * @attr {boolean}      needJudgeFirstPage       是否需要判断首屏
+ * @attr {boolean}      delayBgJudge             是否延迟背景判断
+ * @attr {DOM Object}   container                延迟运行js时使用的容器
+ * @attr {string}       cssSelectorsPrefix       css选择器前缀
+ * @attr {string}       defaultLightWebviewColor Light Mode下webview颜色
+ * @attr {string}       defaultLightBgColor      Light Mode下背景颜色
+ * @attr {string}       defaultLightTextColor    Light Mode下字体颜色
+ * @attr {string}       defaultDarkWebviewColor  Dark Mode下webview颜色
+ * @attr {string}       defaultDarkBgColor       Dark Mode下背景颜色
+ * @attr {string}       defaultDarkTextColor     Dark Mode下字体颜色
  *
  * @method set 设置配置
  * @param {string} type 要处理的节点
@@ -2916,6 +2920,7 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 // 常量
+
 
 var config = {
   hasInit: false,
@@ -2946,14 +2951,18 @@ var config = {
   // 延迟运行js时使用的容器
   cssSelectorsPrefix: '',
   // css选择器前缀
-  defaultLightTextColor: _constant__WEBPACK_IMPORTED_MODULE_0__["DEFAULT_LIGHT_TEXTCOLOR"],
-  // 非Dark Mode下字体颜色
+  defaultLightWebviewColor: _constant__WEBPACK_IMPORTED_MODULE_0__["DEFAULT_LIGHT_WEBVIEWCOLOR"],
+  // Light Mode下webview颜色
   defaultLightBgColor: _constant__WEBPACK_IMPORTED_MODULE_0__["DEFAULT_LIGHT_BGCOLOR"],
-  // 非Dark Mode下背景颜色
-  defaultDarkTextColor: _constant__WEBPACK_IMPORTED_MODULE_0__["DEFAULT_DARK_TEXTCOLOR"],
-  // Dark Mode下字体颜色
+  // Light Mode下背景颜色
+  defaultLightTextColor: _constant__WEBPACK_IMPORTED_MODULE_0__["DEFAULT_LIGHT_TEXTCOLOR"],
+  // Light Mode下字体颜色
+  defaultDarkWebviewColor: _constant__WEBPACK_IMPORTED_MODULE_0__["DEFAULT_DARK_WEBVIEWCOLOR"],
+  // Dark Mode下webview颜色
   defaultDarkBgColor: _constant__WEBPACK_IMPORTED_MODULE_0__["DEFAULT_DARK_BGCOLOR"],
   // Dark Mode下背景颜色
+  defaultDarkTextColor: _constant__WEBPACK_IMPORTED_MODULE_0__["DEFAULT_DARK_TEXTCOLOR"],
+  // Dark Mode下字体颜色
   // 设置配置
   set: function set(type, opt, key) {
     var value = opt[key];
@@ -2972,6 +2981,23 @@ var config = {
         break;
       default:
     }
+  },
+  // 设置默认颜色
+  setDefaultColor: function setDefaultColor(opt) {
+    this.set('string', opt, 'defaultLightWebviewColor');
+    this.set('string', opt, 'defaultDarkWebviewColor');
+    var bgColor = {
+      defaultLightBgColor: Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([this.defaultLightWebviewColor, opt.defaultLightBgColor || this.defaultLightBgColor], 'normal').hex(),
+      defaultDarkBgColor: Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([this.defaultDarkWebviewColor, opt.defaultDarkBgColor || this.defaultDarkBgColor], 'normal').hex()
+    };
+    this.set('string', bgColor, 'defaultLightBgColor');
+    this.set('string', bgColor, 'defaultDarkBgColor');
+    var textColor = {
+      defaultLightTextColor: Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([this.defaultLightWebviewColor, this.defaultLightBgColor, opt.defaultLightTextColor || this.defaultLightTextColor], 'normal').hex(),
+      defaultDarkTextColor: Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([this.defaultDarkWebviewColor, this.defaultDarkBgColor, opt.defaultDarkTextColor || this.defaultDarkTextColor], 'normal').hex()
+    };
+    this.set('string', textColor, 'defaultLightTextColor');
+    this.set('string', textColor, 'defaultDarkTextColor');
   }
 };
 /* harmony default export */ __webpack_exports__["default"] = (config);
@@ -2982,7 +3008,7 @@ var config = {
 /*!*********************************!*\
   !*** ./src/modules/constant.js ***!
   \*********************************/
-/*! exports provided: MEDIA_QUERY, CLASS_PREFIX, DM_CLASSNAME_REGEXP, HTML_CLASS, COLORATTR, BGCOLORATTR, ORIGINAL_COLORATTR, ORIGINAL_BGCOLORATTR, BGIMAGEATTR, COMPLEMENTARY_BGIMAGECOLORATTR, BG_COLOR_DELIMITER, DEFAULT_LIGHT_TEXTCOLOR, DEFAULT_LIGHT_BGCOLOR, DEFAULT_DARK_TEXTCOLOR, DEFAULT_DARK_BGCOLOR, WHITE_LIKE_COLOR_BRIGHTNESS, MAX_LIMIT_BGCOLOR_BRIGHTNESS, MIN_LIMIT_OFFSET_BRIGHTNESS, HIGH_BGCOLOR_BRIGHTNESS, HIGH_BLACKWHITE_HSL_BRIGHTNESS, LOW_BLACKWHITE_HSL_BRIGHTNESS, IGNORE_ALPHA, PAGE_HEIGHT, CSS_PROP_SERIES, CSS_PROP_LIST, TABLE_NAME, IMPORTANT_REGEXP, SEMICOLON_PLACEHOLDER, SEMICOLON_PLACEHOLDER_REGEXP, COLOR_REGEXP, COLOR_REGEXP_GLOBAL, URL_REGEXP */
+/*! exports provided: MEDIA_QUERY, CLASS_PREFIX, DM_CLASSNAME_REGEXP, HTML_CLASS, COLORATTR, BGCOLORATTR, ORIGINAL_COLORATTR, ORIGINAL_BGCOLORATTR, BGIMAGEATTR, COMPLEMENTARY_BGIMAGECOLORATTR, BG_COLOR_DELIMITER, DEFAULT_LIGHT_WEBVIEWCOLOR, DEFAULT_LIGHT_BGCOLOR, DEFAULT_LIGHT_TEXTCOLOR, DEFAULT_DARK_WEBVIEWCOLOR, DEFAULT_DARK_BGCOLOR, DEFAULT_DARK_TEXTCOLOR, WHITE_LIKE_COLOR_BRIGHTNESS, MAX_LIMIT_BGCOLOR_BRIGHTNESS, MIN_LIMIT_OFFSET_BRIGHTNESS, HIGH_BGCOLOR_BRIGHTNESS, HIGH_BLACKWHITE_HSL_BRIGHTNESS, LOW_BLACKWHITE_HSL_BRIGHTNESS, IGNORE_ALPHA, PAGE_HEIGHT, CSS_PROP_SERIES, CSS_PROP_LIST, TABLE_NAME, IMPORTANT_REGEXP, SEMICOLON_PLACEHOLDER, SEMICOLON_PLACEHOLDER_REGEXP, COLOR_REGEXP, COLOR_REGEXP_GLOBAL, URL_REGEXP */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2998,10 +3024,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BGIMAGEATTR", function() { return BGIMAGEATTR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "COMPLEMENTARY_BGIMAGECOLORATTR", function() { return COMPLEMENTARY_BGIMAGECOLORATTR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BG_COLOR_DELIMITER", function() { return BG_COLOR_DELIMITER; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_LIGHT_TEXTCOLOR", function() { return DEFAULT_LIGHT_TEXTCOLOR; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_LIGHT_WEBVIEWCOLOR", function() { return DEFAULT_LIGHT_WEBVIEWCOLOR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_LIGHT_BGCOLOR", function() { return DEFAULT_LIGHT_BGCOLOR; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_DARK_TEXTCOLOR", function() { return DEFAULT_DARK_TEXTCOLOR; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_LIGHT_TEXTCOLOR", function() { return DEFAULT_LIGHT_TEXTCOLOR; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_DARK_WEBVIEWCOLOR", function() { return DEFAULT_DARK_WEBVIEWCOLOR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_DARK_BGCOLOR", function() { return DEFAULT_DARK_BGCOLOR; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_DARK_TEXTCOLOR", function() { return DEFAULT_DARK_TEXTCOLOR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WHITE_LIKE_COLOR_BRIGHTNESS", function() { return WHITE_LIKE_COLOR_BRIGHTNESS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MAX_LIMIT_BGCOLOR_BRIGHTNESS", function() { return MAX_LIMIT_BGCOLOR_BRIGHTNESS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MIN_LIMIT_OFFSET_BRIGHTNESS", function() { return MIN_LIMIT_OFFSET_BRIGHTNESS; });
@@ -3038,10 +3066,12 @@ var ORIGINAL_BGCOLORATTR = "data-darkmode-original-bgcolor-".concat(RANDOM); // 
 var BGIMAGEATTR = "data-darkmode-bgimage-".concat(RANDOM);
 var COMPLEMENTARY_BGIMAGECOLORATTR = "data-darkmode-complementary-bgimagecolor-".concat(RANDOM); // 背景图片的补色色值，单个
 var BG_COLOR_DELIMITER = '|';
-var DEFAULT_LIGHT_TEXTCOLOR = '#191919'; // 非Dark Mode下字体颜色
-var DEFAULT_LIGHT_BGCOLOR = '#fff'; // 非Dark Mode下背景颜色
-var DEFAULT_DARK_TEXTCOLOR = '#a3a3a3'; // Dark Mode下字体颜色，前景色：rgba(255,255,255,0.6) 背景色：#191919
+var DEFAULT_LIGHT_WEBVIEWCOLOR = '#fff'; // Light Mode下webView颜色
+var DEFAULT_LIGHT_BGCOLOR = '#fff'; // Light Mode下背景颜色
+var DEFAULT_LIGHT_TEXTCOLOR = '#191919'; // Light Mode下字体颜色
+var DEFAULT_DARK_WEBVIEWCOLOR = '#191919'; // Dark Mode下webView颜色
 var DEFAULT_DARK_BGCOLOR = '#191919'; // Dark Mode下背景颜色
+var DEFAULT_DARK_TEXTCOLOR = 'rgba(255,255,255,0.6)'; // Dark Mode下字体颜色
 
 var WHITE_LIKE_COLOR_BRIGHTNESS = 250; // 接近白色的感知亮度阈值
 var MAX_LIMIT_BGCOLOR_BRIGHTNESS = 190;

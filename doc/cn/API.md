@@ -20,12 +20,14 @@ API
   - `options.delayBgJudge` &lt;boolean&gt; 是否延迟背景判断，默认 `false`。
   - `options.container` &lt;DOM Object&gt; 延迟运行 js 时使用的容器，默认 `null`。
   - `options.cssSelectorsPrefix` &lt;string&gt; css 选择器前缀，默认 `''`。
-  - `options.defaultLightTextColor` &lt;string&gt; 非 Dark Mode 下字体颜色，默认 `#191919`。
-  - `options.defaultLightBgColor` &lt;string&gt; 非 Dark Mode 下背景颜色，默认 `#fff`。
-  - `options.defaultDarkTextColor` &lt;string&gt; Dark Mode 下字体颜色，默认 `#a3a3a3`。
+  - `options.defaultLightWebviewColor` &lt;string&gt; Light Mode 下 webview 颜色，默认 `#fff`。
+  - `options.defaultLightBgColor` &lt;string&gt; Light Mode 下背景颜色，默认 `#fff`。
+  - `options.defaultLightTextColor` &lt;string&gt; Light Mode 下字体颜色，默认 `#191919`。
+  - `options.defaultDarkWebviewColor` &lt;string&gt; Dark Mode 下 webview 颜色，默认 `#000`。
   - `options.defaultDarkBgColor` &lt;string&gt; Dark Mode 下背景颜色，默认 `#191919`。
+  - `options.defaultDarkTextColor` &lt;string&gt; Dark Mode 下字体颜色，默认 `#a3a3a3`。
 
-运行 Dark Mode 转换算法。**注意：可多次运行转换，但配置只可设置一次。**
+初始化并运行 Dark Mode 转换算法。**注意：可多次运行转换算法，但配置只可设置一次。**
 
 ```javascript
 Darkmode.run(document.body.querySelectorAll('*'), {
@@ -38,7 +40,7 @@ Darkmode.run(document.body.querySelectorAll('*'), {
 
 - `options` 和 `Darkmode.run()` 中的 `options` 参数一致。
 
-初始化 Dark Mode 配置。**注意：配置只可设置一次。**
+你也可以只初始化 Dark Mode 配置，后续等某个时间再运行转换算法。**注意：为了避免因不同配置而导致转换产出的差异，配置只可设置一次。**
 
 ```javascript
 Darkmode.init({
@@ -60,10 +62,12 @@ Darkmode.init({
   delayBgJudge: false, // 是否延迟背景判断
   container: null, // 延迟运行 js 时使用的容器
   cssSelectorsPrefix: '', // css 选择器前缀
-  defaultLightTextColor: '#191919', // 非 Dark Mode 下字体颜色
-  defaultLightBgColor: '#fff', // 非 Dark Mode 下背景颜色
-  defaultDarkTextColor: '#a3a3a3', // Dark Mode 下字体颜色
+  defaultLightWebviewColor: '#fff', // Light Mode 下 webview 颜色
+  defaultLightBgColor: '#fff', // Light Mode 下背景颜色
+  defaultLightTextColor: '#191919', // Light Mode 下字体颜色
+  defaultDarkWebviewColor: '#000', // Dark Mode 下 webview 颜色
   defaultDarkBgColor: '#191919', // Dark Mode 下背景颜色
+  defaultDarkTextColor: '#a3a3a3', // Dark Mode 下字体颜色
 });
 ```
 

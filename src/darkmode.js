@@ -7,21 +7,23 @@
  * @return void
  *
  * @function init 初始化Dark Mode配置
- * @param {Function}   opt.begin                 开始处理时触发的回调
- * @param {Function}   opt.showFirstPage         首屏处理完成时触发的回调
- * @param {Function}   opt.error                 发生error时触发的回调
- * @param {string}     opt.mode                  强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
- * @param {Object}     opt.whitelist             节点白名单
- * @param {Array}      opt.whitelist.tagName     标签名列表
- * @param {Array}      opt.whitelist.attribute   属性列表
- * @param {boolean}    opt.needJudgeFirstPage    是否需要判断首屏
- * @param {boolean}    opt.delayBgJudge          是否延迟背景判断
- * @param {DOM Object} opt.container             延迟运行js时使用的容器
- * @param {string}     opt.cssSelectorsPrefix    css选择器前缀
- * @param {string}     opt.defaultLightTextColor 非Dark Mode下字体颜色
- * @param {string}     opt.defaultLightBgColor   非Dark Mode下背景颜色
- * @param {string}     opt.defaultDarkTextColor  Dark Mode下字体颜色
- * @param {string}     opt.defaultDarkBgColor    Dark Mode下背景颜色
+ * @param {Function}   opt.begin                    开始处理时触发的回调
+ * @param {Function}   opt.showFirstPage            首屏处理完成时触发的回调
+ * @param {Function}   opt.error                    发生error时触发的回调
+ * @param {string}     opt.mode                     强制指定的颜色模式(dark|light), 指定了就不监听系统颜色
+ * @param {Object}     opt.whitelist                节点白名单
+ * @param {Array}      opt.whitelist.tagName        标签名列表
+ * @param {Array}      opt.whitelist.attribute      属性列表
+ * @param {boolean}    opt.needJudgeFirstPage       是否需要判断首屏
+ * @param {boolean}    opt.delayBgJudge             是否延迟背景判断
+ * @param {DOM Object} opt.container                延迟运行js时使用的容器
+ * @param {string}     opt.cssSelectorsPrefix       css选择器前缀
+ * @param {string}     opt.defaultLightWebviewColor Light Mode下webview颜色
+ * @param {string}     opt.defaultLightBgColor      Light Mode下背景颜色
+ * @param {string}     opt.defaultLightTextColor    Light Mode下字体颜色
+ * @param {string}     opt.defaultDarkWebviewColor  Dark Mode下webview颜色
+ * @param {string}     opt.defaultDarkBgColor       Dark Mode下背景颜色
+ * @param {string}     opt.defaultDarkTextColor     Dark Mode下字体颜色
  * @return void
  *
  * @function convertBg 处理背景
@@ -129,11 +131,11 @@ const switchToDarkmode = (mqlObj, opt = {
     cssUtils.writeStyle(); // 写入非首屏样式表
     domUtils.emptyFirstPageNodes(); // 清空记录的首屏节点
 
-    if (!sdk.isDarkmode) { // 非Dark Mode
-      // 首次加载页面时为非Dark Mode，标记为不需要判断首屏
+    if (!sdk.isDarkmode) { // Light Mode
+      // 首次加载页面时为Light Mode，标记为不需要判断首屏
       config.needJudgeFirstPage = false;
 
-      // 首次加载页面时为非Dark Mode，标记为不延迟判断背景
+      // 首次加载页面时为Light Mode，标记为不延迟判断背景
       config.delayBgJudge = false;
 
       if (config.container === null && opt.type === 'dom' && domUtils.length) {
@@ -160,7 +162,10 @@ export function run(nodes, opt) {
 
 // 初始化Dark Mode配置
 export function init(opt = {}) {
-  if (config.hasInit) return; // 只可设置一次配置
+  if (config.hasInit) { // 只可设置一次配置
+    console.log('Dark Mode can only be initialized once');
+    return;
+  }
 
   config.hasInit = true; // 记录为配置已设置
 
@@ -188,10 +193,7 @@ export function init(opt = {}) {
   config.set('boolean', opt, 'delayBgJudge');
   config.set('dom', opt, 'container');
   config.set('string', opt, 'cssSelectorsPrefix');
-  config.set('string', opt, 'defaultLightTextColor');
-  config.set('string', opt, 'defaultLightBgColor');
-  config.set('string', opt, 'defaultDarkTextColor');
-  config.set('string', opt, 'defaultDarkBgColor');
+  config.setDefaultColor(opt);
 
   sdk.init();
 
