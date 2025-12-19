@@ -2726,7 +2726,7 @@ var BgNodeStack = /*#__PURE__*/function () {
 /*!******************************!*\
   !*** ./src/modules/color.js ***!
   \******************************/
-/*! exports provided: ColorParser, parseColorName, parseWebkitFillColorAndStrokeColor, mixColors, getColorPerceivedBrightness, adjustBrightnessTo */
+/*! exports provided: ColorParser, parseColorName, parseWebkitFillColorAndStrokeColor, mixColors, getFrontColor, getColorPerceivedBrightness, adjustBrightnessTo */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2735,6 +2735,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parseColorName", function() { return parseColorName; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "parseWebkitFillColorAndStrokeColor", function() { return parseWebkitFillColorAndStrokeColor; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mixColors", function() { return mixColors; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getFrontColor", function() { return getFrontColor; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getColorPerceivedBrightness", function() { return getColorPerceivedBrightness; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "adjustBrightnessTo", function() { return adjustBrightnessTo; });
 /* harmony import */ var color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! color */ "./node_modules/color/index.js");
@@ -2747,7 +2748,7 @@ __webpack_require__.r(__webpack_exports__);
  * @name 颜色操作相关API
  *
  * @function ColorParser 实例化Color对象，传参非法时返回null
- * @param {string} color css色值
+ * @param {string | Color Object | null} color css色值
  * @return {Color Object | null} 实例化结果
  *
  * @function parseColorName 处理颜色，包括清除!important和转换英文定义颜色
@@ -2760,9 +2761,16 @@ __webpack_require__.r(__webpack_exports__);
  * @return {string} 处理后的rgb(a)格式css色值，无则返回空字符串
  *
  * @function mixColors 计算混合颜色
- * @param {string} colors 用于计算的颜色数组
+ * @param {(string | Color Object | null)[]} colors 用于计算的颜色数组
  * @param {string} type 使用的混合颜色算法，支持 mix(默认) | normal | multiply | screen | overlay | darken | lighten | colorDodge | colorBurn | hardLight | softLight | difference | exclusion | hue | saturation | color | luminosity
  * @return {Color Object | null} 混合结果
+ *
+ * @function getFrontColor 根据混合色、背景色和前景色透明度，反推前景色rgba，目前只支持 type = 'normal'
+ * @param {string | Color Object} retColor 混合色
+ * @param {string | Color Object} bgColor 背景色
+ * @param {number} frontColorAlpha 前景色透明度
+ * @param {string} type 使用的混合颜色算法，支持 mix(默认) | normal | multiply | screen | overlay | darken | lighten | colorDodge | colorBurn | hardLight | softLight | difference | exclusion | hue | saturation | color | luminosity
+ * @return {Color Object} 前景色
  *
  * @function getColorPerceivedBrightness 计算感知亮度
  * @param {RGB Array} rgb 要计算的颜色rgb数组，如：[255, 0, 0]
@@ -2804,6 +2812,7 @@ var colorBlend2Color = function colorBlend2Color(colorBlend) {
 
 // 实例化Color对象，传参非法时返回null
 var ColorParser = function ColorParser(color) {
+  if (!color) return null;
   var res = null;
   try {
     res = color instanceof color__WEBPACK_IMPORTED_MODULE_0___default.a ? color : color__WEBPACK_IMPORTED_MODULE_0___default()(color);
@@ -2832,27 +2841,48 @@ var parseWebkitFillColorAndStrokeColor = function parseWebkitFillColorAndStrokeC
 // 计算混合颜色
 var mixColors = function mixColors(colors) {
   var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'mix';
-  if (Object.prototype.toString.call(colors) !== '[object Array]' || colors.length < 1) return null;
-  if (colors.length === 1) return colors[0];
-  var color1 = ColorParser(colors.shift());
-  var color2 = ColorParser(colors.shift());
+  if (Object.prototype.toString.call(colors) !== '[object Array]') return null;
+  var filterColors = colors.filter(function (color) {
+    return !!color;
+  });
+  if (filterColors.length < 1) return null;
+  if (filterColors.length === 1) return ColorParser(filterColors[0]);
+  var color1 = ColorParser(filterColors.shift());
+  var color2 = ColorParser(filterColors.shift());
   while (color2) {
     if (!color1 && color2) {
       // 如果当前色值非法，混入色值合法，则直接使用混入色值
       color1 = color2;
     } else if (!color1 && !color2) {
       // 如果两个色值都非法，则使用下一批色值
-      if (colors.length === 0) break;
-      color1 = ColorParser(colors.shift());
+      if (filterColors.length === 0) break;
+      color1 = ColorParser(filterColors.shift());
     } else if (color1 && color2) {
       // 如果两个色值都合法，执行mix
       color1 = type === 'mix' ? color1.mix(color2, color2.alpha()) : colorBlend2Color(color_blend__WEBPACK_IMPORTED_MODULE_2__[type](color2ColorBlend(color1), color2ColorBlend(color2)));
     } // 如果当前色值合法，混入色值非法，无需处理
 
-    if (colors.length === 0) break;
-    color2 = ColorParser(colors.shift());
+    if (filterColors.length === 0) break;
+    color2 = ColorParser(filterColors.shift());
   }
   return color1 || null;
+};
+
+// 根据混合色、背景色和前景色透明度，反推前景色rgba，目前只支持 type = 'normal'
+var getFrontColor = function getFrontColor(retColor, bgColor, frontColorAlpha) {
+  var type = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'normal';
+  if (type === 'normal') {
+    var retColorRgb = ColorParser(retColor).rgb().array().slice(0, 3);
+    var bgColorObj = Object.prototype.toString.call(bgColor) === '[object Array]' ? mixColors(bgColor, type) : ColorParser(bgColor);
+    var bgColorRgb = bgColorObj.rgb().array().slice(0, 3);
+    var bgColorAlpha = bgColorObj.alpha();
+    return ColorParser("rgba(".concat(retColorRgb.map(function (r, idx) {
+      var b = bgColorRgb[idx];
+      return Math.round(r + bgColorAlpha * (1 - frontColorAlpha) * (r - b) / frontColorAlpha);
+    }).join(', '), ", ").concat(frontColorAlpha, ")"));
+  }
+  console.warn("getFrontColor not support type=".concat(type));
+  return null;
 };
 
 // 计算感知亮度
@@ -2873,7 +2903,7 @@ var adjustBrightnessTo = function adjustBrightnessTo(target, rgb) {
   } else if (newTextB === 0 || newTextG === 255) {
     newTextB = (target * 1000 - newTextR * 299 - newTextG * 587) / 114;
   }
-  return color__WEBPACK_IMPORTED_MODULE_0___default.a.rgb(newTextR, newTextG, newTextB);
+  return color__WEBPACK_IMPORTED_MODULE_0___default.a.rgb(newTextR, newTextG, newTextB, rgb[3] || 1);
 };
 
 /***/ }),
@@ -3815,27 +3845,25 @@ var SDK = /*#__PURE__*/function () {
         if (alpha >= _constant__WEBPACK_IMPORTED_MODULE_2__["IGNORE_ALPHA"]) {
           // 如果设置背景颜色，取消背景图片的影响
           if (el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) delete el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]];
-
-          // 如果有背景图片补色
-          if (el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]]) {
-            // 背景图片补色和当前背景色一致，则无需处理
-            // 根据最小可觉差Just-noticeable difference(即JND，表示人类或动物对于某一特定的感官刺激所能察觉的最小改变）和韦伯-费希纳定律，在特定条件下，人类能感知小至 0.5% - 2% 的变化，0.5%换算成对比度为1.1
-            // https://zh.wikipedia.org/wiki/%E6%9C%80%E5%B0%8F%E5%8F%AF%E8%A6%BA%E5%B7%AE 最小可觉差wiki
-            // https://zh.wikipedia.org/wiki/%E9%9F%8B%E4%BC%AF-%E8%B2%BB%E5%B8%8C%E7%B4%8D%E5%AE%9A%E7%90%86 韦伯-费希纳定理wiki
-            if (el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]] === color.toString() || this.getContrast(el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]], color.toString()) < 1.1) return {
-              newColor: '',
-              extStyle: extStyle
-            };
-
-            // 否则取消背景图片补色的影响
-            Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
-              delete dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]];
-            });
-          }
         }
 
-        // newColor = this._adjustBackgroundBrightness(color);
-        newColor = this._adjustBackgroundBrightness(color, Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor, color], 'normal'));
+        // 如果有背景图片补色
+        if (el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]]) {
+          // 背景图片补色和当前背景色一致，则无需处理
+          // 根据最小可觉差Just-noticeable difference(即JND，表示人类或动物对于某一特定的感官刺激所能察觉的最小改变）和韦伯-费希纳定律，在特定条件下，人类能感知小至 0.5% - 2% 的变化，0.5%换算成对比度为1.1
+          // https://zh.wikipedia.org/wiki/%E6%9C%80%E5%B0%8F%E5%8F%AF%E8%A6%BA%E5%B7%AE 最小可觉差wiki
+          // https://zh.wikipedia.org/wiki/%E9%9F%8B%E4%BC%AF-%E8%B2%BB%E5%B8%8C%E7%B4%8D%E5%AE%9A%E7%90%86 韦伯-费希纳定理wiki
+          if (el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]] === color.toString() || this.getContrast(el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]], color.toString()) < 1.1) return {
+            newColor: '',
+            extStyle: extStyle
+          };
+
+          // 否则取消背景图片补色的影响
+          Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
+            delete dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]];
+          });
+        }
+        newColor = this._adjustBackgroundBrightness(color, Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor, el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]] || null], 'normal'));
         if (!options.hasInlineColor) {
           var parentTextColorStr = el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightTextColor;
           var parentTextColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(parentTextColorStr);
@@ -3870,12 +3898,12 @@ var SDK = /*#__PURE__*/function () {
         // 字体阴影
         // 无背景图片
         if (!el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) {
-          newColor = this._adjustBackgroundBrightness(color, Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor, color], 'normal')); // 按照背景色的方法来处理
+          newColor = this._adjustBackgroundBrightness(color, Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor, el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]] || null], 'normal'));
         }
       }
-
       return {
-        newColor: newColor && color.toString() !== newColor.toString() && newColor.alpha(alpha).rgb(),
+        // newColor: newColor && color.toString() !== newColor.toString() && newColor.alpha(alpha).rgb(), // TODO: check .alpha(alpha)逻辑
+        newColor: newColor && color.toString() !== newColor.toString() && newColor.rgb(),
         extStyle: extStyle
       };
     }
@@ -3924,52 +3952,26 @@ var SDK = /*#__PURE__*/function () {
     }
 
     // 调整背景明度
-    // _adjustBackgroundBrightness(bgColor) {
-    //   const bgColorRgb = bgColor.rgb().array();
-    //   const bgColorHsl = bgColor.hsl().array();
-    //   const bgColorAlpha = bgColor.alpha();
-    //   const bgColorPerceivedBrightness = getColorPerceivedBrightness(bgColorRgb);
-    //   let newColor = bgColor;
-    //   if ((bgColorHsl[1] === 0 && bgColorHsl[2] > HIGH_BLACKWHITE_HSL_BRIGHTNESS)
-    //     || bgColorPerceivedBrightness > WHITE_LIKE_COLOR_BRIGHTNESS) {
-    //     // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
-    //     newColor = Color.hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - bgColorHsl[2]));
-    //   } else if (bgColorPerceivedBrightness > MAX_LIMIT_BGCOLOR_BRIGHTNESS) {
-    //     // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
-    //     newColor = adjustBrightnessTo(MAX_LIMIT_BGCOLOR_BRIGHTNESS, bgColorRgb).alpha(bgColorAlpha);
-    //     // const ratio = (MAX_LIMIT_BGCOLOR_BRIGHTNESS * 1000)
-    //     //   / (bgColorRgb[0] * 299 + bgColorRgb[1] * 587 + bgColorRgb[2] * 114);
-    //     // newColor = Color.rgb(bgColorRgb[0] * ratio, bgColorRgb[1] * ratio, bgColorRgb[2] * ratio);
-    //   } else if (bgColorHsl[2] < LOW_BLACKWHITE_HSL_BRIGHTNESS) {
-    //     // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
-    //     bgColorHsl[2] = LOW_BLACKWHITE_HSL_BRIGHTNESS;
-    //     newColor = Color.hsl(...bgColorHsl);
-    //   }
-    //   return newColor.alpha(bgColorAlpha).rgb();
-    // }
-
-    // 调整背景明度
   }, {
     key: "_adjustBackgroundBrightness",
-    value: function _adjustBackgroundBrightness(bgColor) {
-      var bgColorMix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : bgColor;
-      var bgColorHsl = bgColor.hsl().array();
-      var bgColorAlpha = bgColor.alpha();
-      var bgColorMixHsl = bgColorMix.hsl().array();
-      var bgColorMixPerceivedBrightness = Object(_color__WEBPACK_IMPORTED_MODULE_1__["getColorPerceivedBrightness"])(bgColorMix.rgb().array());
-      var newColor = bgColor;
-      if (bgColorMixHsl[1] === 0 && bgColorMixHsl[2] > _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BLACKWHITE_HSL_BRIGHTNESS"] || bgColorMixPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_2__["WHITE_LIKE_COLOR_BRIGHTNESS"]) {
+    value: function _adjustBackgroundBrightness(bgColor, bgColorMix) {
+      var mixColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([bgColorMix, bgColor], 'normal');
+      var mixColorRgb = mixColor.rgb().array();
+      var mixColorHsl = mixColor.hsl().array();
+      var mixColorPerceivedBrightness = Object(_color__WEBPACK_IMPORTED_MODULE_1__["getColorPerceivedBrightness"])(mixColorRgb);
+      var newColor = mixColor;
+      if (mixColorHsl[1] === 0 && mixColorHsl[2] > _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BLACKWHITE_HSL_BRIGHTNESS"] || mixColorPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_2__["WHITE_LIKE_COLOR_BRIGHTNESS"]) {
         // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
-        newColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - bgColorHsl[2]));
-      } else if (bgColorMixPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_2__["MAX_LIMIT_BGCOLOR_BRIGHTNESS"]) {
+        newColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - mixColorHsl[2]), mixColorHsl[3] || 1);
+      } else if (mixColorPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_2__["MAX_LIMIT_BGCOLOR_BRIGHTNESS"]) {
         // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
-        newColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["adjustBrightnessTo"])(_constant__WEBPACK_IMPORTED_MODULE_2__["MAX_LIMIT_BGCOLOR_BRIGHTNESS"], bgColor.rgb().array()).alpha(bgColorAlpha);
-      } else if (bgColorMixHsl[2] < _constant__WEBPACK_IMPORTED_MODULE_2__["LOW_BLACKWHITE_HSL_BRIGHTNESS"]) {
+        newColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["adjustBrightnessTo"])(_constant__WEBPACK_IMPORTED_MODULE_2__["MAX_LIMIT_BGCOLOR_BRIGHTNESS"], mixColorRgb);
+      } else if (mixColorHsl[2] < _constant__WEBPACK_IMPORTED_MODULE_2__["LOW_BLACKWHITE_HSL_BRIGHTNESS"]) {
         // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
-        bgColorHsl[2] = _constant__WEBPACK_IMPORTED_MODULE_2__["LOW_BLACKWHITE_HSL_BRIGHTNESS"];
-        newColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl.apply(color__WEBPACK_IMPORTED_MODULE_0___default.a, _toConsumableArray(bgColorHsl));
+        mixColorHsl[2] = _constant__WEBPACK_IMPORTED_MODULE_2__["LOW_BLACKWHITE_HSL_BRIGHTNESS"];
+        newColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl.apply(color__WEBPACK_IMPORTED_MODULE_0___default.a, _toConsumableArray(mixColorHsl));
       }
-      return newColor.alpha(bgColorAlpha).rgb();
+      return Object(_color__WEBPACK_IMPORTED_MODULE_1__["getFrontColor"])(newColor, bgColorMix, bgColor.alpha(), 'normal');
     }
 
     // 叠加渐变色到背景色中，并更新背景色相关属性值以及文本颜色
@@ -4228,7 +4230,7 @@ var SDK = /*#__PURE__*/function () {
                 }
                 var matchColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(match);
                 if ((matchColor === null || matchColor === void 0 ? void 0 : matchColor.alpha()) >= _constant__WEBPACK_IMPORTED_MODULE_2__["IGNORE_ALPHA"]) {
-                  // 忽略透明度低的色值
+                  // 忽略透明度低的色值 // TODO: 后面要干掉这个逻辑
                   // 使用颜色处理算法
                   var ret = _this._adjustBrightness(matchColor, el, {
                     isBgColor: isBgColor,

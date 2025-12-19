@@ -53,7 +53,10 @@
           </div>
 
           <div>
-            <h2 class="demo_title" id="dark_online_title">Dark Mode online</h2>
+            <h2 class="demo_title">
+              <span id="dark_online_title">Dark Mode online</span>
+              <a id="validate_online" href="javascript:;">校验</a>
+            </h2>
             <div class="rich_media_wrp article_dark">
               <div class="rich_media_content" id="dark_online">
                 <cases />
@@ -62,7 +65,10 @@
           </div>
 
           <div>
-            <h2 class="demo_title" id="dark_title">Dark Mode</h2>
+            <h2 class="demo_title">
+              <span id="dark_title">Dark Mode</span>
+              <a id="validate" href="javascript:;">校验</a>
+            </h2>
             <div class="rich_media_wrp article_dark">
               <div class="rich_media_content" id="dark">
                 <cases />
@@ -157,8 +163,14 @@
     // }); // 模拟秒开分批渲染
 
     // 校验
-    Darkmode.validate(container, function(node) {
+    var filter = function(node) {
       return node.classList.contains('validate_ignore');
+    };
+    document.getElementById('validate_online').addEventListener('click', function() {
+      DarkmodeOnline.validate(container, filter);
+    });
+    document.getElementById('validate').addEventListener('click', function() {
+      Darkmode.validate(container, filter);
     });
   </script>
 </body>

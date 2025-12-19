@@ -2,7 +2,7 @@
  * @name 颜色操作相关API
  *
  * @function ColorParser 实例化Color对象，传参非法时返回null
- * @param {string} color css色值
+ * @param {string | Color Object | null} color css色值
  * @return {Color Object | null} 实例化结果
  *
  * @function parseColorName 处理颜色，包括清除!important和转换英文定义颜色
@@ -15,9 +15,16 @@
  * @return {string} 处理后的rgb(a)格式css色值，无则返回空字符串
  *
  * @function mixColors 计算混合颜色
- * @param {string} colors 用于计算的颜色数组
+ * @param {(string | Color Object | null)[]} colors 用于计算的颜色数组
  * @param {string} type 使用的混合颜色算法，支持 mix(默认) | normal | multiply | screen | overlay | darken | lighten | colorDodge | colorBurn | hardLight | softLight | difference | exclusion | hue | saturation | color | luminosity
  * @return {Color Object | null} 混合结果
+ *
+ * @function getFrontColor 根据混合色、背景色和前景色透明度，反推前景色rgba，目前只支持 type = 'normal'
+ * @param {string | Color Object} retColor 混合色
+ * @param {string | Color Object} bgColor 背景色
+ * @param {number} frontColorAlpha 前景色透明度
+ * @param {string} type 使用的混合颜色算法，支持 mix(默认) | normal | multiply | screen | overlay | darken | lighten | colorDodge | colorBurn | hardLight | softLight | difference | exclusion | hue | saturation | color | luminosity
+ * @return {Color Object} 前景色
  *
  * @function getColorPerceivedBrightness 计算感知亮度
  * @param {RGB Array} rgb 要计算的颜色rgb数组，如：[255, 0, 0]
@@ -61,6 +68,7 @@ const colorBlend2Color = colorBlend => {
 
 // 实例化Color对象，传参非法时返回null
 export const ColorParser = color => {
+  if (!color) return null;
   let res = null;
   try {
     res = color instanceof Color ? color : Color(color);
@@ -86,28 +94,48 @@ export const parseWebkitFillColorAndStrokeColor = color => {
 
 // 计算混合颜色
 export const mixColors = (colors, type = 'mix') => {
-  if (Object.prototype.toString.call(colors) !== '[object Array]' || colors.length < 1) return null;
-  if (colors.length === 1) return colors[0];
+  if (Object.prototype.toString.call(colors) !== '[object Array]') return null;
 
-  let color1 = ColorParser(colors.shift());
-  let color2 = ColorParser(colors.shift());
+  const filterColors = colors.filter(color => !!color);
+  if (filterColors.length < 1) return null;
+  if (filterColors.length === 1) return ColorParser(filterColors[0]);
+
+  let color1 = ColorParser(filterColors.shift());
+  let color2 = ColorParser(filterColors.shift());
   while (color2) {
     if (!color1 && color2) { // 如果当前色值非法，混入色值合法，则直接使用混入色值
       color1 = color2;
     } else if (!color1 && !color2) { // 如果两个色值都非法，则使用下一批色值
-      if (colors.length === 0) break;
-      color1 = ColorParser(colors.shift());
+      if (filterColors.length === 0) break;
+      color1 = ColorParser(filterColors.shift());
     } else if (color1 && color2) { // 如果两个色值都合法，执行mix
       color1 = (type === 'mix'
         ? color1.mix(color2, color2.alpha())
         : colorBlend2Color(ColorBlend[type](color2ColorBlend(color1), color2ColorBlend(color2))));
     } // 如果当前色值合法，混入色值非法，无需处理
 
-    if (colors.length === 0) break;
-    color2 = ColorParser(colors.shift());
+    if (filterColors.length === 0) break;
+    color2 = ColorParser(filterColors.shift());
   }
 
   return color1 || null;
+};
+
+// 根据混合色、背景色和前景色透明度，反推前景色rgba，目前只支持 type = 'normal'
+export const getFrontColor = (retColor, bgColor, frontColorAlpha, type = 'normal') => {
+  if (type === 'normal') {
+    const retColorRgb = ColorParser(retColor).rgb().array().slice(0, 3);
+    const bgColorObj = Object.prototype.toString.call(bgColor) === '[object Array]' ? mixColors(bgColor, type) : ColorParser(bgColor);
+    const bgColorRgb = bgColorObj.rgb().array().slice(0, 3);
+    const bgColorAlpha = bgColorObj.alpha();
+    return ColorParser(`rgba(${retColorRgb.map((r, idx) => {
+      const b = bgColorRgb[idx];
+      return Math.round(r + (bgColorAlpha * (1 - frontColorAlpha) * (r - b)) / frontColorAlpha);
+    }).join(', ')}, ${frontColorAlpha})`);
+  }
+
+  console.warn(`getFrontColor not support type=${type}`);
+  return null;
 };
 
 // 计算感知亮度
@@ -126,5 +154,5 @@ export const adjustBrightnessTo = (target, rgb) => {
   } else if (newTextB === 0 || newTextG === 255) {
     newTextB = (target * 1000 - newTextR * 299 - newTextG * 587) / 114;
   }
-  return Color.rgb(newTextR, newTextG, newTextB);
+  return Color.rgb(newTextR, newTextG, newTextB, rgb[3] || 1);
 };
