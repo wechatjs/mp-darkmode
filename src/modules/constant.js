@@ -11,13 +11,12 @@ export const DM_CLASSNAME_REGEXP = new RegExp(`${CLASS_PREFIX}\\d+`);
 export const HTML_CLASS = 'data_color_scheme_dark'; // 强制设置暗黑模式时给html加的class
 
 const RANDOM = `${new Date() * 1}${Math.floor(Math.random() * 10000)}`; // 生成个随机数，格式为时间戳+随机数
-export const COLORATTR = `data-darkmode-color-${RANDOM}`; // dm color，即算法生成的新色值，单个
-export const BGCOLORATTR = `data-darkmode-bgcolor-${RANDOM}`; // dm bg-color，即算法生成的新色值，单个
-export const ORIGINAL_COLORATTR = `data-darkmode-original-color-${RANDOM}`; // lm color，即原色值，单个
-export const ORIGINAL_BGCOLORATTR = `data-darkmode-original-bgcolor-${RANDOM}`; // lm bg-color，即原色值，有多个，用BG_COLOR_DELIMITER分割
-export const BGIMAGEATTR = `data-darkmode-bgimage-${RANDOM}`;
-export const COMPLEMENTARY_BGIMAGECOLORATTR = `data-darkmode-complementary-bgimagecolor-${RANDOM}`; // 背景图片的补色色值，单个
-export const BG_COLOR_DELIMITER = '|';
+export const COLORATTR = `data-darkmode-color-${RANDOM}`; // dm color，即算法生成的已mix新色值
+export const BGCOLORATTR = `data-darkmode-bgcolor-${RANDOM}`; // dm bg-color，即算法生成的已mix新色值
+export const ORIGINAL_COLORATTR = `data-darkmode-original-color-${RANDOM}`; // lm color，即原色值
+export const ORIGINAL_BGCOLORATTR = `data-darkmode-original-bgcolor-${RANDOM}`; // lm bg-color，即原色值
+export const BGIMAGEATTR = `data-darkmode-bgimage-${RANDOM}`; // 是否有背景图片的标记
+export const COMPLEMENTARY_BGIMAGECOLORATTR = `data-darkmode-complementary-bgimagecolor-${RANDOM}`; // 背景图片的补色色值
 
 export const DEFAULT_LIGHT_WEBVIEWCOLOR = '#fff'; // Light Mode下webView颜色
 export const DEFAULT_LIGHT_BGCOLOR = '#fff'; // Light Mode下背景颜色

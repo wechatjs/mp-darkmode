@@ -7,8 +7,25 @@
   <link rel="stylesheet" href="./light.css">
   <link rel="stylesheet" href="./dark.css">
   <style>
+    .column {
+      position: relative;
+    }
     .demo_title {
-      margin: 20px;
+      box-sizing: border-box;
+      padding: 20px;
+      background-color: #fff;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      width: 572px;
+      line-height: 26px;
+    }
+    .column:nth-child(2) .demo_title {
+      left: 572px;
+    }
+    .column:nth-child(3) .demo_title {
+      left: 1144px;
     }
     .mp_artical_style_section_title {
       margin: 40px 0 10px 0;
@@ -27,7 +44,7 @@
     }
     .rich_media_wrp {
       width: 500px;
-      margin: 0 20px;
+      margin: 66px 20px 0;
       padding: 16px;
     }
     @media screen and (min-width: 1024px) {
@@ -43,7 +60,7 @@
     <div class="rich_media_inner">
       <div class="rich_media_area_primary">
         <div class="rich_media_area_primary_inner">
-          <div>
+          <div class="column">
             <h2 class="demo_title"><span id="mode_name"></span> Mode <a id="switch_mode" href="javascript:;">切换</a></h2>
             <div id="original_wrp" class="rich_media_wrp">
               <div class="rich_media_content" id="light">
@@ -52,7 +69,7 @@
             </div>
           </div>
 
-          <div>
+          <div class="column">
             <h2 class="demo_title">
               <span id="dark_online_title">Dark Mode online</span>
               <a id="validate_online" href="javascript:;">校验</a>
@@ -64,7 +81,7 @@
             </div>
           </div>
 
-          <div>
+          <div class="column">
             <h2 class="demo_title">
               <span id="dark_title">Dark Mode</span>
               <a id="validate" href="javascript:;">校验</a>

@@ -3038,7 +3038,7 @@ var config = {
 /*!*********************************!*\
   !*** ./src/modules/constant.js ***!
   \*********************************/
-/*! exports provided: MEDIA_QUERY, CLASS_PREFIX, DM_CLASSNAME_REGEXP, HTML_CLASS, COLORATTR, BGCOLORATTR, ORIGINAL_COLORATTR, ORIGINAL_BGCOLORATTR, BGIMAGEATTR, COMPLEMENTARY_BGIMAGECOLORATTR, BG_COLOR_DELIMITER, DEFAULT_LIGHT_WEBVIEWCOLOR, DEFAULT_LIGHT_BGCOLOR, DEFAULT_LIGHT_TEXTCOLOR, DEFAULT_DARK_WEBVIEWCOLOR, DEFAULT_DARK_BGCOLOR, DEFAULT_DARK_TEXTCOLOR, WHITE_LIKE_COLOR_BRIGHTNESS, MAX_LIMIT_BGCOLOR_BRIGHTNESS, MIN_LIMIT_OFFSET_BRIGHTNESS, HIGH_BGCOLOR_BRIGHTNESS, HIGH_BLACKWHITE_HSL_BRIGHTNESS, LOW_BLACKWHITE_HSL_BRIGHTNESS, IGNORE_ALPHA, PAGE_HEIGHT, CSS_PROP_SERIES, CSS_PROP_LIST, TABLE_NAME, IMPORTANT_REGEXP, SEMICOLON_PLACEHOLDER, SEMICOLON_PLACEHOLDER_REGEXP, COLOR_REGEXP, COLOR_REGEXP_GLOBAL, URL_REGEXP */
+/*! exports provided: MEDIA_QUERY, CLASS_PREFIX, DM_CLASSNAME_REGEXP, HTML_CLASS, COLORATTR, BGCOLORATTR, ORIGINAL_COLORATTR, ORIGINAL_BGCOLORATTR, BGIMAGEATTR, COMPLEMENTARY_BGIMAGECOLORATTR, DEFAULT_LIGHT_WEBVIEWCOLOR, DEFAULT_LIGHT_BGCOLOR, DEFAULT_LIGHT_TEXTCOLOR, DEFAULT_DARK_WEBVIEWCOLOR, DEFAULT_DARK_BGCOLOR, DEFAULT_DARK_TEXTCOLOR, WHITE_LIKE_COLOR_BRIGHTNESS, MAX_LIMIT_BGCOLOR_BRIGHTNESS, MIN_LIMIT_OFFSET_BRIGHTNESS, HIGH_BGCOLOR_BRIGHTNESS, HIGH_BLACKWHITE_HSL_BRIGHTNESS, LOW_BLACKWHITE_HSL_BRIGHTNESS, IGNORE_ALPHA, PAGE_HEIGHT, CSS_PROP_SERIES, CSS_PROP_LIST, TABLE_NAME, IMPORTANT_REGEXP, SEMICOLON_PLACEHOLDER, SEMICOLON_PLACEHOLDER_REGEXP, COLOR_REGEXP, COLOR_REGEXP_GLOBAL, URL_REGEXP */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3053,7 +3053,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ORIGINAL_BGCOLORATTR", function() { return ORIGINAL_BGCOLORATTR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BGIMAGEATTR", function() { return BGIMAGEATTR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "COMPLEMENTARY_BGIMAGECOLORATTR", function() { return COMPLEMENTARY_BGIMAGECOLORATTR; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BG_COLOR_DELIMITER", function() { return BG_COLOR_DELIMITER; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_LIGHT_WEBVIEWCOLOR", function() { return DEFAULT_LIGHT_WEBVIEWCOLOR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_LIGHT_BGCOLOR", function() { return DEFAULT_LIGHT_BGCOLOR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DEFAULT_LIGHT_TEXTCOLOR", function() { return DEFAULT_LIGHT_TEXTCOLOR; });
@@ -3089,13 +3088,13 @@ var DM_CLASSNAME_REGEXP = new RegExp("".concat(CLASS_PREFIX, "\\d+"));
 var HTML_CLASS = 'data_color_scheme_dark'; // 强制设置暗黑模式时给html加的class
 
 var RANDOM = "".concat(new Date() * 1).concat(Math.floor(Math.random() * 10000)); // 生成个随机数，格式为时间戳+随机数
-var COLORATTR = "data-darkmode-color-".concat(RANDOM); // dm color，即算法生成的新色值，单个
-var BGCOLORATTR = "data-darkmode-bgcolor-".concat(RANDOM); // dm bg-color，即算法生成的新色值，单个
-var ORIGINAL_COLORATTR = "data-darkmode-original-color-".concat(RANDOM); // lm color，即原色值，单个
-var ORIGINAL_BGCOLORATTR = "data-darkmode-original-bgcolor-".concat(RANDOM); // lm bg-color，即原色值，有多个，用BG_COLOR_DELIMITER分割
-var BGIMAGEATTR = "data-darkmode-bgimage-".concat(RANDOM);
-var COMPLEMENTARY_BGIMAGECOLORATTR = "data-darkmode-complementary-bgimagecolor-".concat(RANDOM); // 背景图片的补色色值，单个
-var BG_COLOR_DELIMITER = '|';
+var COLORATTR = "data-darkmode-color-".concat(RANDOM); // dm color，即算法生成的已mix新色值
+var BGCOLORATTR = "data-darkmode-bgcolor-".concat(RANDOM); // dm bg-color，即算法生成的已mix新色值
+var ORIGINAL_COLORATTR = "data-darkmode-original-color-".concat(RANDOM); // lm color，即原色值
+var ORIGINAL_BGCOLORATTR = "data-darkmode-original-bgcolor-".concat(RANDOM); // lm bg-color，即原色值
+var BGIMAGEATTR = "data-darkmode-bgimage-".concat(RANDOM); // 是否有背景图片的标记
+var COMPLEMENTARY_BGIMAGECOLORATTR = "data-darkmode-complementary-bgimagecolor-".concat(RANDOM); // 背景图片的补色色值
+
 var DEFAULT_LIGHT_WEBVIEWCOLOR = '#fff'; // Light Mode下webView颜色
 var DEFAULT_LIGHT_BGCOLOR = '#fff'; // Light Mode下背景颜色
 var DEFAULT_LIGHT_TEXTCOLOR = '#191919'; // Light Mode下字体颜色
@@ -3837,14 +3836,15 @@ var SDK = /*#__PURE__*/function () {
       // 字体阴影
       // 处理方法：按照背景的处理方法来处理
 
-      var alpha = color.alpha();
       var newColor;
       var extStyle = '';
       if (options.isBgColor) {
         // 背景色
-        if (alpha >= _constant__WEBPACK_IMPORTED_MODULE_2__["IGNORE_ALPHA"]) {
-          // 如果设置背景颜色，取消背景图片的影响
-          if (el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) delete el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]];
+        // 如果有背景颜色，取消背景图片的影响
+        if (color.alpha() >= _constant__WEBPACK_IMPORTED_MODULE_2__["IGNORE_ALPHA"] && el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) {
+          Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
+            delete dom[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]];
+          });
         }
 
         // 如果有背景图片补色
@@ -3863,46 +3863,54 @@ var SDK = /*#__PURE__*/function () {
             delete dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]];
           });
         }
-        newColor = this._adjustBackgroundBrightness(color, Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor, el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]] || null], 'normal'));
+        var bgColor = el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor;
+        newColor = this._adjustBackgroundBrightness(color, bgColor);
+
+        // 如果内联样式没有color，使用继承的原字体颜色和当前背景色算出合适的字体颜色
         if (!options.hasInlineColor) {
-          var parentTextColorStr = el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightTextColor;
-          var parentTextColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(parentTextColorStr);
-          if (parentTextColor) {
-            var ret = this._adjustBrightness(parentTextColor, el, {
-              isTextColor: true,
-              // parentElementBgColorStr: newColor || color
-              parentElementBgColorStr: Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor, newColor || color], 'normal')
-            }, isUpdate);
-            if (ret.newColor) {
-              extStyle += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('color', ret.newColor);
-            } else {
-              extStyle += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('color', parentTextColor);
-            }
+          var parentElementBgColorStr = Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([bgColor, newColor || color], 'normal');
+          var parentTextColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightTextColor);
+          var ret = this._adjustBrightness(parentTextColor, el, {
+            isBgColor: false,
+            isTextShadow: false,
+            isTextColor: true,
+            isBorderColor: false,
+            hasInlineColor: true,
+            parentElementBgColorStr: parentElementBgColorStr
+          }, isUpdate);
+          if (ret.newColor) {
+            extStyle += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('color', ret.newColor);
+          } else {
+            extStyle += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('color', parentTextColor);
           }
+
+          // 对文字颜色做继承传递，用于文字亮度计算
+          Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
+            dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COLORATTR"]] = Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([parentElementBgColorStr, ret.newColor || parentTextColor], 'normal');
+            dom[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]] = parentTextColor;
+          });
         }
       } else if (options.isTextColor || options.isBorderColor) {
         // 字体色、边框色
-        var parentElementBgColorStr = options.parentElementBgColorStr || options.isTextColor && el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor;
-        var parentElementBgColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(parentElementBgColorStr);
+        var _parentElementBgColorStr = options.parentElementBgColorStr || options.isTextColor && el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor;
+        var parentElementBgColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(_parentElementBgColorStr);
 
         // 无背景图片
         if (parentElementBgColor && !el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) {
           newColor = this._adjustTextBrightness(color, parentElementBgColor);
           _global__WEBPACK_IMPORTED_MODULE_4__["plugins"].emit("afterConvertTextColor".concat(isUpdate ? 'ByUpdateStyle' : ''), el, {
-            // fontColor: color,
             fontColor: newColor,
             bgColor: parentElementBgColor
           });
         }
       } else if (options.isTextShadow) {
-        // 字体阴影
+        // 字体阴影，当背景色处理
         // 无背景图片
         if (!el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) {
-          newColor = this._adjustBackgroundBrightness(color, Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor, el[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]] || null], 'normal'));
+          newColor = this._adjustBackgroundBrightness(color, el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor);
         }
       }
       return {
-        // newColor: newColor && color.toString() !== newColor.toString() && newColor.alpha(alpha).rgb(), // TODO: check .alpha(alpha)逻辑
         newColor: newColor && color.toString() !== newColor.toString() && newColor.rgb(),
         extStyle: extStyle
       };
@@ -3911,43 +3919,45 @@ var SDK = /*#__PURE__*/function () {
     // 调整文本明度
   }, {
     key: "_adjustTextBrightness",
-    value: function _adjustTextBrightness(textColor, bgColor) {
-      var bgColorRgb = bgColor.rgb().array();
-      var bgColorAlpha = bgColor.alpha();
-      var bgColorPerceivedBrightness = Object(_color__WEBPACK_IMPORTED_MODULE_1__["getColorPerceivedBrightness"])(bgColorRgb);
-      var bgColorWithOpacityPerceivedBrightness = bgColorPerceivedBrightness * bgColorAlpha + this._defaultDarkBgColorBrightness * (1 - bgColorAlpha);
-      var textColorRgb = textColor.rgb().array();
-      var textColorHSL = textColor.hsl().array();
-      var textColorAlpha = textColor.alpha();
-      var textPerceivedBrightness = Object(_color__WEBPACK_IMPORTED_MODULE_1__["getColorPerceivedBrightness"])(textColorRgb);
-      var offsetPerceivedBrightness = Math.abs(bgColorWithOpacityPerceivedBrightness - textPerceivedBrightness);
+    value: function _adjustTextBrightness(textColor, bgColor, opt) {
+      var textColorAlpha = (opt === null || opt === void 0 ? void 0 : opt.alpha) || textColor.alpha();
+      var textColorMix = opt ? textColor : Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([bgColor, textColor], 'normal');
+      var textColorMixRgb = textColorMix.rgb().array();
+      var textColorMixHsl = textColorMix.hsl().array();
+      var textPerceivedBrightness = Object(_color__WEBPACK_IMPORTED_MODULE_1__["getColorPerceivedBrightness"])(textColorMixRgb);
+      var bgColorPerceivedBrightness = (opt === null || opt === void 0 ? void 0 : opt.bgColorPerceivedBrightness) || Object(_color__WEBPACK_IMPORTED_MODULE_1__["getColorPerceivedBrightness"])(bgColor.rgb().array());
+      var offsetPerceivedBrightness = Math.abs(bgColorPerceivedBrightness - textPerceivedBrightness);
 
       // 用户设置为高亮字体颜色（接近白色亮度），不处理，保持高亮
-      if (textPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_2__["WHITE_LIKE_COLOR_BRIGHTNESS"]) return textColor;
-      if (offsetPerceivedBrightness > this._maxLimitOffsetBrightness && bgColorWithOpacityPerceivedBrightness <= this._defaultDarkBgColorBrightness + 2) {
-        return Object(_color__WEBPACK_IMPORTED_MODULE_1__["adjustBrightnessTo"])(this._maxLimitOffsetBrightness + bgColorWithOpacityPerceivedBrightness, textColorRgb).alpha(textColorAlpha);
+      if (textPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_2__["WHITE_LIKE_COLOR_BRIGHTNESS"]) return opt ? Object(_color__WEBPACK_IMPORTED_MODULE_1__["getFrontColor"])(textColor, bgColor, textColorAlpha, 'normal') : textColor;
+      if (offsetPerceivedBrightness > this._maxLimitOffsetBrightness && bgColorPerceivedBrightness <= this._defaultDarkBgColorBrightness + 2) {
+        return Object(_color__WEBPACK_IMPORTED_MODULE_1__["getFrontColor"])(Object(_color__WEBPACK_IMPORTED_MODULE_1__["adjustBrightnessTo"])(this._maxLimitOffsetBrightness + bgColorPerceivedBrightness, textColorMixRgb), bgColor, textColorAlpha, 'normal');
       }
 
       // 如果感知亮度差大于阈值，无需调整
-      if (offsetPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_2__["MIN_LIMIT_OFFSET_BRIGHTNESS"]) return textColor;
-      if (bgColorWithOpacityPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BGCOLOR_BRIGHTNESS"]) {
+      if (offsetPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_2__["MIN_LIMIT_OFFSET_BRIGHTNESS"]) return opt ? Object(_color__WEBPACK_IMPORTED_MODULE_1__["getFrontColor"])(textColor, bgColor, textColorAlpha, 'normal') : textColor;
+      if (bgColorPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BGCOLOR_BRIGHTNESS"]) {
         // 亮背景，调暗字体
-        if (textColorHSL[2] > 90 - _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BLACKWHITE_HSL_BRIGHTNESS"]) {
+        if (textColorMixHsl[2] > 90 - _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BLACKWHITE_HSL_BRIGHTNESS"]) {
           // 优先调字体的亮度已带到降低感知亮度的目的
-          textColorHSL[2] = 90 - textColorHSL[2];
-          var tmpTextColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl.apply(color__WEBPACK_IMPORTED_MODULE_0___default.a, _toConsumableArray(textColorHSL)).alpha(textColorAlpha);
-          return this._adjustTextBrightness(tmpTextColor, bgColor);
+          textColorMixHsl[2] = 90 - textColorMixHsl[2];
+          return this._adjustTextBrightness(color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl.apply(color__WEBPACK_IMPORTED_MODULE_0___default.a, _toConsumableArray(textColorMixHsl)), bgColor, {
+            alpha: textColorAlpha,
+            bgColorPerceivedBrightness: bgColorPerceivedBrightness
+          });
         }
-        return Object(_color__WEBPACK_IMPORTED_MODULE_1__["adjustBrightnessTo"])(Math.min(this._maxLimitOffsetBrightness, bgColorWithOpacityPerceivedBrightness - _constant__WEBPACK_IMPORTED_MODULE_2__["MIN_LIMIT_OFFSET_BRIGHTNESS"]), textColorRgb).alpha(textColorAlpha);
+        return Object(_color__WEBPACK_IMPORTED_MODULE_1__["getFrontColor"])(Object(_color__WEBPACK_IMPORTED_MODULE_1__["adjustBrightnessTo"])(Math.min(this._maxLimitOffsetBrightness, bgColorPerceivedBrightness - _constant__WEBPACK_IMPORTED_MODULE_2__["MIN_LIMIT_OFFSET_BRIGHTNESS"]), textColorMixRgb), bgColor, textColorAlpha, 'normal');
       } else {
         // 暗背景，调亮字体
-        if (textColorHSL[2] <= _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BLACKWHITE_HSL_BRIGHTNESS"]) {
+        if (textColorMixHsl[2] <= _constant__WEBPACK_IMPORTED_MODULE_2__["HIGH_BLACKWHITE_HSL_BRIGHTNESS"]) {
           // 优先调字体的亮度已带到提高感知亮度的目的
-          textColorHSL[2] = 90 - textColorHSL[2];
-          var _tmpTextColor = color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl.apply(color__WEBPACK_IMPORTED_MODULE_0___default.a, _toConsumableArray(textColorHSL)).alpha(textColorAlpha);
-          return this._adjustTextBrightness(_tmpTextColor, bgColor);
+          textColorMixHsl[2] = 90 - textColorMixHsl[2];
+          return this._adjustTextBrightness(color__WEBPACK_IMPORTED_MODULE_0___default.a.hsl.apply(color__WEBPACK_IMPORTED_MODULE_0___default.a, _toConsumableArray(textColorMixHsl)), bgColor, {
+            alpha: textColorAlpha,
+            bgColorPerceivedBrightness: bgColorPerceivedBrightness
+          });
         }
-        return Object(_color__WEBPACK_IMPORTED_MODULE_1__["adjustBrightnessTo"])(Math.min(this._maxLimitOffsetBrightness, bgColorWithOpacityPerceivedBrightness + _constant__WEBPACK_IMPORTED_MODULE_2__["MIN_LIMIT_OFFSET_BRIGHTNESS"]), textColorRgb).alpha(textColorAlpha);
+        return Object(_color__WEBPACK_IMPORTED_MODULE_1__["getFrontColor"])(Object(_color__WEBPACK_IMPORTED_MODULE_1__["adjustBrightnessTo"])(Math.min(this._maxLimitOffsetBrightness, bgColorPerceivedBrightness + _constant__WEBPACK_IMPORTED_MODULE_2__["MIN_LIMIT_OFFSET_BRIGHTNESS"]), textColorMixRgb), bgColor, textColorAlpha, 'normal');
       }
     }
 
@@ -3977,24 +3987,48 @@ var SDK = /*#__PURE__*/function () {
     // 叠加渐变色到背景色中，并更新背景色相关属性值以及文本颜色
   }, {
     key: "_updateBgWithGradient",
-    value: function _updateBgWithGradient(gradientColor, el, className, cssKVList, hasInlineColor, isUpdate) {
+    value: function _updateBgWithGradient(gradientColor, el, className, cssKVList, isUpdate) {
       var newBgColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor, gradientColor], 'normal');
-      var newOriginalBgColor = (el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightBgColor).split(_constant__WEBPACK_IMPORTED_MODULE_2__["BG_COLOR_DELIMITER"]).concat(gradientColor.toString()).join(_constant__WEBPACK_IMPORTED_MODULE_2__["BG_COLOR_DELIMITER"]);
+      var newOriginalBgColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightBgColor, gradientColor], 'normal');
       Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
         dom[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] = newBgColor;
         dom[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] = newOriginalBgColor;
       });
       var lastKV = cssKVList.slice(-1)[0];
-      if (lastKV[0] === 'color') {
-        var ret = this._adjustBrightness(Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(Object(_color__WEBPACK_IMPORTED_MODULE_1__["parseColorName"])(lastKV[1])), el, {
-          isBgColor: false,
-          isTextShadow: false,
-          isTextColor: true,
-          isBorderColor: false,
-          hasInlineColor: hasInlineColor
-        }, isUpdate);
-        if (ret.newColor) return _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(className, _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('color', ret.newColor));
+      var color = null;
+      var hasInlineColor = _constant__WEBPACK_IMPORTED_MODULE_2__["CSS_PROP_SERIES"].TEXT_COLOR.indexOf(lastKV[0]) >= 5;
+      if (hasInlineColor) {
+        color = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(Object(_color__WEBPACK_IMPORTED_MODULE_1__["parseColorName"])(lastKV[1]));
+      } else if (el.nodeName === 'FONT') {
+        // 如果是font标签且没有内联文本颜色样式
+        this._try(function () {
+          var colorStr = el.getAttribute('color'); // 获取color的色值
+          if (colorStr) {
+            // 有色值，则当做内联样式来处理
+            var tmpColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(colorStr);
+            if (tmpColor) {
+              color = tmpColor;
+              hasInlineColor = true;
+            }
+          }
+        });
+      } else {
+        color = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightTextColor);
       }
+      var ret = this._adjustBrightness(color, el, {
+        isBgColor: false,
+        isTextShadow: false,
+        isTextColor: true,
+        isBorderColor: false,
+        hasInlineColor: hasInlineColor
+      }, isUpdate);
+      var newColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([newBgColor, ret.newColor || color], 'normal');
+      var newOriginColor = color;
+      Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
+        dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COLORATTR"]] = newColor;
+        dom[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]] = newOriginColor;
+      });
+      if (ret.newColor) return _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(className, _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(lastKV[0], ret.newColor));
       return '';
     }
   }, {
@@ -4243,23 +4277,17 @@ var SDK = /*#__PURE__*/function () {
                   extStyle += ret.extStyle;
 
                   // 对背景颜色和文字颜色做继承传递，用于文字亮度计算
-                  if (isBgColor || textColorIdx >= 5) {
+                  if ((isBgColor || textColorIdx >= 5) && replaceIndex === 0) {
                     // 只处理color及之后的属性
-                    // const retColorStr = retColor ? retColor.toString() : match;
-                    var retColorStr = Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor, retColor ? retColor.toString() : match], 'normal');
-                    replaceIndex === 0 && Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
+                    var newColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultDarkBgColor, retColor || match], 'normal');
+                    var newOriginalColor = isBgColor ? Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])([el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightBgColor, match], 'normal') : match;
+                    Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
                       if (isBgColor) {
-                        dom[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] = retColorStr;
-                        dom[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] = (dom[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightBgColor).split(_constant__WEBPACK_IMPORTED_MODULE_2__["BG_COLOR_DELIMITER"]).concat(match).join(_constant__WEBPACK_IMPORTED_MODULE_2__["BG_COLOR_DELIMITER"]);
+                        dom[_constant__WEBPACK_IMPORTED_MODULE_2__["BGCOLORATTR"]] = newColor;
+                        dom[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] = newOriginalColor;
                       } else {
-                        dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COLORATTR"]] = retColorStr;
-                        dom[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]] = match;
-                      }
-
-                      // 如果设置背景颜色，取消背景图片的影响
-                      var retColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["ColorParser"])(retColorStr);
-                      if (isBgColor && (retColor === null || retColor === void 0 ? void 0 : retColor.alpha()) >= _constant__WEBPACK_IMPORTED_MODULE_2__["IGNORE_ALPHA"] && dom[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) {
-                        delete dom[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]];
+                        dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COLORATTR"]] = newColor;
+                        dom[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]] = newOriginalColor;
                       }
                     });
                   }
@@ -4278,43 +4306,41 @@ var SDK = /*#__PURE__*/function () {
               var isBorderImageAttr = /^(-webkit-)?border-image/.test(key);
               if ((isBackgroundAttr || isBorderImageAttr) && _constant__WEBPACK_IMPORTED_MODULE_2__["URL_REGEXP"].test(value)) {
                 cssChange = true;
-                var imgBgColor = Object(_color__WEBPACK_IMPORTED_MODULE_1__["mixColors"])((el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightBgColor).split(_constant__WEBPACK_IMPORTED_MODULE_2__["BG_COLOR_DELIMITER"]), 'normal').toString();
 
-                // 在背景图片下加一层原背景颜色：
-                // background-image使用多层背景(注意background-position也要多加一层 https://www.w3.org/TR/css-backgrounds-3/#layering)；
-                // border-image不支持多层背景，需要添加background-color
-                value = value.replace(/^(.*?)url\(([^)]*)\)(.*)$/i, function (matches) {
-                  var newValue = matches;
+                // 在背景图片下加一层原背景颜色，即图片补色：
+                // background-image使用多层背景(注意background-position也要多加一层 https://www.w3.org/TR/css-backgrounds-3/#layering)
+                // border-image不支持多层背景，需要添加background-image
+                var imgBgColor = el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_BGCOLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightBgColor;
+                if (/^(.*?)url\(([^)]*)\)(.*)$/i.test(value)) {
                   var tmpCssKvStr = '';
-                  if (!el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]]) {
-                    // 避免重复set
-                    Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
-                      dom[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]] = true;
-                    });
-                  }
+
+                  // 标记为有背景图片
+                  !el[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]] && Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
+                    dom[_constant__WEBPACK_IMPORTED_MODULE_2__["BGIMAGEATTR"]] = true;
+                  });
 
                   // background-image
                   if (isBackgroundAttr) {
-                    tmpCssKvStr = _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(key, imgBgColor ? "".concat(newValue, ",linear-gradient(").concat(imgBgColor, ", ").concat(imgBgColor, ")") : newValue);
+                    tmpCssKvStr = _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(key, "".concat(value, ",linear-gradient(").concat(imgBgColor, ", ").concat(imgBgColor, ")"));
                     if (elBackgroundPositionAttr) {
                       cssKV += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-position', elBackgroundPositionAttr);
-                      tmpCssKvStr += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-position', imgBgColor ? "".concat(elBackgroundPositionAttr, ",top left") : elBackgroundPositionAttr);
+                      tmpCssKvStr += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-position', "".concat(elBackgroundPositionAttr, ",top left"));
                     }
                     if (elBackgroundSizeAttr) {
                       cssKV += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-size', elBackgroundSizeAttr);
-                      tmpCssKvStr += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-size', imgBgColor ? "".concat(elBackgroundSizeAttr, ",100%") : elBackgroundSizeAttr);
+                      tmpCssKvStr += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('background-size', "".concat(elBackgroundSizeAttr, ",100%"));
                     }
                     if (dmBgClassName) {
                       // 如果是文字底图，则直接加样式
                       bgCss += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(dmBgClassName, tmpCssKvStr);
                       Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
-                        dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]] = imgBgColor || newValue;
+                        dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]] = imgBgColor;
                       });
                     } else {
                       // 否则背景图入栈
                       _global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].push(el, tmpCssKvStr, function () {
                         Object(_domUtils__WEBPACK_IMPORTED_MODULE_5__["getChildrenAndIt"])(el).forEach(function (dom) {
-                          dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]] = imgBgColor || newValue;
+                          dom[_constant__WEBPACK_IMPORTED_MODULE_2__["COMPLEMENTARY_BGIMAGECOLORATTR"]] = imgBgColor;
                         });
                       });
                     }
@@ -4326,16 +4352,14 @@ var SDK = /*#__PURE__*/function () {
                         // 如果是文字底图，则直接加样式
                         bgCss += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(dmBgClassName, tmpCssKvStr);
                       } else {
-                        // 否则背景图入栈
-                        _global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].push(el, tmpCssKvStr); // 背景图入栈
+                        // 否则边框图入栈
+                        _global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].push(el, tmpCssKvStr);
                       }
                     }
                   }
+                }
 
-                  return newValue;
-                });
-
-                // 没有设置自定义字体颜色，则使用非 Dark Mode 下默认字体颜色
+                // 没有设置自定义字体颜色，则使用 Light Mode 下默认字体颜色
                 if (!hasInlineColor) {
                   var textColor = el[_constant__WEBPACK_IMPORTED_MODULE_2__["ORIGINAL_COLORATTR"]] || _config__WEBPACK_IMPORTED_MODULE_3__["default"].defaultLightTextColor;
                   cssKV += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV('color', textColor);
@@ -4349,19 +4373,18 @@ var SDK = /*#__PURE__*/function () {
               !isUpdate && _constant__WEBPACK_IMPORTED_MODULE_2__["IMPORTANT_REGEXP"].test(oldValue) && (styles[key] = oldValue.replace(_constant__WEBPACK_IMPORTED_MODULE_2__["IMPORTANT_REGEXP"], '')); // 清除inline style的!important
               if (isGradient) {
                 if (dmBgClassName) {
-                  // 如果是文字底图，则直接加样式（其实理论上不会走到这里）
+                  // 如果是文字底图，则直接加样式
                   bgCss += _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCss(dmBgClassName, _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(key, value));
                   if (/^background/.test(key) && !_constant__WEBPACK_IMPORTED_MODULE_2__["URL_REGEXP"].test(value)) {
                     // 是无背景图的渐变，需要重新计算背景色
-                    css += _this._updateBgWithGradient(gradientMixColor, el, dmBgClassName, cssKVList, hasInlineColor, isUpdate);
+                    css += _this._updateBgWithGradient(gradientMixColor, el, dmBgClassName, cssKVList, isUpdate);
                   }
                 } else {
                   // 否则渐变入栈
                   _global__WEBPACK_IMPORTED_MODULE_4__["bgStack"].push(el, _global__WEBPACK_IMPORTED_MODULE_4__["cssUtils"].genCssKV(key, value), function (item) {
-                    // 渐变入栈
                     if (/^background/.test(key) && !_constant__WEBPACK_IMPORTED_MODULE_2__["URL_REGEXP"].test(value)) {
                       // 是无背景图的渐变，需要重新计算背景色
-                      css += _this._updateBgWithGradient(gradientMixColor, el, item.className, cssKVList, hasInlineColor, isUpdate);
+                      css += _this._updateBgWithGradient(gradientMixColor, el, item.className, cssKVList, isUpdate);
                     }
                   });
                 }
