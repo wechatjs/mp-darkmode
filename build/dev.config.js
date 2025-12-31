@@ -3,7 +3,7 @@ const path = require('path');
 module.exports = {
   devtool: 'source-map',
   mode: 'development',
-  entry: path.resolve(__dirname, '../src/darkmode.js'),
+  entry: path.resolve(__dirname, '../src/darkmode.ts'),
   output: {
     path: path.resolve(__dirname, '../dist'),
     filename: 'darkmode.js',
@@ -24,6 +24,10 @@ module.exports = {
           ]
         }
       }
+    }, {
+      test: /\.tsx?$/,
+      exclude: /node_modules/,
+      use: 'ts-loader'
     }]
   }
 };

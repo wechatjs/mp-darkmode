@@ -11,7 +11,7 @@
  * @attr {string Array} whitelist.attribute      属性列表
  * @attr {boolean}      needJudgeFirstPage       是否需要判断首屏
  * @attr {boolean}      delayBgJudge             是否延迟背景判断
- * @attr {DOM Object}   container                延迟运行js时使用的容器
+ * @attr {HTMLElement}  container                延迟运行js时使用的容器
  * @attr {string}       cssSelectorsPrefix       css选择器前缀
  * @attr {string}       defaultLightWebviewColor Light Mode下webview颜色
  * @attr {string}       defaultLightBgColor      Light Mode下背景颜色
@@ -21,12 +21,18 @@
  * @attr {string}       defaultDarkTextColor     Dark Mode下字体颜色
  *
  * @method set 设置配置
- * @param {string} type 要处理的节点
- * @param {Object} opt  传入的配置对象
- * @param {string} key  配置名
+ * @param {ConfigType}   type 配置类型，'boolean' | 'string' | 'function' | 'dom'
+ * @param {ConfigOption} opt  传入的配置对象
+ * @param {ConfigKey}    key  配置名
+ * @return void
+ *
+ * @method setDefaultColor 设置默认颜色
+ * @param {ConfigOption} opt 传入的配置对象
  * @return void
  *
  */
+
+import type { ConfigOption } from '../darkmode.d';
 
 // 常量
 import {
@@ -42,7 +48,17 @@ import {
   mixColors,
 } from './color';
 
-const config = {
+type ConfigType = 'boolean' | 'string' | 'function' | 'dom';
+type ConfigKey = keyof ConfigOption;
+
+interface Config extends Required<ConfigOption> {
+  hasInit: boolean;
+  set: (type: ConfigType, opt: ConfigOption, key: ConfigKey) => void;
+  setDefaultColor: (opt: ConfigOption) => void;
+  whitelist: Required<Required<ConfigOption>['whitelist']>;
+}
+
+const config: Config = {
   hasInit: false, // 是否初始化过配置
 
   // hooks
@@ -71,16 +87,16 @@ const config = {
     const value = opt[key];
     switch (type) {
       case 'boolean':
-        typeof value === 'boolean' && (this[key] = value);
+        typeof value === 'boolean' && ((this[key] as boolean) = value);
         break;
       case 'string':
-        typeof value === 'string' && value !== '' && (this[key] = value);
+        typeof value === 'string' && value !== '' && ((this[key] as string) = value);
         break;
       case 'function':
-        typeof value === 'function' && (this[key] = value);
+        typeof value === 'function' && ((this[key] as Function) = value);
         break;
       case 'dom':
-        value instanceof HTMLElement && (this[key] = value);
+        value instanceof HTMLElement && ((this[key] as HTMLElement) = value);
         break;
       default:
     }
@@ -91,19 +107,17 @@ const config = {
     this.set('string', opt, 'defaultLightWebviewColor');
     this.set('string', opt, 'defaultDarkWebviewColor');
 
-    const bgColor = {
-      defaultLightBgColor: mixColors([this.defaultLightWebviewColor, opt.defaultLightBgColor || this.defaultLightBgColor], 'normal').hex(),
-      defaultDarkBgColor: mixColors([this.defaultDarkWebviewColor, opt.defaultDarkBgColor || this.defaultDarkBgColor], 'normal').hex(),
-    };
-    this.set('string', bgColor, 'defaultLightBgColor');
-    this.set('string', bgColor, 'defaultDarkBgColor');
+    const newDefaultLightBgColor = mixColors([this.defaultLightWebviewColor, opt.defaultLightBgColor || this.defaultLightBgColor]);
+    if (newDefaultLightBgColor) this.defaultLightBgColor = newDefaultLightBgColor.hex();
 
-    const textColor = {
-      defaultLightTextColor: mixColors([this.defaultLightWebviewColor, this.defaultLightBgColor, opt.defaultLightTextColor || this.defaultLightTextColor], 'normal').hex(),
-      defaultDarkTextColor: mixColors([this.defaultDarkWebviewColor, this.defaultDarkBgColor, opt.defaultDarkTextColor || this.defaultDarkTextColor], 'normal').hex(),
-    };
-    this.set('string', textColor, 'defaultLightTextColor');
-    this.set('string', textColor, 'defaultDarkTextColor');
+    const newDefaultDarkBgColor = mixColors([this.defaultDarkWebviewColor, opt.defaultDarkBgColor || this.defaultDarkBgColor]);
+    if (newDefaultDarkBgColor) this.defaultDarkBgColor = newDefaultDarkBgColor.hex();
+
+    const newDefaultLightTextColor = mixColors([this.defaultLightWebviewColor, this.defaultLightBgColor, opt.defaultLightTextColor || this.defaultLightTextColor]);
+    if (newDefaultLightTextColor) this.defaultLightTextColor = newDefaultLightTextColor.hex();
+
+    const newDefaultDarkTextColor = mixColors([this.defaultDarkWebviewColor, this.defaultDarkBgColor, opt.defaultDarkTextColor || this.defaultDarkTextColor]);
+    if (newDefaultDarkTextColor) this.defaultDarkTextColor = newDefaultDarkTextColor.hex();
   }
 };
 

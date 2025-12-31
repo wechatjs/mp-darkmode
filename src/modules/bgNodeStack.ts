@@ -2,22 +2,24 @@
  * @name 需要判断位置的背景节点堆栈
  *
  * @class BgNodeStack
+ * @attr {RegExp} classNameReg 类名正则表达式
  *
  * @constructor
  * @param {string} prefix 类名前缀
  *
  * @method push 背景节点入栈
- * @param {DOM Object} el    背景节点对象
- * @param {string}     cssKV css键值对
+ * @param {HTMLElement} el    背景节点对象
+ * @param {string}      cssKV css键值对
+ * @param {Callback}    [cb]  如果在背景节点区域内，则执行该回调函数
  * @return void
  *
  * @method contains 判断节点是否在背景节点的区域
- * @param {DOM Object} el       要判断的节点对象（非背景节点）
- * @param {Function}   callback 如果在背景节点区域内，则执行该回调函数
+ * @param {HTMLElement} el       要判断的节点对象（非背景节点）
+ * @param {Callback}    callback 如果在背景节点区域内，则执行该回调函数
  * @return void
  *
  * @method update 更新堆栈的节点对象，主要解决前后节点不一致的问题
- * @param {DOM Object Array} els 要更新的节点对象列表
+ * @param {HTMLElement[]} els 要更新的节点对象列表
  * @return void
  *
  */
@@ -25,17 +27,31 @@
 // Darkmode配置
 import config from './config';
 
+type Callback = (item: StackItem) => void;
+
+interface StackItem {
+  el: HTMLElement;
+  className: string;
+  cssKV: string;
+  updated: boolean;
+  cb?: Callback;
+  rect?: DOMRect;
+}
+
 export default class BgNodeStack {
-  _stack = []; // 需要判断位置的背景堆栈，{ el, className, cssKV, updated, rect }
+  classNameReg: RegExp;
+  _prefix: string;
+
+  _stack: StackItem[] = []; // 需要判断位置的背景堆栈
   _idx = 0; // 索引值
 
-  constructor(prefix) {
+  constructor(prefix: string) {
     this._prefix = prefix;
     this.classNameReg = new RegExp(`${this._prefix}\\d+`);
   }
 
   // 背景节点入栈
-  push(el, cssKV, cb) {
+  push(el: HTMLElement, cssKV: string, cb?: Callback) {
     const className = `${this._prefix}${this._idx++}`;
     el.classList.add(className);
     this._stack.unshift({
@@ -48,9 +64,9 @@ export default class BgNodeStack {
   }
 
   // 判断节点是否在背景节点的区域
-  contains(el, callback) {
+  contains(el: HTMLElement, callback: Callback) {
     const rect = el.getBoundingClientRect();
-    const idxStack = [];
+    const idxStack: number[] = [];
 
     this._stack.forEach((item, i) => {
       if (item.updated) {
@@ -69,16 +85,18 @@ export default class BgNodeStack {
     });
 
     while (idxStack.length) {
-      const item = this._stack.splice(idxStack.shift(), 1)[0];
-      typeof callback === 'function' && callback(item);
+      const idx = idxStack.shift();
+      if (idx === undefined) continue;
+      const item = this._stack.splice(idx, 1)[0];
+      callback(item);
     }
   }
 
   // 更新堆栈的节点对象，主要解决前后节点不一致的问题
-  update(els) {
+  update(els: HTMLElement[]) {
     this._stack.forEach(item => {
       if (!item.updated) {
-        Array.prototype.some.call(els, el => {
+        Array.prototype.some.call(els, (el: HTMLElement) => {
           if (el.nodeType === 1 && el.classList.contains(item.className)) {
             item.el = el;
             item.updated = true;

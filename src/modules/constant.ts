@@ -3,6 +3,12 @@
  *
  */
 
+declare global {
+  interface Window {
+    getInnerHeight?: () => number;
+  }
+}
+
 export const MEDIA_QUERY = '(prefers-color-scheme: dark)'; // Dark Mode的CSS媒体查询
 
 export const CLASS_PREFIX = 'js_darkmode__'; // Dark Mode class前缀
@@ -10,7 +16,7 @@ export const DM_CLASSNAME_REGEXP = new RegExp(`${CLASS_PREFIX}\\d+`);
 
 export const HTML_CLASS = 'data_color_scheme_dark'; // 强制设置暗黑模式时给html加的class
 
-const RANDOM = `${new Date() * 1}${Math.floor(Math.random() * 10000)}`; // 生成个随机数，格式为时间戳+随机数
+const RANDOM = `${new Date().getTime()}${Math.floor(Math.random() * 10000)}`; // 生成个随机数，格式为时间戳+随机数
 export const COLORATTR = `data-darkmode-color-${RANDOM}`; // dm color，即算法生成的已mix新色值
 export const BGCOLORATTR = `data-darkmode-bgcolor-${RANDOM}`; // dm bg-color，即算法生成的已mix新色值
 export const ORIGINAL_COLORATTR = `data-darkmode-original-color-${RANDOM}`; // lm color，即原色值
@@ -33,9 +39,7 @@ export const HIGH_BLACKWHITE_HSL_BRIGHTNESS = 40;
 export const LOW_BLACKWHITE_HSL_BRIGHTNESS = 22;
 export const IGNORE_ALPHA = 0.05; // 忽略的透明度阈值
 
-export const PAGE_HEIGHT = (window.getInnerHeight && window.getInnerHeight())
-  || window.innerHeight
-  || document.documentElement.clientHeight;
+export const PAGE_HEIGHT = window.getInnerHeight?.() || window.innerHeight || document.documentElement.clientHeight;
 
 export const CSS_PROP_SERIES = { // 支持的css属性，按类型做分类
   BG_COLOR: [
@@ -91,7 +95,7 @@ export const CSS_PROP_SERIES = { // 支持的css属性，按类型做分类
   //   'filter'
   // ],
 };
-export const CSS_PROP_LIST = Object.keys(CSS_PROP_SERIES).map(key => CSS_PROP_SERIES[key].join('|')).join('|').split('|'); // 支持的css属性平铺列表
+export const CSS_PROP_LIST = Object.keys(CSS_PROP_SERIES).map(key => CSS_PROP_SERIES[key as keyof typeof CSS_PROP_SERIES].join('|')).join('|').split('|'); // 支持的css属性平铺列表
 export const TABLE_NAME = ['TABLE', 'TR', 'TD', 'TH']; // 支持bgcolor属性的table标签列表
 
 export const IMPORTANT_REGEXP = / !important$/; // !important

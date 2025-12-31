@@ -84,7 +84,7 @@ this.addCss('test_class2', [{
 
 #### `beforeConvertNode(el)`
 
-- `el` &lt;DOM Object&gt; The currently transformed node.
+- `el` &lt;HTMLElement&gt; The currently transformed node.
 
 Hook before the node starts transforming.
 
@@ -94,7 +94,7 @@ Hook before the node starts transforming.
 
 #### `afterConvertTextColor(el, opt)`
 
-- `el` &lt;DOM Object&gt; The currently transformed node.
+- `el` &lt;HTMLElement&gt; The currently transformed node.
 - `opt` &lt;Object&gt; Text color object.
   - `opt.fontColor` &lt;Color Object&gt; The text foreground color `Color` object.
   - `opt.bgColor` &lt;Color Object&gt; Text background color `Color` object.
@@ -105,6 +105,6 @@ Hook after the text style conversion.
 
 #### `afterConvertNode(el)`
 
-- `el` &lt;DOM Object&gt; The currently transformed node.
+- `el` &lt;HTMLElement&gt; The currently transformed node.
 
 Hook after the node conversion.

@@ -5,7 +5,7 @@ API
 
 ### `Darkmode.run(nodes[, options])`
 
-- `nodes` &lt;DOM Object Array&gt; 要进行 Dark Mode 转换的 DOM 节点数组。
+- `nodes` &lt;HTMLElement[]&gt; 要进行 Dark Mode 转换的 DOM 节点数组。
 - `options` &lt;Object&gt; Dark Mode 转换算法配置项。
   - `options.begin` &lt;Function&gt; Dark Mode 转换开始时触发的回调。
     - `isSwitch` &lt;boolean&gt; 是否切换 Dark Mode 时进行转换。
@@ -18,7 +18,7 @@ API
     - `options.whitelist.attribute` &lt;string Array&gt; 属性列表。
   - `options.needJudgeFirstPage` &lt;boolean&gt; 是否需要判断首屏，默认 `true`。
   - `options.delayBgJudge` &lt;boolean&gt; 是否延迟背景判断，默认 `false`。
-  - `options.container` &lt;DOM Object&gt; 延迟运行 js 时使用的容器，默认 `null`。
+  - `options.container` &lt;HTMLElement&gt; 延迟运行 js 时使用的容器，默认 `null`。
   - `options.cssSelectorsPrefix` &lt;string&gt; css 选择器前缀，默认 `''`。
   - `options.defaultLightWebviewColor` &lt;string&gt; Light Mode 下 webview 颜色，默认 `#fff`。
   - `options.defaultLightBgColor` &lt;string&gt; Light Mode 下背景颜色，默认 `#fff`。
@@ -73,7 +73,7 @@ Darkmode.init({
 
 ### `Darkmode.convertBg(nodes)`
 
-- `nodes` &lt;DOM Object Array&gt; 要处理的背景节点列表（可包含非背景节点）。
+- `nodes` &lt;HTMLElement[]&gt; 要处理的背景节点列表（可包含非背景节点）。
 
 处理背景。当配置项中的 `delayBgJudge = true` 时，可手动指定运行背景判断的时机。
 
@@ -83,7 +83,7 @@ Darkmode.convertBg(document.body.querySelectorAll('*'));
 
 ### `Darkmode.updateStyle(node, styles)`
 
-- `node` &lt;DOM Object&gt; 要更新的节点。
+- `node` &lt;HTMLElement&gt; 要更新的节点。
 - `styles` &lt;Object&gt; 更新的样式键值对对象，如：`{ color: '#ddd' }`。
 
 更新节点 Dark Mode 样式。

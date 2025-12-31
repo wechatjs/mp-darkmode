@@ -8,4 +8,4 @@ const DEMO_PATH = path.join(__dirname, '../test/demo.html');
 
 fs.writeFileSync(DEMO_PATH, fs.readFileSync(LAYOUT_PATH, 'utf8').replace(/<cases \/>/g, fs.readFileSync(CASES_PATH, 'utf8')), 'utf8');
 
-console.log('\033[30;32mdone\033[0m');
+console.log('\x1b[30;32mdone\x1b[0m');

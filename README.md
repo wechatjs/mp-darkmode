@@ -43,7 +43,7 @@ Darkmode.run(document.body.querySelectorAll('*')); // process all DOM nodes unde
 
 ### `Darkmode.run(nodes[, options])`
 
-- `nodes` &lt;DOM Object Array&gt; The DOM to be converted.
+- `nodes` &lt;HTMLElement[]&gt; The DOM to be converted.
 - `options` &lt;Object&gt; Configuration.
   - `options.error` &lt;Function&gt; Callback triggered when an error occurs.
     - `err` &lt;Error&gt; Error object.

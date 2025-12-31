@@ -5,7 +5,7 @@ API
 
 ### `Darkmode.run(nodes[, options])`
 
-- `nodes` &lt;DOM Object Array&gt; The DOM to be converted.
+- `nodes` &lt;HTMLElement[]&gt; The DOM to be converted.
 - `options` &lt;Object&gt; Configuration.
   - `options.begin` &lt;Function&gt; Callback triggered when Dark Mode conversion starts.
     - `isSwitch` &lt;boolean&gt; Whether to switch to Dark Mode.
@@ -18,7 +18,7 @@ API
     - `options.whitelist.attribute` &lt;string Array&gt; The whitelist for attributes.
   - `options.needJudgeFirstPage` &lt;boolean&gt; Whether to judge the first screen. Default `true`.
   - `options.delayBgJudge` &lt;boolean&gt; Whether to delay background judgment. Default `false`.
-  - `options.container` &lt;DOM Object&gt; The container to use when delaying running js. Default `null`.
+  - `options.container` &lt;HTMLElement&gt; The container to use when delaying running js. Default `null`.
   - `options.cssSelectorsPrefix` &lt;string&gt; Css selector prefix. Default `''`.
   - `opt.defaultLightWebviewColor` &lt;string&gt; Webview color in Light Mode. Default `#fff`.
   - `opt.defaultLightBgColor` &lt;string&gt; Background color in Light Mode. Default `#fff`.
@@ -73,7 +73,7 @@ Darkmode.init({
 
 ### `Darkmode.convertBg(nodes)`
 
-- `nodes` &lt;DOM Object Array&gt; List of background nodes to be processed (may contain non-background nodes).
+- `nodes` &lt;HTMLElement[]&gt; List of background nodes to be processed (may contain non-background nodes).
 
 Processing background. When `delayBgJudge = true` in the configuration item, you can manually specify the timing to run the background judgment.
 
@@ -83,7 +83,7 @@ Darkmode.convertBg(document.body.querySelectorAll('*'));
 
 ### `Darkmode.updateStyle(node, styles)`
 
-- `node` &lt;DOM Object&gt; The node to be updated.
+- `node` &lt;HTMLElement&gt; The node to be updated.
 - `styles` &lt;Object&gt; The key-value pair object to be updated. eg: `{ color: '#ddd' }`.
 
 Update the Dark Mode style of the specified node.

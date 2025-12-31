@@ -14,6 +14,8 @@
 1. 首屏优化处理长尾
 1. 去掉 visibility: visible ？
 1. 获取真正convert耗时（排除渲染）
+1. mql.addListener 已不推荐使用，看看怎么使用新方式做监听
+1. 想办法把COLORATTR这类属性的 as any干掉
 
 ## Feature
 
