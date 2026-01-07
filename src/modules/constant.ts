@@ -107,3 +107,10 @@ export const COLOR_REGEXP = /\brgba?\([^)]+\)/i;
 export const COLOR_REGEXP_GLOBAL = /\brgba?\([^)]+\)/ig;
 
 export const URL_REGEXP = /url\([^)]*\)/i;
+
+export enum PLUGIN_PAGE_STYLE_ATTR { // 插件页面样式属性
+  FIRST_PAGE_STYLE = 'firstPageStyle', // 首屏样式
+  OTHER_PAGE_STYLE = 'otherPageStyle', // 非首屏样式
+  FIRST_PAGE_STYLE_NO_MQ = 'firstPageStyleNoMQ', // 首屏样式（不需要加媒体查询）
+  OTHER_PAGE_STYLE_NO_MQ = 'otherPageStyleNoMQ', // 非首屏样式（不需要加媒体查询）
+}

@@ -1,19 +1,3 @@
-export enum PLUGIN_PAGE_STYLE_ATTR { // 插件页面样式属性
-  FIRST_PAGE_STYLE = 'firstPageStyle', // 首屏样式
-  OTHER_PAGE_STYLE = 'otherPageStyle', // 非首屏样式
-  FIRST_PAGE_STYLE_NO_MQ = 'firstPageStyleNoMQ', // 首屏样式（不需要加媒体查询）
-  OTHER_PAGE_STYLE_NO_MQ = 'otherPageStyleNoMQ', // 非首屏样式（不需要加媒体查询）
-}
-
-export enum PLUGIN_HOOK { // 插件钩子
-  BEFORE_CONVERT_NODE = 'beforeConvertNode',
-  AFTER_CONVERT_TEXT_COLOR = 'afterConvertTextColor',
-  AFTER_CONVERT_NODE = 'afterConvertNode',
-  BEFORE_CONVERT_NODE_BY_UPDATE_STYLE = 'beforeConvertNodeByUpdateStyle',
-  AFTER_CONVERT_TEXT_COLOR_BY_UPDATE_STYLE = 'afterConvertTextColorByUpdateStyle',
-  AFTER_CONVERT_NODE_BY_UPDATE_STYLE = 'afterConvertNodeByUpdateStyle',
-}
-
 export interface ConfigOption {
   begin?: ((isSwitch: boolean) => void) | null;
   showFirstPage?: (() => void) | null;
@@ -47,6 +31,15 @@ export abstract class PluginBaseAbstract {
   get isDarkmode(): boolean;
 
   addCss(className: string, kvList: KvList, needMediaQuery?: boolean): void;
+}
+
+export enum PLUGIN_HOOK { // 插件钩子
+  BEFORE_CONVERT_NODE = 'beforeConvertNode',
+  AFTER_CONVERT_TEXT_COLOR = 'afterConvertTextColor',
+  AFTER_CONVERT_NODE = 'afterConvertNode',
+  BEFORE_CONVERT_NODE_BY_UPDATE_STYLE = 'beforeConvertNodeByUpdateStyle',
+  AFTER_CONVERT_TEXT_COLOR_BY_UPDATE_STYLE = 'afterConvertTextColorByUpdateStyle',
+  AFTER_CONVERT_NODE_BY_UPDATE_STYLE = 'afterConvertNodeByUpdateStyle',
 }
 
 export abstract class PluginAbstract extends PluginBaseAbstract {

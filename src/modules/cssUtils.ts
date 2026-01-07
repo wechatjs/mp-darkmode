@@ -26,12 +26,11 @@
  *
  */
 
-import { PLUGIN_PAGE_STYLE_ATTR } from '../darkmode.d';
-
 // 常量
 import {
   MEDIA_QUERY,
   HTML_CLASS,
+  PLUGIN_PAGE_STYLE_ATTR,
 } from './constant';
 
 // Darkmode配置

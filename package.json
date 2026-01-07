@@ -3,6 +3,7 @@
   "version": "1.2.2",
   "description": "微信公众平台 Dark Mode 转换算法",
   "main": "dist/darkmode.min.js",
+  "types": "dist/index.d.ts",
   "dependencies": {
     "color": "^3.2.1",
     "color-blend": "^4.0.0",
@@ -12,9 +13,9 @@
     "@babel/core": "^7.28.5",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "@babel/preset-env": "^7.28.5",
+    "@babel/preset-typescript": "^7.28.5",
     "@types/color": "^4.2.0",
     "babel-loader": "^8.4.1",
-    "ts-loader": "^9.5.4",
     "typescript": "^5.9.3",
     "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1"

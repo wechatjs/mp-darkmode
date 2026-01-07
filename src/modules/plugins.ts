@@ -17,13 +17,17 @@
  */
 
 import {
-  PLUGIN_PAGE_STYLE_ATTR,
-  PLUGIN_HOOK,
   type KvList,
   PluginBaseAbstract,
+  PLUGIN_HOOK,
   type PluginAbstract,
   type PluginConstructor,
 } from '../darkmode.d';
+
+// 常量
+import {
+  PLUGIN_PAGE_STYLE_ATTR,
+} from './constant';
 
 import {
   cssUtils, // 样式相关操作工具对象

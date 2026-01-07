@@ -5,10 +5,10 @@
     "module": "es6",
     "target": "es5",
     "allowJs": true,
-    "moduleResolution": "node",
-    "strict": true
-  },
-  "types": [
-    "src/darkmode.d.ts"
-  ]
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "noEmitOnError": true,
+    "sourceMap": true
+  }
 }
