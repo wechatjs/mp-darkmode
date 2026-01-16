@@ -22,6 +22,7 @@ export const BGCOLORATTR = `data-darkmode-bgcolor-${RANDOM}`; // dm bg-color，�
 export const ORIGINAL_COLORATTR = `data-darkmode-original-color-${RANDOM}`; // lm color，即原色值
 export const ORIGINAL_BGCOLORATTR = `data-darkmode-original-bgcolor-${RANDOM}`; // lm bg-color，即原色值
 export const BGIMAGEATTR = `data-darkmode-bgimage-${RANDOM}`; // 是否有背景图片的标记
+export const BGGRADIENT_MIXCOLORATTR = `data-darkmode-bggradient-mix-color-${RANDOM}`; // 背景渐变进行mix混合后的色值
 export const COMPLEMENTARY_BGIMAGECOLORATTR = `data-darkmode-complementary-bgimagecolor-${RANDOM}`; // 背景图片的补色色值
 
 export const DEFAULT_LIGHT_WEBVIEWCOLOR = '#fff'; // Light Mode下webView颜色

@@ -94,7 +94,7 @@ export const ColorParser = (color: ColorParam): Color | null => {
   try {
     res = color instanceof Color ? color : Color(color);
   } catch (e) {
-    console.log(`ignore the invalid color: \`${color}\``);
+    console.log(`ignore the invalid color: \`${color}\`, error: ${e}`);
   }
   return res;
 };

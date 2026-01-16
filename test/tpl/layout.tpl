@@ -52,6 +52,28 @@
         max-width: none;
       }
     }
+
+    .marker {
+      /* margin-top: 66px; */
+      position: absolute;
+      top: 0;
+      right: 10px;
+      font-size: 14px;
+      /* background-color: white; */
+      z-index: 1;
+      transform: translateX(100%);
+    }
+    .marker_line {
+      display: none;
+      align-items: center;
+    }
+    .marker_color {
+      width: 20px;
+      height: 16px;
+      margin-right: 4px;
+      background-color: black;
+      border: 1px solid #757575;
+    }
   </style>
 </head>
 
@@ -86,6 +108,30 @@
               <span id="dark_title">Dark Mode</span>
               <a id="validate" href="javascript:;">校验</a>
             </h2>
+            <div id="dark_marker" class="marker">
+              <div class="marker_line">
+                <span class="marker_color"></span>
+                <span>前景色：</span>
+                <span></span>
+              </div>
+              <div class="marker_line">
+                <span class="marker_color"></span>
+                <span>背景色：</span>
+                <span></span>
+              </div>
+              <div class="marker_line">
+                <span>有背景图</span>
+              </div>
+              <div class="marker_line">
+                <span class="marker_color"></span>
+                <span>补色：</span>
+                <span></span>
+              </div>
+              <div class="marker_line">
+                <span>对比度：</span>
+                <span></span>
+              </div>
+            </div>
             <div class="rich_media_wrp article_dark">
               <div class="rich_media_content" id="dark">
                 <cases />
@@ -146,10 +192,13 @@
     begin = new Date();
 
     // H5本地版本
+    var defaultDarkTextColor = 'rgba(255, 255, 255, 0.55)';
+    var defaultDarkBgColor = '#191919';
     Darkmode.run(container.querySelectorAll('*'), { // 运行Dark Mode转换算法
       mode: 'dark',
       cssSelectorsPrefix: '#dark',
-      defaultDarkTextColor: 'rgba(255, 255, 255, 0.55)',
+      defaultDarkTextColor: defaultDarkTextColor,
+      defaultDarkBgColor: defaultDarkBgColor,
       whitelist: {
         attribute: ['data-no-dark']
       },
@@ -180,15 +229,91 @@
     // }); // 模拟秒开分批渲染
 
     // 校验
-    var filter = function(node) {
+    var validateOpt = {
+      minContrast: 1.5
+    };
+    var validateFilter = function(node) {
       return node.classList.contains('validate_ignore');
     };
     document.getElementById('validate_online').addEventListener('click', function() {
-      DarkmodeOnline.validate(container, filter);
+      console.log(DarkmodeOnline.validate(container, validateOpt, validateFilter));
     });
     document.getElementById('validate').addEventListener('click', function() {
-      Darkmode.validate(container, filter);
+      console.log(Darkmode.validate(container, validateOpt, validateFilter));
     });
+
+    // hover显示颜色
+    var marker = document.getElementById('dark_marker');
+    var markerLines = marker.querySelectorAll('.marker_line');
+    container.addEventListener('mouseover', function(e) {
+      var target = e.target;
+
+      if (validateFilter(target)) return;
+
+      var rect = target.getBoundingClientRect();
+      var scrollTop = document.body.scrollTop || document.documentElement.scrollTop;
+      marker.style.top = scrollTop + rect.top + 'px';
+
+      var colorObj = {};
+      var keys = Object.keys(target);
+      keys.forEach(function(key) {
+        if (key.indexOf('data-darkmode-color-') === 0) {
+          colorObj.color = target[key].toString();
+        } else if (key.indexOf('data-darkmode-bgcolor-') === 0) {
+          colorObj.bgcolor = target[key].toString();
+        } else if (key.indexOf('data-darkmode-bgimage-') === 0) {
+          colorObj.bgimage = true;
+        } else if (key.indexOf('data-darkmode-complementary-bgimagecolor-') === 0) {
+          colorObj.complementary = target[key].toString();
+        }
+      });
+      markerLines.forEach(function(line, idx) {
+        switch (idx) {
+          case 0:
+            if (colorObj.color) {
+              line.children[0].style.backgroundColor = colorObj.color;
+              line.children[2].innerHTML = colorObj.color;
+              line.style.display = 'flex';
+            } else {
+              line.children[0].style.backgroundColor = defaultDarkTextColor;
+              line.children[2].innerHTML = '默认';
+              line.style.display = 'flex';
+            }
+            break;
+          case 1:
+            if (colorObj.bgcolor) {
+              line.children[0].style.backgroundColor = colorObj.bgcolor;
+              line.children[2].innerHTML = colorObj.bgcolor;
+              line.style.display = 'flex';
+            } else {
+              line.children[0].style.backgroundColor = defaultDarkBgColor;
+              line.children[2].innerHTML = '默认';
+              line.style.display = 'flex';
+            }
+            break;
+          case 2:
+            if (colorObj.bgimage) {
+              line.style.display = 'flex';
+            } else {
+              line.style.display = 'none';
+            }
+            break;
+          case 3:
+            if (colorObj.complementary) {
+              line.children[0].style.backgroundColor = colorObj.complementary;
+              line.children[2].innerHTML = colorObj.complementary;
+              line.style.display = 'flex';
+            } else {
+              line.style.display = 'none';
+            }
+            break;
+          case 4:
+            line.children[1].innerHTML = Darkmode.getContrast(colorObj.color || defaultDarkTextColor, colorObj.bgcolor || defaultDarkBgColor);
+            line.style.display = 'flex';
+            break;
+        }
+      });
+    }, false);
   </script>
 </body>
 </html>

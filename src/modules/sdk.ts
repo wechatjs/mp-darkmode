@@ -47,6 +47,7 @@ import {
   ORIGINAL_COLORATTR,
   ORIGINAL_BGCOLORATTR,
   BGIMAGEATTR,
+  BGGRADIENT_MIXCOLORATTR,
   COMPLEMENTARY_BGIMAGECOLORATTR,
 
   WHITE_LIKE_COLOR_BRIGHTNESS,
@@ -682,6 +683,7 @@ export default class SDK {
               bgStack.push(el, cssUtils.genCssKV(key, value), item => {
                 if (gradientMixColor && /^background/.test(key) && !URL_REGEXP.test(value)) { // 是无背景图的渐变，需要重新计算背景色
                   css += this._updateBgWithGradient(gradientMixColor, el, item.className, cssKVList, isUpdate);
+                  (el as any)[BGGRADIENT_MIXCOLORATTR] = gradientMixColor;
                 }
               });
             }

@@ -1,6 +1,10 @@
 {
   "name": "mp-darkmode",
   "version": "1.2.2",
+  "engines": {
+    "node": ">=23.11.0"
+  },
+  "packageManager": "npm@10.9.2",
   "description": "微信公众平台 Dark Mode 转换算法",
   "main": "dist/darkmode.min.js",
   "types": "dist/darkmode.d.ts",
@@ -15,15 +19,22 @@
     "@babel/preset-env": "^7.28.5",
     "@babel/preset-typescript": "^7.28.5",
     "@types/color": "^4.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.52.0",
+    "@typescript-eslint/parser": "^8.52.0",
     "babel-loader": "^8.4.1",
+    "eslint-webpack-plugin": "^5.0.2",
     "typescript": "^5.9.3",
     "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1",
     "webpack-merge": "^6.0.1"
   },
   "scripts": {
+    "preinstall": "npx check-fe-env",
+    "predev": "npx check-fe-env",
     "dev": "webpack --config build/dev.config.js --watch",
+    "prebuild": "npx check-fe-env",
     "build": "webpack --config build/prod.config.js && cp ./src/darkmode.d.ts ./dist/darkmode.d.ts",
+    "pregenDemo": "npx check-fe-env",
     "genDemo": "node build/genDemo.js"
   },
   "files": [

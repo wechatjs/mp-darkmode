@@ -30,13 +30,17 @@
  *
  * @function validate 校验
  * @param {HTMLElement}    container 要校验的容器节点
+ * @param {ValidateOption} opt       校验配置
  * @param {ValidateFilter} [filter]  过滤器
+ * @return {ValidateResult[]} 校验结果
  *
  */
 
 import type {
   ConfigOption,
+  ValidateOption,
   ValidateFilter,
+  ValidateResult,
   PluginConstructor,
 } from './darkmode.d';
 
@@ -234,6 +238,6 @@ export function extend(pluginList: PluginConstructor[]) {
 };
 
 // 校验
-export function validate(container: HTMLElement, filter?: ValidateFilter) {
-  validator.validate(container, filter);
+export function validate(container: HTMLElement, opt: ValidateOption, filter?: ValidateFilter): ValidateResult[] {
+  return validator.validate(container, opt, filter);
 };

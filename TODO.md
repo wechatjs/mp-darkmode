@@ -7,6 +7,8 @@
 1. 对比度算法加入透明度维度计算（现在是暂时通过忽略低透明度的色值来曲线救国）
 1. covert() 的 cssKVList 参数只支持 rgb() 或 rgba() 颜色，不支持 hex/hsl等等
 1. 父元素用了-webkit-text-fill-color，应该忽略子元素的color
+1. 对background-image的渐变色和background-color的mix顺序估计不对，应该先前者再后者（现在应该是反过来了，并且现在的算法应该区分不了是否有background-color）
+1. background-image渐变色mix叠加数量不对
 
 ## 优化
 

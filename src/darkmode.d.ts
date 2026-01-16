@@ -55,7 +55,15 @@ export abstract class PluginAbstract extends PluginBaseAbstract {
 
 export type PluginConstructor = (plugin: typeof PluginBaseAbstract) => new () => PluginAbstract;
 
+export interface ValidateOption {
+  minContrast?: number;
+}
 export type ValidateFilter = (node: HTMLElement) => boolean;
+export interface ValidateResult {
+  dom: HTMLElement;
+  key: string;
+  violateRules: string;
+}
 
 export interface DarkMode {
   run: (nodes: HTMLElement[], opt?: ConfigOption) => void;
@@ -64,5 +72,5 @@ export interface DarkMode {
   updateStyle: (node: HTMLElement, styles: Record<string, string>) => void;
   getContrast: (color1: string, color2: string) => number;
   extend: (pluginList: PluginConstructor[]) => void;
-  validate: (container: HTMLElement, filter?: ValidateFilter) => void;
+  validate: (container: HTMLElement, opt: ValidateOption, filter?: ValidateFilter) => ValidateResult[];
 }
