@@ -90,6 +90,9 @@ class Plugin extends PluginBaseAbstract {
  * @method resetCss 重置插件样式
  * @return void
  *
+ * @method reset 重置
+ * @return void
+ *
  */
 
 export default class Plugins {
@@ -120,11 +123,11 @@ export default class Plugins {
   // 写入插件样式
   addCss(isFirstPageStyle: boolean = false) {
     if (isFirstPageStyle) {
-      this.firstPageStyle += cssNeedMQ.join('');
-      this.firstPageStyleNoMQ += cssNoMQ.join('');
+      this[PLUGIN_PAGE_STYLE_ATTR.FIRST_PAGE_STYLE] += cssNeedMQ.join('');
+      this[PLUGIN_PAGE_STYLE_ATTR.FIRST_PAGE_STYLE_NO_MQ] += cssNoMQ.join('');
     } else {
-      this.otherPageStyle += cssNeedMQ.join('');
-      this.otherPageStyleNoMQ += cssNoMQ.join('');
+      this[PLUGIN_PAGE_STYLE_ATTR.OTHER_PAGE_STYLE] += cssNeedMQ.join('');
+      this[PLUGIN_PAGE_STYLE_ATTR.OTHER_PAGE_STYLE_NO_MQ] += cssNoMQ.join('');
     }
   }
 
@@ -132,5 +135,17 @@ export default class Plugins {
   resetCss() {
     cssNeedMQ = [];
     cssNoMQ = [];
+  }
+
+  // 重置
+  reset() {
+    this._plugins = [];
+    this.length = 0;
+    this.loopTimes = 0;
+    this[PLUGIN_PAGE_STYLE_ATTR.FIRST_PAGE_STYLE] = '';
+    this[PLUGIN_PAGE_STYLE_ATTR.OTHER_PAGE_STYLE] = '';
+    this[PLUGIN_PAGE_STYLE_ATTR.FIRST_PAGE_STYLE_NO_MQ] = '';
+    this[PLUGIN_PAGE_STYLE_ATTR.OTHER_PAGE_STYLE_NO_MQ] = '';
+    this.resetCss();
   }
 };

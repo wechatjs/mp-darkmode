@@ -9,14 +9,16 @@ declare global {
   }
 }
 
+const RANDOM = `${new Date().getTime()}${Math.floor(Math.random() * 10000)}`; // 生成个随机数，格式为时间戳+随机数
+
 export const MEDIA_QUERY = '(prefers-color-scheme: dark)'; // Dark Mode的CSS媒体查询
 
 export const CLASS_PREFIX = 'js_darkmode__'; // Dark Mode class前缀
 export const DM_CLASSNAME_REGEXP = new RegExp(`${CLASS_PREFIX}\\d+`);
 
+export const STYLE_ID = `js_darkmode_style__${RANDOM}`; // Dark Mode 样式表id
 export const HTML_CLASS = 'data_color_scheme_dark'; // 强制设置暗黑模式时给html加的class
 
-const RANDOM = `${new Date().getTime()}${Math.floor(Math.random() * 10000)}`; // 生成个随机数，格式为时间戳+随机数
 export const COLORATTR = `data-darkmode-color-${RANDOM}`; // dm color，即算法生成的已mix新色值
 export const BGCOLORATTR = `data-darkmode-bgcolor-${RANDOM}`; // dm bg-color，即算法生成的已mix新色值
 export const ORIGINAL_COLORATTR = `data-darkmode-original-color-${RANDOM}`; // lm color，即原色值

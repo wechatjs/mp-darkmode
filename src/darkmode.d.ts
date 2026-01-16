@@ -9,6 +9,7 @@ export interface ConfigOption {
   };
   needJudgeFirstPage?: boolean;
   delayBgJudge?: boolean;
+  noEmit?: boolean;
   container?: HTMLElement | null;
   cssSelectorsPrefix?: string;
   defaultLightWebviewColor?: string;
@@ -72,5 +73,6 @@ export interface DarkMode {
   updateStyle: (node: HTMLElement, styles: Record<string, string>) => void;
   getContrast: (color1: string, color2: string) => number;
   extend: (pluginList: PluginConstructor[]) => void;
+  reset: (nodes: HTMLElement[]) => void;
   validate: (container: HTMLElement, opt: ValidateOption, filter?: ValidateFilter) => ValidateResult[];
 }

@@ -28,6 +28,10 @@
  * @param {Array} pluginList 插件列表
  * @return void
  *
+ * @function reset 重置
+ * @param {HTMLElement[]} [nodes] 要重置的节点列表
+ * @return void
+ *
  * @function validate 校验
  * @param {HTMLElement}    container 要校验的容器节点
  * @param {ValidateOption} opt       校验配置
@@ -49,6 +53,15 @@ import {
   MEDIA_QUERY,
   CLASS_PREFIX,
   HTML_CLASS,
+
+  COLORATTR,
+  BGCOLORATTR,
+  ORIGINAL_COLORATTR,
+  ORIGINAL_BGCOLORATTR,
+  BGIMAGEATTR,
+  BGGRADIENT_MIXCOLORATTR,
+  COMPLEMENTARY_BGIMAGECOLORATTR,
+
   PAGE_HEIGHT
 } from './modules/constant';
 const classReg = new RegExp(`${CLASS_PREFIX}[^ ]+`, 'g');
@@ -72,8 +85,8 @@ interface SwitchToDarkmodeOptions {
 }
 
 // Dark Mode切换
-let mql: MediaQueryList;
-const switchToDarkmode = (mqlObj: MediaQueryList, opt: SwitchToDarkmodeOptions = {
+let mql: MediaQueryList | null = null;
+const switchToDarkmode = (mqlObj: MediaQueryList | null, opt: SwitchToDarkmodeOptions = {
   type: 'dom'
 }) => {
   opt.force && (cssUtils.isFinish = false); // 如果是强制运行Dark Mode处理逻辑，则重置为未运行
@@ -81,7 +94,12 @@ const switchToDarkmode = (mqlObj: MediaQueryList, opt: SwitchToDarkmodeOptions =
   if (cssUtils.isFinish) return; // 已运行过Dark Mode处理逻辑则不再运行
 
   try {
-    sdk.isDarkmode = config.mode ? (config.mode === 'dark') : mqlObj.matches;
+    if (config.mode) {
+      sdk.isDarkmode = config.mode === 'dark';
+    } else {
+      if (!mqlObj) return;
+      sdk.isDarkmode = mqlObj.matches;
+    }
 
     if (opt.type === 'dom') { // 处理节点
       sdk.isDarkmode && config.begin?.(domUtils.hasDelay());
@@ -192,6 +210,7 @@ export function init(opt: ConfigOption = {}) {
   config.set('function', opt, 'error');
   config.set('boolean', opt, 'needJudgeFirstPage');
   config.set('boolean', opt, 'delayBgJudge');
+  config.set('boolean', opt, 'noEmit');
   config.set('dom', opt, 'container');
   config.set('string', opt, 'cssSelectorsPrefix');
   config.setDefaultColor(opt);
@@ -235,6 +254,34 @@ export function getContrast(color1: string, color2: string): number {
 // 挂载插件
 export function extend(pluginList: PluginConstructor[]) {
   pluginList.forEach(plugin => plugins.extend(plugin));
+};
+
+// 重置
+export function reset(nodes: HTMLElement[]) {
+  config.reset();
+  plugins.reset();
+  tnQueue.reset();
+  bgStack.reset();
+  cssUtils.reset();
+  domUtils.reset();
+  sdk.reset();
+
+  document.getElementsByTagName('html')[0].classList.remove(HTML_CLASS);
+
+  if (mql) {
+    mql.removeListener(switchToDarkmode as any); // 取消监听
+    mql = null;
+  }
+
+  nodes?.forEach(node => {
+    delete (node as any)[COLORATTR];
+    delete (node as any)[BGCOLORATTR];
+    delete (node as any)[ORIGINAL_COLORATTR];
+    delete (node as any)[ORIGINAL_BGCOLORATTR];
+    delete (node as any)[BGIMAGEATTR];
+    delete (node as any)[BGGRADIENT_MIXCOLORATTR];
+    delete (node as any)[COMPLEMENTARY_BGIMAGECOLORATTR];
+  });
 };
 
 // 校验

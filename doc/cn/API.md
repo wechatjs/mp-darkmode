@@ -18,6 +18,7 @@ API
     - `options.whitelist.attribute` &lt;string Array&gt; 属性列表。
   - `options.needJudgeFirstPage` &lt;boolean&gt; 是否需要判断首屏，默认 `true`。
   - `options.delayBgJudge` &lt;boolean&gt; 是否延迟背景判断，默认 `false`。
+  - `options.noEmit` &lt;boolean&gt; 是否不产出&lt;style&gt;，默认 `false`。
   - `options.container` &lt;HTMLElement&gt; 延迟运行 js 时使用的容器，默认 `null`。
   - `options.cssSelectorsPrefix` &lt;string&gt; css 选择器前缀，默认 `''`。
   - `options.defaultLightWebviewColor` &lt;string&gt; Light Mode 下 webview 颜色，默认 `#fff`。
@@ -115,4 +116,34 @@ Darkmode.getContrast('#fff', '#000'); // return 21
 
 ```javascript
 Darkmode.extend([pluginA, pluginB, pluginC]);
+```
+
+### `Darkmode.reset(nodes)`
+
+- `nodes` &lt;HTMLElement[]&gt; 已进行 Dark Mode 转换的 DOM 节点数组。
+
+重置，会移除算法添加的 Dark Mode 样式，并卸载已挂载的插件。
+
+```javascript
+Darkmode.reset(document.body.querySelectorAll('*'));
+```
+
+### `Darkmode.validate(container[, options, filter])`
+
+- `container` &lt;HTMLElement&gt; 要校验的容器节点。
+- `options` &lt;Object&gt; 校验配置。
+  - `options.minContrast` &lt;number&gt; 文字与背景色的最小对比度。
+- `filter` &lt;Function&gt; 过滤器，返回 `true` 则跳过该节点。
+  - `node` &lt;HTMLElement&gt; 被校验的节点。
+- return `result` &lt;Object Array&gt; 校验不通过的结果列表。
+  - `reselt[].dom` &lt;HTMLElement&gt; 校验不通过的节点。
+  - `reselt[].key` &lt;string&gt; 校验不通过的原因。
+  - `reselt[].violateRules` &lt;string&gt; 校验不通过的描述。
+
+校验 Dark Mode 算法转换后的效果。
+
+```javascript
+const result = Darkmode.validate(document.body, {
+  minContrast: 1.5
+}, node => node.classList.has('dm-ignore'));
 ```

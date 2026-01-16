@@ -20,6 +20,8 @@
       z-index: 1;
       width: 572px;
       line-height: 26px;
+      display: flex;
+      gap: 4px;
     }
     .column:nth-child(2) .demo_title {
       left: 572px;
@@ -94,6 +96,7 @@
           <div class="column">
             <h2 class="demo_title">
               <span id="dark_online_title">Dark Mode online</span>
+              <a id="reset_online" href="javascript:;">重置</a>
               <a id="validate_online" href="javascript:;">校验</a>
             </h2>
             <div class="rich_media_wrp article_dark">
@@ -106,6 +109,7 @@
           <div class="column">
             <h2 class="demo_title">
               <span id="dark_title">Dark Mode</span>
+              <a id="reset" href="javascript:;">重置</a>
               <a id="validate" href="javascript:;">校验</a>
             </h2>
             <div id="dark_marker" class="marker">
@@ -235,6 +239,12 @@
     var validateFilter = function(node) {
       return node.classList.contains('validate_ignore');
     };
+    document.getElementById('reset_online').addEventListener('click', function() {
+      DarkmodeOnline.reset();
+    });
+    document.getElementById('reset').addEventListener('click', function() {
+      Darkmode.reset();
+    });
     document.getElementById('validate_online').addEventListener('click', function() {
       console.log(DarkmodeOnline.validate(container, validateOpt, validateFilter));
     });

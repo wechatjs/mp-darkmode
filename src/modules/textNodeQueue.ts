@@ -18,6 +18,9 @@
  * @param {HTMLElement[]} els 要更新的节点对象列表
  * @return void
  *
+ * @method reset 重置
+ * @return void
+ *
  */
 
 // Darkmode配置
@@ -83,5 +86,11 @@ export default class TextNodeQueue {
         });
       }
     });
+  }
+
+  // 重置
+  reset() {
+    this._queue = [];
+    this._idx = 0;
   }
 };

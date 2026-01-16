@@ -24,11 +24,15 @@
  * @param {boolean} [isFirstPageStyle=false] 是否首屏样式
  * @return void
  *
+ * @method reset 移除已写入的样式表
+ * @return void
+ *
  */
 
 // 常量
 import {
   MEDIA_QUERY,
+  STYLE_ID,
   HTML_CLASS,
   PLUGIN_PAGE_STYLE_ATTR,
 } from './constant';
@@ -57,6 +61,8 @@ export default class CssUtils {
   [CssUtilsPrivateAttr.OTHER_PAGE_STYLE] = ''; // 非首屏样式
 
   isFinish = false; // 是否运行过Dark Mode处理逻辑（写入过非首屏样式表则表示已运行过）
+
+  _styleIdx = 0; // 样式表索引值
 
   constructor() {}
 
@@ -131,6 +137,16 @@ export default class CssUtils {
     }).join('');
 
     // 写入样式表
-    styles && document.head.insertAdjacentHTML('beforeend', `<style type="text/css">${styles}</style>`);
+    styles && !config.noEmit && document.head.insertAdjacentHTML('beforeend', `<style id="${STYLE_ID}_${this._styleIdx++}" type="text/css">${styles}</style>`);
+  }
+
+  // 移除已写入的样式表
+  reset() {
+    for (let i = 0; i < this._styleIdx; i++) {
+      const style = document.getElementById(`${STYLE_ID}_${i}`);
+      style?.parentNode?.removeChild(style);
+    }
+    this.isFinish = false;
+    this._styleIdx = 0;
   }
 };

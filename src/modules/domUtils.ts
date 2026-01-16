@@ -90,6 +90,9 @@ export function hasTableClass(el: HTMLElement): string | null {
  * @method emptyFirstPageNodes 清空记录的首屏节点
  * @return void
  *
+ * @method reset 重置
+ * @return void
+ *
  */
 
 export class DomUtils {
@@ -156,5 +159,13 @@ export class DomUtils {
   // 清空记录的首屏节点
   emptyFirstPageNodes() {
     this._firstPageEls = [];
+  }
+
+  // 重置
+  reset() {
+    this._els = [];
+    this._firstPageEls = [];
+    this._delayEls = [];
+    this.showFirstPage = false;
   }
 };

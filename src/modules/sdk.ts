@@ -19,6 +19,9 @@
  * @param {ColorParam} colorStr2 颜色2
  * @return {number} 颜色对比度，取值范围为`[1, 21]`
  *
+ * @method reset 重置
+ * @return void
+ *
  */
 
 import { PLUGIN_HOOK } from '../darkmode.d';
@@ -725,5 +728,19 @@ export default class SDK {
     const color1 = ColorParser(colorStr1);
     const color2 = ColorParser(colorStr2);
     return (color1 && color2) ? color1.contrast(color2) : 0;
+  }
+
+  // 重置
+  reset() {
+    this._idx = 0;
+    this._defaultDarkTextColorRgb = [0, 0, 0, 0];
+    this._defaultDarkBgColorRgb = [0, 0, 0, 0];
+    this._defaultDarkBgColorHSL = [];
+    this._defaultDarkTextColorBrightness = 0;
+    this._defaultDarkBgColorBrightness = 0;
+    this._defaultDarkBgColorHslBrightness = 0;
+    this._maxLimitOffsetBrightness = 0;
+
+    this.isDarkmode = false;
   }
 };

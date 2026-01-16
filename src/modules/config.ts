@@ -11,6 +11,7 @@
  * @attr {string Array} whitelist.attribute      属性列表
  * @attr {boolean}      needJudgeFirstPage       是否需要判断首屏
  * @attr {boolean}      delayBgJudge             是否延迟背景判断
+ * @attr {boolean}      noEmit                   是否不产出style标签
  * @attr {HTMLElement}  container                延迟运行js时使用的容器
  * @attr {string}       cssSelectorsPrefix       css选择器前缀
  * @attr {string}       defaultLightWebviewColor Light Mode下webview颜色
@@ -28,6 +29,9 @@
  *
  * @method setDefaultColor 设置默认颜色
  * @param {ConfigOption} opt 传入的配置对象
+ * @return void
+ *
+ * @method reset 重置配置
  * @return void
  *
  */
@@ -51,16 +55,19 @@ import {
 type ConfigType = 'boolean' | 'string' | 'function' | 'dom';
 type ConfigKey = keyof ConfigOption;
 
-interface Config extends Required<ConfigOption> {
-  hasInit: boolean;
-  set: (type: ConfigType, opt: ConfigOption, key: ConfigKey) => void;
-  setDefaultColor: (opt: ConfigOption) => void;
+interface DefaultConfig extends Required<ConfigOption> {
   whitelist: Required<Required<ConfigOption>['whitelist']>;
 }
 
-const config: Config = {
-  hasInit: false, // 是否初始化过配置
+interface Config extends DefaultConfig {
+  hasInit: boolean;
+  set: (type: ConfigType, opt: ConfigOption, key: ConfigKey) => void;
+  setDefaultColor: (opt: ConfigOption) => void;
+  reset: () => void;
+}
 
+// 默认配置
+const defaultConfig: DefaultConfig = {
   // hooks
   begin: null, // 开始处理时触发的回调
   showFirstPage: null, // 首屏处理完成时触发的回调
@@ -73,6 +80,7 @@ const config: Config = {
   },
   needJudgeFirstPage: true, // 是否需要判断首屏
   delayBgJudge: false, // 是否延迟背景判断
+  noEmit: false, // 是否不产出style标签
   container: null, // 延迟运行js时使用的容器
   cssSelectorsPrefix: '', // css选择器前缀
   defaultLightWebviewColor: DEFAULT_LIGHT_WEBVIEWCOLOR, // Light Mode下webview颜色
@@ -81,6 +89,12 @@ const config: Config = {
   defaultDarkWebviewColor: DEFAULT_DARK_WEBVIEWCOLOR, // Dark Mode下webview颜色
   defaultDarkBgColor: DEFAULT_DARK_BGCOLOR, // Dark Mode下背景颜色
   defaultDarkTextColor: DEFAULT_DARK_TEXTCOLOR, // Dark Mode下字体颜色
+};
+
+const config: Config = {
+  hasInit: false, // 是否初始化过配置
+
+  ...defaultConfig,
 
   // 设置配置
   set(type, opt, key) {
@@ -118,6 +132,12 @@ const config: Config = {
 
     const newDefaultDarkTextColor = mixColors([this.defaultDarkWebviewColor, this.defaultDarkBgColor, opt.defaultDarkTextColor || this.defaultDarkTextColor]);
     if (newDefaultDarkTextColor) this.defaultDarkTextColor = newDefaultDarkTextColor.hex();
+  },
+
+  // 重置配置
+  reset() {
+    this.hasInit = false;
+    Object.assign(this, defaultConfig);
   }
 };
 

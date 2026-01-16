@@ -18,6 +18,7 @@ API
     - `options.whitelist.attribute` &lt;string Array&gt; The whitelist for attributes.
   - `options.needJudgeFirstPage` &lt;boolean&gt; Whether to judge the first screen. Default `true`.
   - `options.delayBgJudge` &lt;boolean&gt; Whether to delay background judgment. Default `false`.
+  - `options.noEmit` &lt;boolean&gt; Whether to generate &lt;style&gt;. Default `false`.
   - `options.container` &lt;HTMLElement&gt; The container to use when delaying running js. Default `null`.
   - `options.cssSelectorsPrefix` &lt;string&gt; Css selector prefix. Default `''`.
   - `opt.defaultLightWebviewColor` &lt;string&gt; Webview color in Light Mode. Default `#fff`.
@@ -115,4 +116,34 @@ Mount the plugin.
 
 ```javascript
 Darkmode.extend([pluginA, pluginB, pluginC]);
+```
+
+### `Darkmode.reset(nodes)`
+
+- `nodes` &lt;HTMLElement[]&gt; The DOM which were converted.
+
+Remove the stylesheets which were added by Dark Mode conversion, and unextend all plugins.
+
+```javascript
+Darkmode.reset(document.body.querySelectorAll('*'));
+```
+
+### `Darkmode.validate(container[, options, filter])`
+
+- `container` &lt;HTMLElement&gt; The container to be validate.
+- `options` &lt;Object&gt; Configuration.
+  - `options.minContrast` &lt;number&gt; Minimum contrast ratio between text and background color.
+- `filter` &lt;Function&gt; Filter, returning `true` will skip this node.
+  - `node` &lt;HTMLElement&gt; The DOM to be validate.
+- return `result` &lt;Object Array&gt; List of results that failed validation
+  - `reselt[].dom` &lt;HTMLElement&gt; The DOM which was failed validation.
+  - `reselt[].key` &lt;string&gt; The failed validation reason.
+  - `reselt[].violateRules` &lt;string&gt; The failed validation description.
+
+Validate the effect of the Dark Mode algorithm conversion.
+
+```javascript
+const result = Darkmode.validate(document.body, {
+  minContrast: 1.5
+}, node => node.classList.has('dm-ignore'));
 ```
