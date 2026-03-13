@@ -96,7 +96,7 @@ export default class SDK {
   constructor() {}
 
   // 调整明度
-  _adjustBrightness(color, el, options, isUpdate) {
+  _adjustBrightness(color, el, options, isUpdate, needReset) {
     // 背景：
     // 处理原则：白背景改黑，其他高感知亮度背景调暗，低亮度适当提高亮度（感知亮度：https://www.w3.org/TR/AERT/#color-contrast）
     // 处理方法：
@@ -126,10 +126,12 @@ export default class SDK {
           // 根据最小可觉差Just-noticeable difference(即JND，表示人类或动物对于某一特定的感官刺激所能察觉的最小改变）和韦伯-费希纳定律，在特定条件下，人类能感知小至 0.5% - 2% 的变化，0.5%换算成对比度为1.1
           // https://zh.wikipedia.org/wiki/%E6%9C%80%E5%B0%8F%E5%8F%AF%E8%A6%BA%E5%B7%AE 最小可觉差wiki
           // https://zh.wikipedia.org/wiki/%E9%9F%8B%E4%BC%AF-%E8%B2%BB%E5%B8%8C%E7%B4%8D%E5%AE%9A%E7%90%86 韦伯-费希纳定理wiki
-          if (el[COMPLEMENTARY_BGIMAGECOLORATTR] === color.toString() || this.getContrast(el[COMPLEMENTARY_BGIMAGECOLORATTR], color.toString()) < 1.1) return {
-            newColor: '',
-            extStyle
-          };
+          if (el[COMPLEMENTARY_BGIMAGECOLORATTR] === color.toString() || this.getContrast(el[COMPLEMENTARY_BGIMAGECOLORATTR], color.toString()) < 1.1) {
+            return {
+              newColor: needReset ? color.toString() : '',
+              extStyle,
+            };
+          }
 
           // 否则取消背景图片补色的影响
           getChildrenAndIt(el).forEach(dom => {
@@ -147,7 +149,7 @@ export default class SDK {
           const ret = this._adjustBrightness(parentTextColor, el, {
             isTextColor: true,
             parentElementBgColorStr: newColor || color
-          }, isUpdate);
+          }, isUpdate, needReset);
           if (ret.newColor) {
             extStyle += cssUtils.genCssKV('color', ret.newColor);
           } else {
@@ -164,7 +166,13 @@ export default class SDK {
       // 无背景图片
       if (parentElementBgColor && !el[BGIMAGEATTR]) {
         newColor = this._adjustTextBrightness(color, parentElementBgColor);
-        plugins.emit(`afterConvertTextColor${isUpdate ? 'ByUpdateStyle' : ''}`, el, {
+        let emitNameSuffix = '';
+        if (isUpdate) {
+          emitNameSuffix = 'ByUpdateStyle';
+        } else if (needReset) {
+          emitNameSuffix = 'ByReset';
+        }
+        plugins.emit(`afterConvertTextColor${emitNameSuffix}`, el, {
           // fontColor: color,
           fontColor: newColor,
           bgColor: parentElementBgColor
@@ -257,7 +265,7 @@ export default class SDK {
   }
 
   // 叠加渐变色到背景色中，并更新背景色相关属性值以及文本颜色
-  _updateBgWithGradient(gradientColor, el, className, cssKVList, hasInlineColor, isUpdate) {
+  _updateBgWithGradient(gradientColor, el, className, cssKVList, hasInlineColor, isUpdate, needReset) {
     const newBgColor = mixColors([el[BGCOLORATTR] || config.defaultDarkBgColor, gradientColor], 'normal');
     const newOriginalBgColor = (el[ORIGINAL_BGCOLORATTR] || config.defaultLightBgColor).split(BG_COLOR_DELIMITER).concat(gradientColor.toString()).join(BG_COLOR_DELIMITER);
     getChildrenAndIt(el).forEach(dom => {
@@ -272,7 +280,7 @@ export default class SDK {
         isTextColor: true,
         isBorderColor: false,
         hasInlineColor
-      }, isUpdate);
+      }, isUpdate, needReset);
       if (ret.newColor) return cssUtils.genCss(className, cssUtils.genCssKV('color', ret.newColor));
     }
     return '';
@@ -299,14 +307,20 @@ export default class SDK {
   }
 
   // 处理节点
-  convert(el, cssKVList, isUpdate) {
+  convert(el, cssKVList, isUpdate, needReset) {
     plugins.resetCss();
-    plugins.emit(`beforeConvertNode${isUpdate ? 'ByUpdateStyle' : ''}`, el);
+    let emitNameSuffix = '';
+    if (isUpdate) {
+      emitNameSuffix = 'ByUpdateStyle';
+    } else if (needReset) {
+      emitNameSuffix = 'ByReset';
+    }
+    plugins.emit(`beforeConvertNode${emitNameSuffix}`, el);
 
     let css = ''; // css
     let bgCss = ''; // 文字底图css
 
-    if (this.isDarkmode || isUpdate) {
+    if (this.isDarkmode || isUpdate || needReset) {
       const nodeName = el.nodeName;
 
       if (config.whitelist.tagName.indexOf(nodeName) > -1) return '';
@@ -425,7 +439,7 @@ export default class SDK {
 
       let dmClassName = '';
       let dmBgClassName = '';
-      if (isUpdate && el.className && typeof el.className === 'string') {
+      if ((isUpdate || needReset) && el.className && typeof el.className === 'string') {
         // 先提取dm className
         let matches = el.className.match(DM_CLASSNAME_REGEXP);
         if (matches) {
@@ -440,6 +454,11 @@ export default class SDK {
       }
 
       let cssKV = ''; // css键值对
+      let noColor = needReset;
+      noColor && cssUtils.watch('color', () => {
+        noColor = false;
+        cssUtils.unwatch('color');
+      });
       cssKVList.forEach(([key, value]) => this._try(() => {
         const oldValue = value;
         let cssChange = false;
@@ -486,7 +505,7 @@ export default class SDK {
                 isTextColor: textColorIdx > -1,
                 isBorderColor,
                 hasInlineColor
-              }, isUpdate);
+              }, isUpdate, needReset);
               const retColor = !hasInlineBackgroundImage && ret.newColor;
 
               extStyle += ret.extStyle;
@@ -554,21 +573,23 @@ export default class SDK {
                   cssKV += cssUtils.genCssKV('background-size', elBackgroundSizeAttr);
                   tmpCssKvStr += cssUtils.genCssKV('background-size', imgBgColor ? `${elBackgroundSizeAttr},100%` : elBackgroundSizeAttr);
                 }
-                if (dmBgClassName) { // 如果是文字底图，则直接加样式
-                  bgCss += cssUtils.genCss(dmBgClassName, tmpCssKvStr);
-                  getChildrenAndIt(el).forEach(dom => {
-                    dom[COMPLEMENTARY_BGIMAGECOLORATTR] = imgBgColor || newValue;
-                  });
-                } else { // 否则背景图入栈
-                  bgStack.push(el, tmpCssKvStr, () => {
+                if (!needReset) {
+                  if (dmBgClassName) { // 如果是文字底图，则直接加样式
+                    bgCss += cssUtils.genCss(dmBgClassName, tmpCssKvStr);
                     getChildrenAndIt(el).forEach(dom => {
                       dom[COMPLEMENTARY_BGIMAGECOLORATTR] = imgBgColor || newValue;
                     });
-                  });
+                  } else { // 否则背景图入栈
+                    bgStack.push(el, tmpCssKvStr, () => {
+                      getChildrenAndIt(el).forEach(dom => {
+                        dom[COMPLEMENTARY_BGIMAGECOLORATTR] = imgBgColor || newValue;
+                      });
+                    });
+                  }
                 }
               } else {
                 // border-image元素，如果当前元素没有背景颜色，补背景颜色
-                if (imgBgColor && !hasInlineBackground) {
+                if (imgBgColor && !hasInlineBackground && !needReset) {
                   tmpCssKvStr = cssUtils.genCssKV('background-image', `linear-gradient(${imgBgColor}, ${imgBgColor})`);
                   if (dmBgClassName) { // 如果是文字底图，则直接加样式
                     bgCss += cssUtils.genCss(dmBgClassName, tmpCssKvStr);
@@ -591,26 +612,36 @@ export default class SDK {
           }
         }
 
-        if (cssChange) {
-          !isUpdate && IMPORTANT_REGEXP.test(oldValue) && (styles[key] = oldValue.replace(IMPORTANT_REGEXP, '')); // 清除inline style的!important
+        if (cssChange || needReset) {
+          !isUpdate && !needReset && IMPORTANT_REGEXP.test(oldValue) && (styles[key] = oldValue.replace(IMPORTANT_REGEXP, '')); // 清除inline style的!important
           if (isGradient) {
-            if (dmBgClassName) { // 如果是文字底图，则直接加样式（其实理论上不会走到这里）
-              bgCss += cssUtils.genCss(dmBgClassName, cssUtils.genCssKV(key, value));
-              if ((/^background/.test(key) && !/url\([^)]*\)/i.test(value))) { // 是无背景图的渐变，需要重新计算背景色
-                css += this._updateBgWithGradient(gradientMixColor, el, dmBgClassName, cssKVList, hasInlineColor, isUpdate);
-              }
-            } else { // 否则渐变入栈
-              bgStack.push(el, cssUtils.genCssKV(key, value), item => { // 渐变入栈
+            if (!needReset) {
+              if (dmBgClassName) { // 如果是文字底图，则直接加样式
+                bgCss += cssUtils.genCss(dmBgClassName, cssUtils.genCssKV(key, value));
                 if ((/^background/.test(key) && !/url\([^)]*\)/i.test(value))) { // 是无背景图的渐变，需要重新计算背景色
-                  css += this._updateBgWithGradient(gradientMixColor, el, item.className, cssKVList, hasInlineColor, isUpdate);
+                  css += this._updateBgWithGradient(gradientMixColor, el, dmBgClassName, cssKVList, hasInlineColor, isUpdate, needReset);
                 }
-              });
+              } else { // 否则渐变入栈
+                bgStack.push(el, cssUtils.genCssKV(key, value), item => { // 渐变入栈
+                  if ((/^background/.test(key) && !/url\([^)]*\)/i.test(value))) { // 是无背景图的渐变，需要重新计算背景色
+                    css += this._updateBgWithGradient(gradientMixColor, el, item.className, cssKVList, hasInlineColor, isUpdate, needReset);
+                  }
+                });
+              }
             }
           } else {
-            cssKV += cssUtils.genCssKV(key, value);
+            if (key === 'color') {
+              noColor = false;
+              cssUtils.unwatch('color');
+            }
+            cssKV += cssUtils.genCssKV(key, (!cssChange && needReset) ? el.style[key] : value);
           }
         }
       }));
+      if (noColor) {
+        cssKV += cssUtils.genCssKV('color', el.style.color || el[COLORATTR] || config.defaultDarkTextColor);
+        cssUtils.unwatch('color');
+      }
 
       if (cssKV) { // 有处理过或者是背景图片就加class以及css
         if (!dmClassName) {
@@ -622,7 +653,7 @@ export default class SDK {
 
       css += bgCss; // 追加文字底图样式，要在添加cssKV之后添加，避免被覆盖
 
-      if (!isUpdate && hasTextNode(el)) { // 如果节点里有文本，要判断是否在背景图里
+      if (!isUpdate && hasTextNode(el) && !needReset) { // 如果节点里有文本，要判断是否在背景图里
         if (config.delayBgJudge) { // 延迟背景判断
           tnQueue.push(el); // 文字入队
         } else {
@@ -634,7 +665,7 @@ export default class SDK {
       }
     }
 
-    plugins.emit(`afterConvertNode${isUpdate ? 'ByUpdateStyle' : ''}`, el);
+    plugins.emit(`afterConvertNode${emitNameSuffix}`, el);
 
     return css;
   }

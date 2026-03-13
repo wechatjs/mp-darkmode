@@ -6,6 +6,8 @@
  * @constructor
  * @param {string} prefix 类名前缀
  *
+ * @attr {number} length 队列长度
+ *
  * @method push 文本节点入队
  * @param {DOM Object} el 文本节点对象
  * @return void
@@ -29,6 +31,11 @@ export default class TextNodeQueue {
 
   constructor(prefix) {
     this._prefix = prefix;
+  }
+
+  // 队列长度
+  get length() {
+    return this._queue.length;
   }
 
   // 文本节点入队

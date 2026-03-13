@@ -24,6 +24,15 @@
  * @param {boolean} isFirstPageStyle 是否首屏样式
  * @return void
  *
+ * @method watch 监听生成css键值对
+ * @param {string} key  css属性
+ * @param {function} cb 回调函数
+ * @return void
+ *
+ * @method unwatch 取消监听生成css键值对
+ * @param {string} key css属性
+ * @return void
+ *
  */
 
 // 常量
@@ -43,6 +52,7 @@ import {
 export default class CssUtils {
   _firstPageStyle = ''; // 首屏样式
   _otherPageStyle = ''; // 非首屏样式
+  _watcher = {}; // 监听器，用于监听生成css键值对
 
   isFinish = false; // 是否运行过Dark Mode处理逻辑（写入过非首屏样式表则表示已运行过）
 
@@ -50,6 +60,7 @@ export default class CssUtils {
 
   // 生成css键值对
   genCssKV(key, val) {
+    this._watcher[key]?.();
     return `${key}: ${val} !important;`;
   }
 
@@ -105,5 +116,15 @@ export default class CssUtils {
 
     // 写入样式表
     styles && document.head.insertAdjacentHTML('beforeend', `<style type="text/css">${styles}</style>`);
+  }
+
+  // 监听生成css键值对
+  watch(key, cb) {
+    this._watcher[key] = cb;
+  }
+
+  // 取消监听生成css键值对
+  unwatch(key) {
+    delete this._watcher[key];
   }
 };

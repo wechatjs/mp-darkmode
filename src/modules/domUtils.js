@@ -3,6 +3,7 @@
  *
  * @function getChildrenAndIt 获取某个节点及它的所有子节点
  * @param {DOM Object} el 节点对象
+ * @param {boolean} exceptIt 是否排除自身
  * @return {DOM Object Array} 节点对象列表
  *
  * @function hasTextNode 判断某个节点里是否包含文字节点
@@ -23,8 +24,8 @@ import {
 } from './global';
 
 // 获取某个节点及它的所有子节点
-export function getChildrenAndIt(el) {
-  return [el].concat(...el.querySelectorAll('*'));
+export function getChildrenAndIt(el, exceptIt = false) {
+  return (exceptIt ? [] : [el]).concat(...el.querySelectorAll('*'));
 };
 
 // 判断某个节点里是否包含文字节点

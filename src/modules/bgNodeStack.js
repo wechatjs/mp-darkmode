@@ -20,6 +20,9 @@
  * @param {DOM Object Array} els 要更新的节点对象列表
  * @return void
  *
+ * @method clear 清空堆栈
+ * @return void
+ *
  */
 
 // Darkmode配置
@@ -69,7 +72,13 @@ export default class BgNodeStack {
     });
 
     while (idxStack.length) {
-      const item = this._stack.splice(idxStack.shift(), 1)[0];
+      const idx = idxStack.shift();
+      let item = null;
+      if (config.delayBgJudge) { // 延迟背景判断时，先保留背景节点
+        item = this._stack[idx];
+      } else {
+        item = this._stack.splice(idx, 1)[0];
+      }
       typeof callback === 'function' && callback(item);
     }
   }
@@ -88,5 +97,10 @@ export default class BgNodeStack {
         });
       }
     });
+  }
+
+  // 清空堆栈
+  clear() {
+    this._stack = [];
   }
 };

@@ -49,7 +49,15 @@ import {
   MEDIA_QUERY,
   CLASS_PREFIX,
   HTML_CLASS,
-  PAGE_HEIGHT
+
+  COLORATTR,
+  BGCOLORATTR,
+  ORIGINAL_COLORATTR,
+  ORIGINAL_BGCOLORATTR,
+  BGIMAGEATTR,
+  COMPLEMENTARY_BGIMAGECOLORATTR,
+
+  PAGE_HEIGHT,
 } from './modules/constant';
 const classReg = new RegExp(`${CLASS_PREFIX}[^ ]+`, 'g');
 
@@ -64,6 +72,10 @@ import {
   domUtils, // 节点相关操作工具对象
   sdk
 } from './modules/global';
+
+import {
+  getChildrenAndIt
+} from './modules/domUtils';
 
 // Dark Mode切换
 let mql = null;
@@ -115,6 +127,31 @@ const switchToDarkmode = (mqlObj, opt = {
     } else if (opt.type === 'bg') { // 处理背景
       sdk.isDarkmode && tnQueue.forEach(text => bgStack.contains(text, bg => {
         cssUtils.addCss(cssUtils.genCss(bg.className, bg.cssKV)); // 写入非首屏样式
+        typeof bg.cb === 'function' && bg.cb(bg);
+
+        // 还得处理该背景下的所有节点
+        const { el } = bg;
+        const inheritAttrs = [
+          [COLORATTR, el[COLORATTR] ?? null],
+          [BGCOLORATTR, el[BGCOLORATTR] ?? null],
+          [ORIGINAL_COLORATTR, el[ORIGINAL_COLORATTR] ?? null],
+          [ORIGINAL_BGCOLORATTR, el[ORIGINAL_BGCOLORATTR] ?? null],
+          [BGIMAGEATTR, el[BGIMAGEATTR] ?? null],
+          [COMPLEMENTARY_BGIMAGECOLORATTR, el[COMPLEMENTARY_BGIMAGECOLORATTR] ?? null],
+        ];
+        const children = getChildrenAndIt(el, true);
+        children.forEach(child => { // 重置继承属性
+          inheritAttrs.forEach(([attr, value]) => {
+            if (value === null) {
+              delete child[attr];
+            } else {
+              child[attr] = value;
+            }
+          });
+        });
+        children.forEach(child => { // 重新运行Dark Mode处理逻辑
+          cssUtils.addCss(sdk.convert(child, undefined, false, true));
+        });
       }));
     }
 
@@ -212,6 +249,9 @@ export function convertBg(nodes) {
     force: true,
     type: 'bg'
   });
+
+  // 如果延迟背景判断且文字队列为空，则清空背景堆栈
+  config.delayBgJudge && tnQueue.length === 0 && bgStack.clear();
 };
 
 // 更新节点Dark Mode样式
