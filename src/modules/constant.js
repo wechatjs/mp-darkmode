@@ -98,5 +98,6 @@ export const IMPORTANT_REGEXP = / !important$/; // !important
 export const SEMICOLON_PLACEHOLDER = '<$#_SEMICOLON_#$>'; // 分号占位符
 export const SEMICOLON_PLACEHOLDER_REGEXP = /<\$#_SEMICOLON_#\$>/g;
 
-export const COLOR_REGEXP = /\brgba?\([^)]+\)/i;
-export const COLOR_REGEXP_GLOBAL = /\brgba?\([^)]+\)/ig;
+const COLOR_REGEXP_STR = '\\b((rgba?)|((ok)?lch)|((ok)?lab)|(color))\\([^)]+\\)';
+export const COLOR_REGEXP = new RegExp(COLOR_REGEXP_STR, 'i');
+export const COLOR_REGEXP_GLOBAL = new RegExp(COLOR_REGEXP_STR, 'ig');

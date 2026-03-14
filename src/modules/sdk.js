@@ -150,11 +150,11 @@ export default class SDK {
             isTextColor: true,
             parentElementBgColorStr: newColor || color
           }, isUpdate, needReset);
-          if (ret.newColor) {
-            extStyle += cssUtils.genCssKV('color', ret.newColor);
-          } else {
-            extStyle += cssUtils.genCssKV('color', parentTextColor);
-          }
+          extStyle += cssUtils.genCssKV('color', ret.newColor || parentTextColor);
+          getChildrenAndIt(el).forEach(dom => {
+            dom[COLORATTR] = ret.newColor || parentTextColor;
+            dom[ORIGINAL_COLORATTR] = parentTextColor;
+          });
         }
       }
     } else if (options.isTextColor || options.isBorderColor) { // 字体色、边框色
@@ -580,9 +580,13 @@ export default class SDK {
                       dom[COMPLEMENTARY_BGIMAGECOLORATTR] = imgBgColor || newValue;
                     });
                   } else { // 否则背景图入栈
-                    bgStack.push(el, tmpCssKvStr, () => {
-                      getChildrenAndIt(el).forEach(dom => {
-                        dom[COMPLEMENTARY_BGIMAGECOLORATTR] = imgBgColor || newValue;
+                    bgStack.push(el, tmpCssKvStr, bgStackItem => {
+                      const els = [bgStackItem.elOld];
+                      bgStackItem.el !== bgStackItem.elOld && els.push(bgStackItem.el);
+                      els.forEach(bgEl => { // 新老节点都要处理
+                        getChildrenAndIt(bgEl).forEach(dom => {
+                          dom[COMPLEMENTARY_BGIMAGECOLORATTR] = imgBgColor || newValue;
+                        });
                       });
                     });
                   }
