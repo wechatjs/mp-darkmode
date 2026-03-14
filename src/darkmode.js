@@ -129,28 +129,29 @@ const switchToDarkmode = (mqlObj, opt = {
         cssUtils.addCss(cssUtils.genCss(bg.className, bg.cssKV)); // 写入非首屏样式
         typeof bg.cb === 'function' && bg.cb(bg);
 
-        // 还得处理该背景下的所有节点
-        const { el } = bg;
-        const inheritAttrs = [
-          [COLORATTR, el[COLORATTR] ?? null],
-          [BGCOLORATTR, el[BGCOLORATTR] ?? null],
-          [ORIGINAL_COLORATTR, el[ORIGINAL_COLORATTR] ?? null],
-          [ORIGINAL_BGCOLORATTR, el[ORIGINAL_BGCOLORATTR] ?? null],
-          [BGIMAGEATTR, el[BGIMAGEATTR] ?? null],
-          [COMPLEMENTARY_BGIMAGECOLORATTR, el[COMPLEMENTARY_BGIMAGECOLORATTR] ?? null],
-        ];
-        const children = getChildrenAndIt(el, true);
-        children.forEach(child => { // 重置继承属性
-          inheritAttrs.forEach(([attr, value]) => {
-            if (value === null) {
-              delete child[attr];
-            } else {
-              child[attr] = value;
-            }
+        // 还得处理该背景下的所有新老节点
+        [bg.elOld, bg.el].forEach(el => {
+          const inheritAttrs = [
+            [COLORATTR, el[COLORATTR] ?? null],
+            [BGCOLORATTR, el[BGCOLORATTR] ?? null],
+            [ORIGINAL_COLORATTR, el[ORIGINAL_COLORATTR] ?? null],
+            [ORIGINAL_BGCOLORATTR, el[ORIGINAL_BGCOLORATTR] ?? null],
+            [BGIMAGEATTR, el[BGIMAGEATTR] ?? null],
+            [COMPLEMENTARY_BGIMAGECOLORATTR, el[COMPLEMENTARY_BGIMAGECOLORATTR] ?? null],
+          ];
+          const children = getChildrenAndIt(el, true);
+          children.forEach(child => { // 重置继承属性
+            inheritAttrs.forEach(([attr, value]) => {
+              if (value === null) {
+                delete child[attr];
+              } else {
+                child[attr] = value;
+              }
+            });
           });
-        });
-        children.forEach(child => { // 重新运行Dark Mode处理逻辑
-          cssUtils.addCss(sdk.convert(child, undefined, false, true));
+          children.forEach(child => { // 重新运行Dark Mode处理逻辑
+            cssUtils.addCss(sdk.convert(child, undefined, false, true));
+          });
         });
       }));
     }
@@ -249,9 +250,6 @@ export function convertBg(nodes) {
     force: true,
     type: 'bg'
   });
-
-  // 如果延迟背景判断且文字队列为空，则清空背景堆栈
-  config.delayBgJudge && tnQueue.length === 0 && bgStack.clear();
 };
 
 // 更新节点Dark Mode样式

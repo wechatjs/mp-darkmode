@@ -580,9 +580,11 @@ export default class SDK {
                       dom[COMPLEMENTARY_BGIMAGECOLORATTR] = imgBgColor || newValue;
                     });
                   } else { // 否则背景图入栈
-                    bgStack.push(el, tmpCssKvStr, () => {
-                      getChildrenAndIt(el).forEach(dom => {
-                        dom[COMPLEMENTARY_BGIMAGECOLORATTR] = imgBgColor || newValue;
+                    bgStack.push(el, tmpCssKvStr, bgStackItem => {
+                      [bgStackItem.elOld, bgStackItem.el].forEach(bgEl => {
+                        getChildrenAndIt(bgEl).forEach(dom => {
+                          dom[COMPLEMENTARY_BGIMAGECOLORATTR] = imgBgColor || newValue;
+                        });
                       });
                     });
                   }

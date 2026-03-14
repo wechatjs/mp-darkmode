@@ -20,16 +20,13 @@
  * @param {DOM Object Array} els 要更新的节点对象列表
  * @return void
  *
- * @method clear 清空堆栈
- * @return void
- *
  */
 
 // Darkmode配置
 import config from './config';
 
 export default class BgNodeStack {
-  _stack = []; // 需要判断位置的背景堆栈，{ el, className, cssKV, updated, rect }
+  _stack = []; // 需要判断位置的背景堆栈，{ elOld, el, className, cssKV, updated, rect }
   _idx = 0; // 索引值
 
   constructor(prefix) {
@@ -42,6 +39,7 @@ export default class BgNodeStack {
     const className = `${this._prefix}${this._idx++}`;
     el.classList.add(className);
     this._stack.unshift({
+      elOld: el,
       el,
       className,
       cssKV,
@@ -73,12 +71,7 @@ export default class BgNodeStack {
 
     while (idxStack.length) {
       const idx = idxStack.shift();
-      let item = null;
-      if (config.delayBgJudge) { // 延迟背景判断时，先保留背景节点
-        item = this._stack[idx];
-      } else {
-        item = this._stack.splice(idx, 1)[0];
-      }
+      const item = this._stack.splice(idx, 1)[0];
       typeof callback === 'function' && callback(item);
     }
   }
@@ -97,10 +90,5 @@ export default class BgNodeStack {
         });
       }
     });
-  }
-
-  // 清空堆栈
-  clear() {
-    this._stack = [];
   }
 };

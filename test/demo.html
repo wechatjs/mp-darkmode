@@ -57,6 +57,15 @@
         <span>123</span>
       </section>
     </section>
+  </section>
+  <section data-cacheurl="" data-pm-slice="0 0 []" data-remoteid="" style="box-sizing: border-box; font-style: normal; font-weight: 400; text-align: justify; font-size: 16px; color: rgb(62, 62, 62); visibility: visible;" data-lazy-bgimg="https://mmbiz.qpic.cn/sz_mmbiz_png/7s3nHQprZzJU0oFkcBR64ApiaPCgKEOacSwicY15W7qfnLjROdtj8udhiarK0C1ZggDaZwDqgQCrn3eaH7ibiaHa0ibKmsRLrGwKvyQS2HeOhVILw/640?wx_fmt=png&amp;from=appmsg" class="" data-fail="0">
+    <section style="color: rgb(151, 186, 151); box-sizing: border-box; visibility: visible;"><p style="white-space: normal; margin: 0px; padding: 0px; box-sizing: border-box; visibility: visible;"><span leaf="" style="visibility: visible;"><br style="visibility: visible;"></span></p></section>
+    <section style="text-align: center; justify-content: center; display: flex; flex-flow: row; margin: 9px 0px 0px; box-sizing: border-box; visibility: visible;">
+      <section style="display: inline-block; width: 95%; vertical-align: top; align-self: flex-start; flex: 0 0 auto; height: 100px; box-shadow: rgba(171, 171, 171, 0.35) 0px 0px 3px 0px; background-color: rgba(255, 255, 255, 0.49); padding: 0px 20px; box-sizing: border-box; visibility: visible;">
+        <span>123</span>
+      </section>
+    </section>
+  </section>
 </div>
 
 <!-- 自定义样式 -->
@@ -848,6 +857,15 @@
         <span>123</span>
       </section>
     </section>
+  </section>
+  <section data-cacheurl="" data-pm-slice="0 0 []" data-remoteid="" style="box-sizing: border-box; font-style: normal; font-weight: 400; text-align: justify; font-size: 16px; color: rgb(62, 62, 62); visibility: visible;" data-lazy-bgimg="https://mmbiz.qpic.cn/sz_mmbiz_png/7s3nHQprZzJU0oFkcBR64ApiaPCgKEOacSwicY15W7qfnLjROdtj8udhiarK0C1ZggDaZwDqgQCrn3eaH7ibiaHa0ibKmsRLrGwKvyQS2HeOhVILw/640?wx_fmt=png&amp;from=appmsg" class="" data-fail="0">
+    <section style="color: rgb(151, 186, 151); box-sizing: border-box; visibility: visible;"><p style="white-space: normal; margin: 0px; padding: 0px; box-sizing: border-box; visibility: visible;"><span leaf="" style="visibility: visible;"><br style="visibility: visible;"></span></p></section>
+    <section style="text-align: center; justify-content: center; display: flex; flex-flow: row; margin: 9px 0px 0px; box-sizing: border-box; visibility: visible;">
+      <section style="display: inline-block; width: 95%; vertical-align: top; align-self: flex-start; flex: 0 0 auto; height: 100px; box-shadow: rgba(171, 171, 171, 0.35) 0px 0px 3px 0px; background-color: rgba(255, 255, 255, 0.49); padding: 0px 20px; box-sizing: border-box; visibility: visible;">
+        <span>123</span>
+      </section>
+    </section>
+  </section>
 </div>
 
 <!-- 自定义样式 -->
@@ -1639,6 +1657,15 @@
         <span>123</span>
       </section>
     </section>
+  </section>
+  <section data-cacheurl="" data-pm-slice="0 0 []" data-remoteid="" style="box-sizing: border-box; font-style: normal; font-weight: 400; text-align: justify; font-size: 16px; color: rgb(62, 62, 62); visibility: visible;" data-lazy-bgimg="https://mmbiz.qpic.cn/sz_mmbiz_png/7s3nHQprZzJU0oFkcBR64ApiaPCgKEOacSwicY15W7qfnLjROdtj8udhiarK0C1ZggDaZwDqgQCrn3eaH7ibiaHa0ibKmsRLrGwKvyQS2HeOhVILw/640?wx_fmt=png&amp;from=appmsg" class="" data-fail="0">
+    <section style="color: rgb(151, 186, 151); box-sizing: border-box; visibility: visible;"><p style="white-space: normal; margin: 0px; padding: 0px; box-sizing: border-box; visibility: visible;"><span leaf="" style="visibility: visible;"><br style="visibility: visible;"></span></p></section>
+    <section style="text-align: center; justify-content: center; display: flex; flex-flow: row; margin: 9px 0px 0px; box-sizing: border-box; visibility: visible;">
+      <section style="display: inline-block; width: 95%; vertical-align: top; align-self: flex-start; flex: 0 0 auto; height: 100px; box-shadow: rgba(171, 171, 171, 0.35) 0px 0px 3px 0px; background-color: rgba(255, 255, 255, 0.49); padding: 0px 20px; box-sizing: border-box; visibility: visible;">
+        <span>123</span>
+      </section>
+    </section>
+  </section>
 </div>
 
 <!-- 自定义样式 -->
@@ -2442,24 +2469,9 @@
     document.getElementById('dark_online_title').innerText += ' (cost: ' + (new Date() - begin) + 'ms, first page: ' + fp + 'ms)';
 
     // H5本地版本
-    var container = document.getElementById('dark');
-    begin = new Date();
-    Darkmode.run(container.querySelectorAll('*'), { // 运行Dark Mode转换算法
-      mode: 'dark',
-      cssSelectorsPrefix: '#dark',
-      whitelist: {
-        attribute: ['data-no-dark']
-      },
-      showFirstPage: function() {
-        fp = new Date() - begin;
-      }
-    });
-    document.getElementById('dark_title').innerText += ' (cost: ' + (new Date() - begin) + 'ms, first page: ' + fp + 'ms)';
-
-    // 秒开本地版本
     // var container = document.getElementById('dark');
     // begin = new Date();
-    // Darkmode.init({ // 初始化Dark Mode配置
+    // Darkmode.run(container.querySelectorAll('*'), { // 运行Dark Mode转换算法
     //   mode: 'dark',
     //   cssSelectorsPrefix: '#dark',
     //   whitelist: {
@@ -2467,16 +2479,36 @@
     //   },
     //   showFirstPage: function() {
     //     fp = new Date() - begin;
-    //   },
-    //   needJudgeFirstPage: false, // 不需要判断首屏
-    //   delayBgJudge: true, // 延迟背景判断
-    //   container: container, // 延迟运行js时的容器
+    //   }
     // });
-    // Darkmode.run(container.querySelectorAll('*')); // 运行Dark Mode转换算法
     // document.getElementById('dark_title').innerText += ' (cost: ' + (new Date() - begin) + 'ms, first page: ' + fp + 'ms)';
+
+    // 秒开本地版本
+    var container = document.getElementById('dark');
+    begin = new Date();
+    Darkmode.init({ // 初始化Dark Mode配置
+      mode: 'dark',
+      cssSelectorsPrefix: '#dark',
+      whitelist: {
+        attribute: ['data-no-dark']
+      },
+      showFirstPage: function() {
+        fp = new Date() - begin;
+      },
+      needJudgeFirstPage: false, // 不需要判断首屏
+      delayBgJudge: true, // 延迟背景判断
+      container: container, // 延迟运行js时的容器
+    });
+    Darkmode.run(container.querySelectorAll('*')); // 运行Dark Mode转换算法
+    document.getElementById('dark_title').innerText += ' (cost: ' + (new Date() - begin) + 'ms, first page: ' + fp + 'ms)';
     // Array.prototype.forEach.call(container.getElementsByClassName('mp_artical_style_section'), function(el) {
     //   Darkmode.convertBg(el.querySelectorAll('*'));
     // }); // 模拟秒开分批渲染
+    window.test = () => {
+      Array.prototype.forEach.call(container.getElementsByClassName('mp_artical_style_section'), function(el) {
+        Darkmode.convertBg(el.querySelectorAll('*'));
+      });
+    };
   </script>
 </body>
 </html>
