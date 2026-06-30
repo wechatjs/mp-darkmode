@@ -96,24 +96,9 @@
     document.getElementById('dark_online_title').innerText += ' (cost: ' + (new Date() - begin) + 'ms, first page: ' + fp + 'ms)';
 
     // H5本地版本
-    // var container = document.getElementById('dark');
-    // begin = new Date();
-    // Darkmode.run(container.querySelectorAll('*'), { // 运行Dark Mode转换算法
-    //   mode: 'dark',
-    //   cssSelectorsPrefix: '#dark',
-    //   whitelist: {
-    //     attribute: ['data-no-dark']
-    //   },
-    //   showFirstPage: function() {
-    //     fp = new Date() - begin;
-    //   }
-    // });
-    // document.getElementById('dark_title').innerText += ' (cost: ' + (new Date() - begin) + 'ms, first page: ' + fp + 'ms)';
-
-    // 秒开本地版本
     var container = document.getElementById('dark');
     begin = new Date();
-    Darkmode.init({ // 初始化Dark Mode配置
+    Darkmode.run(container.querySelectorAll('*'), { // 运行Dark Mode转换算法
       mode: 'dark',
       cssSelectorsPrefix: '#dark',
       whitelist: {
@@ -121,21 +106,31 @@
       },
       showFirstPage: function() {
         fp = new Date() - begin;
-      },
-      needJudgeFirstPage: false, // 不需要判断首屏
-      delayBgJudge: true, // 延迟背景判断
-      container: container, // 延迟运行js时的容器
+      }
     });
-    Darkmode.run(container.querySelectorAll('*')); // 运行Dark Mode转换算法
     document.getElementById('dark_title').innerText += ' (cost: ' + (new Date() - begin) + 'ms, first page: ' + fp + 'ms)';
+
+    // 秒开本地版本
+    // var container = document.getElementById('dark');
+    // begin = new Date();
+    // Darkmode.init({ // 初始化Dark Mode配置
+    //   mode: 'dark',
+    //   cssSelectorsPrefix: '#dark',
+    //   whitelist: {
+    //     attribute: ['data-no-dark']
+    //   },
+    //   showFirstPage: function() {
+    //     fp = new Date() - begin;
+    //   },
+    //   needJudgeFirstPage: false, // 不需要判断首屏
+    //   delayBgJudge: true, // 延迟背景判断
+    //   container: container, // 延迟运行js时的容器
+    // });
+    // Darkmode.run(container.querySelectorAll('*')); // 运行Dark Mode转换算法
+    // document.getElementById('dark_title').innerText += ' (cost: ' + (new Date() - begin) + 'ms, first page: ' + fp + 'ms)';
     // Array.prototype.forEach.call(container.getElementsByClassName('mp_artical_style_section'), function(el) {
     //   Darkmode.convertBg(el.querySelectorAll('*'));
     // }); // 模拟秒开分批渲染
-    window.test = () => {
-      Array.prototype.forEach.call(container.getElementsByClassName('mp_artical_style_section'), function(el) {
-        Darkmode.convertBg(el.querySelectorAll('*'));
-      });
-    };
   </script>
 </body>
 </html>

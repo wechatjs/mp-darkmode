@@ -130,7 +130,9 @@ const switchToDarkmode = (mqlObj, opt = {
         typeof bg.cb === 'function' && bg.cb(bg);
 
         // 还得处理该背景下的所有新老节点
-        [bg.elOld, bg.el].forEach(el => {
+        const els = [bg.elOld];
+        bg.elOld !== bg.el && els.push(bg.el);
+        els.forEach(el => {
           const inheritAttrs = [
             [COLORATTR, el[COLORATTR] ?? null],
             [BGCOLORATTR, el[BGCOLORATTR] ?? null],
