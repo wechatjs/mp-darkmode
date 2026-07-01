@@ -18,6 +18,7 @@
 1. 可以优化convertBg，处理老节点时可以不处理未update的bg以及其后代节点
 1. 可以尝试把dm_css记录在节点对象上，方便回溯dm_css，否则只能去style里做字符串匹配
 1. 把完整的秒开模拟逻辑补到test里（cloneNode再append）
+1. 后续可以考虑把color库直接迁为colorjs.io库，不用再做转换
 
 ## Feature
 

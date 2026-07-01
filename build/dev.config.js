@@ -14,7 +14,7 @@ module.exports = {
   module: {
     rules: [{
       test: /\.js$/,
-      exclude: /node_modules/,
+      exclude: file => /node_modules/.test(file) && !/node_modules[\\/]color(js\.io)?[\\/]/.test(file),
       use: {
         loader: 'babel-loader',
         options: {

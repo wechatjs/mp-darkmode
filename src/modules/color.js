@@ -32,9 +32,8 @@
 
 import Color from 'color';
 import ColorName from 'color-name';
-ColorName.windowtext = [0, 0, 0]; // 补上这个colorName
-ColorName.transparent = [255, 255, 255, 0]; // 支持透明，暂定用白色透明度0来表示
 import * as ColorBlend from 'color-blend';
+import ColorJS from 'colorjs.io';
 
 // 常量
 import {
@@ -42,7 +41,12 @@ import {
   COLOR_REGEXP
 } from './constant';
 
-const COLOR_NAME_REG = new RegExp(Object.keys(ColorName).map(colorName => `\\b${colorName}\\b`).join('|'), 'ig'); // 生成正则表达式来匹配这些colorName
+const COLOR_NAME = {
+  ...ColorName,
+  windowtext: [0, 0, 0], // 补上这个colorName
+  transparent: [255, 255, 255, 0], // 支持透明，暂定用白色透明度0来表示
+};
+const COLOR_NAME_REG = new RegExp(Object.keys(COLOR_NAME).map(colorName => `\\b${colorName}\\b`).join('|'), 'ig'); // 生成正则表达式来匹配这些colorName
 
 // Color对象 => ColorBlend对象
 const color2ColorBlend = color => {
@@ -65,7 +69,11 @@ export const ColorParser = color => {
   try {
     res = color instanceof Color ? color : Color(color);
   } catch (e) {
-    console.log(`ignore the invalid color: \`${color}\``);
+    try {
+      res = ColorParser(new ColorJS(color).to('srgb').toString()); // 对于lch、oklch、lab、oklab、color等色值尝试使用colorjs.io来解析，然后再转成Color对象
+    } catch (e) {
+      console.log(`ignore the invalid color: \`${color}\``);
+    }
   }
   return res;
 };
@@ -74,7 +82,7 @@ export const ColorParser = color => {
 export const parseColorName = (color, supportTransparent) => color.replace(IMPORTANT_REGEXP, '').replace(COLOR_NAME_REG, match => {
   if (!supportTransparent && match === 'transparent') return match; // 如果不支持转换transparent，直接返回transparent
 
-  const color = ColorName[match.toLowerCase()];
+  const color = COLOR_NAME[match.toLowerCase()];
   return `${color.length > 3 ? 'rgba' : 'rgb'}(${color.toString()})`;
 });
 

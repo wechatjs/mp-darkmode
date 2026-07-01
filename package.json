@@ -1,12 +1,13 @@
 {
   "name": "mp-darkmode",
-  "version": "1.2.3-beta.5",
+  "version": "1.2.3-beta.6",
   "description": "微信公众平台 Dark Mode 转换算法",
   "main": "dist/darkmode.min.js",
   "dependencies": {
-    "color": "^3.1.2",
+    "color": "^5.0.3",
     "color-blend": "^4.0.0",
-    "color-name": "^1.1.4"
+    "color-name": "^2.1.0",
+    "colorjs.io": "^0.6.1"
   },
   "devDependencies": {
     "@babel/core": "^7.17.8",
