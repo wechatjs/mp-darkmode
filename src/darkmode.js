@@ -44,6 +44,10 @@
  *
  */
 
+// Object.hasOwn polyfill：color-string / colorjs.io 等依赖在模块初始化时即调用 Object.hasOwn，
+// 而该 API 在 iOS 15.4 以下不支持，因此必须作为最顶部、最先执行的 import
+import 'object.hasown/auto';
+
 // 常量
 import {
   MEDIA_QUERY,
