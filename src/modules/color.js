@@ -30,6 +30,7 @@
  *
  */
 
+import 'object.hasown/auto';
 import Color from 'color';
 import ColorName from 'color-name';
 import * as ColorBlend from 'color-blend';

@@ -96,6 +96,125 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
+/***/ "./node_modules/call-bind-apply-helpers/actualApply.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/call-bind-apply-helpers/actualApply.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var bind = __webpack_require__(/*! function-bind */ "./node_modules/function-bind/index.js");
+var $apply = __webpack_require__(/*! ./functionApply */ "./node_modules/call-bind-apply-helpers/functionApply.js");
+var $call = __webpack_require__(/*! ./functionCall */ "./node_modules/call-bind-apply-helpers/functionCall.js");
+var $reflectApply = __webpack_require__(/*! ./reflectApply */ "./node_modules/call-bind-apply-helpers/reflectApply.js");
+
+/** @type {import('./actualApply')} */
+module.exports = $reflectApply || bind.call($call, $apply);
+
+/***/ }),
+
+/***/ "./node_modules/call-bind-apply-helpers/functionApply.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/call-bind-apply-helpers/functionApply.js ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./functionApply')} */
+module.exports = Function.prototype.apply;
+
+/***/ }),
+
+/***/ "./node_modules/call-bind-apply-helpers/functionCall.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/call-bind-apply-helpers/functionCall.js ***!
+  \**************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./functionCall')} */
+module.exports = Function.prototype.call;
+
+/***/ }),
+
+/***/ "./node_modules/call-bind-apply-helpers/index.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/call-bind-apply-helpers/index.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var bind = __webpack_require__(/*! function-bind */ "./node_modules/function-bind/index.js");
+var $TypeError = __webpack_require__(/*! es-errors/type */ "./node_modules/es-errors/type.js");
+var $call = __webpack_require__(/*! ./functionCall */ "./node_modules/call-bind-apply-helpers/functionCall.js");
+var $actualApply = __webpack_require__(/*! ./actualApply */ "./node_modules/call-bind-apply-helpers/actualApply.js");
+
+/** @type {(args: [Function, thisArg?: unknown, ...args: unknown[]]) => Function} TODO FIXME, find a way to use import('.') */
+module.exports = function callBindBasic(args) {
+  if (args.length < 1 || typeof args[0] !== 'function') {
+    throw new $TypeError('a function is required');
+  }
+  return $actualApply(bind, $call, args);
+};
+
+/***/ }),
+
+/***/ "./node_modules/call-bind-apply-helpers/reflectApply.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/call-bind-apply-helpers/reflectApply.js ***!
+  \**************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./reflectApply')} */
+module.exports = typeof Reflect !== 'undefined' && Reflect && Reflect.apply;
+
+/***/ }),
+
+/***/ "./node_modules/call-bound/index.js":
+/*!******************************************!*\
+  !*** ./node_modules/call-bound/index.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var GetIntrinsic = __webpack_require__(/*! get-intrinsic */ "./node_modules/get-intrinsic/index.js");
+var callBindBasic = __webpack_require__(/*! call-bind-apply-helpers */ "./node_modules/call-bind-apply-helpers/index.js");
+
+/** @type {(thisArg: string, searchString: string, position?: number) => number} */
+var $indexOf = callBindBasic([GetIntrinsic('%String.prototype.indexOf%')]);
+
+/** @type {import('.')} */
+module.exports = function callBoundIntrinsic(name, allowMissing) {
+  /* eslint no-extra-parens: 0 */
+
+  var intrinsic = /** @type {(this: unknown, ...args: unknown[]) => unknown} */GetIntrinsic(name, !!allowMissing);
+  if (typeof intrinsic === 'function' && $indexOf(name, '.prototype.') > -1) {
+    return callBindBasic( /** @type {const} */[intrinsic]);
+  }
+  return intrinsic;
+};
+
+/***/ }),
+
 /***/ "./node_modules/color-blend/dist/index.modern.js":
 /*!*******************************************************!*\
   !*** ./node_modules/color-blend/dist/index.modern.js ***!
@@ -121,8 +240,216 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "saturation", function() { return Q; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "screen", function() { return C; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "softLight", function() { return K; });
-function n(n,r,t){return{r:255*t(n.r/255,r.r/255),g:255*t(n.g/255,r.g/255),b:255*t(n.b/255,r.b/255)}}function r(n,r){return r}function t(n,r){return n*r}function u(n,r){return n+r-n*r}function i(n,r){return a(r,n)}function o(n,r){return Math.min(n,r)}function e(n,r){return Math.min(Math.max(n,r),1)}function c(n,r){return 0===n?0:1===r?1:Math.min(1,n/(1-r))}function f(n,r){return 1===n?1:0===r?0:1-Math.min(1,(1-n)/r)}function a(n,r){return r<=.5?t(n,2*r):u(n,2*r-1)}function b(n,r){return r<=.5?n-(1-2*r)*n*(1-n):n+(2*r-1)*((n<=.25?((16*n-12)*n+4)*n:Math.sqrt(n))-n)}function g(n,r){return Math.abs(n-r)}function h(n,r){return n+r-2*n*r}function M(n,r,t){return Math.min(Math.max(n||0,r),t)}function m(n){return{r:M(n.r,0,255),g:M(n.g,0,255),b:M(n.b,0,255),a:M(n.a,0,1)}}function d(n){return{r:255*n.r,g:255*n.g,b:255*n.b,a:n.a}}function p(n){return{r:n.r/255,g:n.g/255,b:n.b/255,a:n.a}}function v(n,r){void 0===r&&(r=0);var t=Math.pow(10,r);return{r:Math.round(n.r*t)/t,g:Math.round(n.g*t)/t,b:Math.round(n.b*t)/t,a:n.a}}function x(n,r,t,u,i,o){return(1-r/t)*u+r/t*Math.round((1-n)*i+n*o)}function O(n,r,t,u,i){void 0===i&&(i={unitInput:!1,unitOutput:!1,roundOutput:!0}),i.unitInput&&(n=d(n),r=d(r)),n=m(n);var o=(r=m(r)).a+n.a-r.a*n.a,e=t(n,r,u),c=m({r:x(n.a,r.a,o,n.r,r.r,e.r),g:x(n.a,r.a,o,n.g,r.g,e.g),b:x(n.a,r.a,o,n.b,r.b,e.b),a:o});return c=i.unitOutput?p(c):i.roundOutput?v(c):function(n){return v(n,9)}(c),c}function s(n,r,t){return d(t(p(n),p(r)))}function I(n){return.3*n.r+.59*n.g+.11*n.b}function q(n,r){var t=r-I(n);return function(n){var r=I(n),t=n.r,u=n.g,i=n.b,o=Math.min(t,u,i),e=Math.max(t,u,i);function c(n){return r+(n-r)*r/(r-o)}function f(n){return r+(n-r)*(1-r)/(e-r)}return o<0&&(t=c(t),u=c(u),i=c(i)),e>1&&(t=f(t),u=f(u),i=f(i)),{r:t,g:u,b:i}}({r:n.r+t,g:n.g+t,b:n.b+t})}function w(n){return Math.max(n.r,n.g,n.b)-Math.min(n.r,n.g,n.b)}function j(n,r){var t=["r","g","b"].sort(function(r,t){return n[r]-n[t]}),u=t[0],i=t[1],o=t[2],e={r:n.r,g:n.g,b:n.b};return e[o]>e[u]?(e[i]=(e[i]-e[u])*r/(e[o]-e[u]),e[o]=r):e[i]=e[o]=0,e[u]=0,e}function k(n,r){return q(j(r,w(n)),I(n))}function l(n,r){return q(j(n,w(r)),I(n))}function y(n,r){return q(r,I(n))}function z(n,r){return q(n,I(r))}function A(t,u){return O(t,u,n,r)}function B(r,u){return O(r,u,n,t)}function C(r,t){return O(r,t,n,u)}function D(r,t){return O(r,t,n,i)}function E(r,t){return O(r,t,n,o)}function F(r,t){return O(r,t,n,e)}function G(r,t){return O(r,t,n,c)}function H(r,t){return O(r,t,n,f)}function J(r,t){return O(r,t,n,a)}function K(r,t){return O(r,t,n,b)}function L(r,t){return O(r,t,n,g)}function N(r,t){return O(r,t,n,h)}function P(n,r){return O(n,r,s,k)}function Q(n,r){return O(n,r,s,l)}function R(n,r){return O(n,r,s,y)}function S(n,r){return O(n,r,s,z)}
-//# sourceMappingURL=index.modern.js.map
+function n(n, r, t) {
+  return {
+    r: 255 * t(n.r / 255, r.r / 255),
+    g: 255 * t(n.g / 255, r.g / 255),
+    b: 255 * t(n.b / 255, r.b / 255)
+  };
+}
+function r(n, r) {
+  return r;
+}
+function t(n, r) {
+  return n * r;
+}
+function u(n, r) {
+  return n + r - n * r;
+}
+function i(n, r) {
+  return a(r, n);
+}
+function o(n, r) {
+  return Math.min(n, r);
+}
+function e(n, r) {
+  return Math.min(Math.max(n, r), 1);
+}
+function c(n, r) {
+  return 0 === n ? 0 : 1 === r ? 1 : Math.min(1, n / (1 - r));
+}
+function f(n, r) {
+  return 1 === n ? 1 : 0 === r ? 0 : 1 - Math.min(1, (1 - n) / r);
+}
+function a(n, r) {
+  return r <= .5 ? t(n, 2 * r) : u(n, 2 * r - 1);
+}
+function b(n, r) {
+  return r <= .5 ? n - (1 - 2 * r) * n * (1 - n) : n + (2 * r - 1) * ((n <= .25 ? ((16 * n - 12) * n + 4) * n : Math.sqrt(n)) - n);
+}
+function g(n, r) {
+  return Math.abs(n - r);
+}
+function h(n, r) {
+  return n + r - 2 * n * r;
+}
+function M(n, r, t) {
+  return Math.min(Math.max(n || 0, r), t);
+}
+function m(n) {
+  return {
+    r: M(n.r, 0, 255),
+    g: M(n.g, 0, 255),
+    b: M(n.b, 0, 255),
+    a: M(n.a, 0, 1)
+  };
+}
+function d(n) {
+  return {
+    r: 255 * n.r,
+    g: 255 * n.g,
+    b: 255 * n.b,
+    a: n.a
+  };
+}
+function p(n) {
+  return {
+    r: n.r / 255,
+    g: n.g / 255,
+    b: n.b / 255,
+    a: n.a
+  };
+}
+function v(n, r) {
+  void 0 === r && (r = 0);
+  var t = Math.pow(10, r);
+  return {
+    r: Math.round(n.r * t) / t,
+    g: Math.round(n.g * t) / t,
+    b: Math.round(n.b * t) / t,
+    a: n.a
+  };
+}
+function x(n, r, t, u, i, o) {
+  return (1 - r / t) * u + r / t * Math.round((1 - n) * i + n * o);
+}
+function O(n, r, t, u, i) {
+  void 0 === i && (i = {
+    unitInput: !1,
+    unitOutput: !1,
+    roundOutput: !0
+  }), i.unitInput && (n = d(n), r = d(r)), n = m(n);
+  var o = (r = m(r)).a + n.a - r.a * n.a,
+    e = t(n, r, u),
+    c = m({
+      r: x(n.a, r.a, o, n.r, r.r, e.r),
+      g: x(n.a, r.a, o, n.g, r.g, e.g),
+      b: x(n.a, r.a, o, n.b, r.b, e.b),
+      a: o
+    });
+  return c = i.unitOutput ? p(c) : i.roundOutput ? v(c) : function (n) {
+    return v(n, 9);
+  }(c), c;
+}
+function s(n, r, t) {
+  return d(t(p(n), p(r)));
+}
+function I(n) {
+  return .3 * n.r + .59 * n.g + .11 * n.b;
+}
+function q(n, r) {
+  var t = r - I(n);
+  return function (n) {
+    var r = I(n),
+      t = n.r,
+      u = n.g,
+      i = n.b,
+      o = Math.min(t, u, i),
+      e = Math.max(t, u, i);
+    function c(n) {
+      return r + (n - r) * r / (r - o);
+    }
+    function f(n) {
+      return r + (n - r) * (1 - r) / (e - r);
+    }
+    return o < 0 && (t = c(t), u = c(u), i = c(i)), e > 1 && (t = f(t), u = f(u), i = f(i)), {
+      r: t,
+      g: u,
+      b: i
+    };
+  }({
+    r: n.r + t,
+    g: n.g + t,
+    b: n.b + t
+  });
+}
+function w(n) {
+  return Math.max(n.r, n.g, n.b) - Math.min(n.r, n.g, n.b);
+}
+function j(n, r) {
+  var t = ["r", "g", "b"].sort(function (r, t) {
+      return n[r] - n[t];
+    }),
+    u = t[0],
+    i = t[1],
+    o = t[2],
+    e = {
+      r: n.r,
+      g: n.g,
+      b: n.b
+    };
+  return e[o] > e[u] ? (e[i] = (e[i] - e[u]) * r / (e[o] - e[u]), e[o] = r) : e[i] = e[o] = 0, e[u] = 0, e;
+}
+function k(n, r) {
+  return q(j(r, w(n)), I(n));
+}
+function l(n, r) {
+  return q(j(n, w(r)), I(n));
+}
+function y(n, r) {
+  return q(r, I(n));
+}
+function z(n, r) {
+  return q(n, I(r));
+}
+function A(t, u) {
+  return O(t, u, n, r);
+}
+function B(r, u) {
+  return O(r, u, n, t);
+}
+function C(r, t) {
+  return O(r, t, n, u);
+}
+function D(r, t) {
+  return O(r, t, n, i);
+}
+function E(r, t) {
+  return O(r, t, n, o);
+}
+function F(r, t) {
+  return O(r, t, n, e);
+}
+function G(r, t) {
+  return O(r, t, n, c);
+}
+function H(r, t) {
+  return O(r, t, n, f);
+}
+function J(r, t) {
+  return O(r, t, n, a);
+}
+function K(r, t) {
+  return O(r, t, n, b);
+}
+function L(r, t) {
+  return O(r, t, n, g);
+}
+function N(r, t) {
+  return O(r, t, n, h);
+}
+function P(n, r) {
+  return O(n, r, s, k);
+}
+function Q(n, r) {
+  return O(n, r, s, l);
+}
+function R(n, r) {
+  return O(n, r, s, y);
+}
+function S(n, r) {
+  return O(n, r, s, z);
+}
 
 
 /***/ }),
@@ -136,158 +463,159 @@ function n(n,r,t){return{r:255*t(n.r/255,r.r/255),g:255*t(n.g/255,r.g/255),b:255
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-const colors = {
-	aliceblue: [240, 248, 255],
-	antiquewhite: [250, 235, 215],
-	aqua: [0, 255, 255],
-	aquamarine: [127, 255, 212],
-	azure: [240, 255, 255],
-	beige: [245, 245, 220],
-	bisque: [255, 228, 196],
-	black: [0, 0, 0],
-	blanchedalmond: [255, 235, 205],
-	blue: [0, 0, 255],
-	blueviolet: [138, 43, 226],
-	brown: [165, 42, 42],
-	burlywood: [222, 184, 135],
-	cadetblue: [95, 158, 160],
-	chartreuse: [127, 255, 0],
-	chocolate: [210, 105, 30],
-	coral: [255, 127, 80],
-	cornflowerblue: [100, 149, 237],
-	cornsilk: [255, 248, 220],
-	crimson: [220, 20, 60],
-	cyan: [0, 255, 255],
-	darkblue: [0, 0, 139],
-	darkcyan: [0, 139, 139],
-	darkgoldenrod: [184, 134, 11],
-	darkgray: [169, 169, 169],
-	darkgreen: [0, 100, 0],
-	darkgrey: [169, 169, 169],
-	darkkhaki: [189, 183, 107],
-	darkmagenta: [139, 0, 139],
-	darkolivegreen: [85, 107, 47],
-	darkorange: [255, 140, 0],
-	darkorchid: [153, 50, 204],
-	darkred: [139, 0, 0],
-	darksalmon: [233, 150, 122],
-	darkseagreen: [143, 188, 143],
-	darkslateblue: [72, 61, 139],
-	darkslategray: [47, 79, 79],
-	darkslategrey: [47, 79, 79],
-	darkturquoise: [0, 206, 209],
-	darkviolet: [148, 0, 211],
-	deeppink: [255, 20, 147],
-	deepskyblue: [0, 191, 255],
-	dimgray: [105, 105, 105],
-	dimgrey: [105, 105, 105],
-	dodgerblue: [30, 144, 255],
-	firebrick: [178, 34, 34],
-	floralwhite: [255, 250, 240],
-	forestgreen: [34, 139, 34],
-	fuchsia: [255, 0, 255],
-	gainsboro: [220, 220, 220],
-	ghostwhite: [248, 248, 255],
-	gold: [255, 215, 0],
-	goldenrod: [218, 165, 32],
-	gray: [128, 128, 128],
-	green: [0, 128, 0],
-	greenyellow: [173, 255, 47],
-	grey: [128, 128, 128],
-	honeydew: [240, 255, 240],
-	hotpink: [255, 105, 180],
-	indianred: [205, 92, 92],
-	indigo: [75, 0, 130],
-	ivory: [255, 255, 240],
-	khaki: [240, 230, 140],
-	lavender: [230, 230, 250],
-	lavenderblush: [255, 240, 245],
-	lawngreen: [124, 252, 0],
-	lemonchiffon: [255, 250, 205],
-	lightblue: [173, 216, 230],
-	lightcoral: [240, 128, 128],
-	lightcyan: [224, 255, 255],
-	lightgoldenrodyellow: [250, 250, 210],
-	lightgray: [211, 211, 211],
-	lightgreen: [144, 238, 144],
-	lightgrey: [211, 211, 211],
-	lightpink: [255, 182, 193],
-	lightsalmon: [255, 160, 122],
-	lightseagreen: [32, 178, 170],
-	lightskyblue: [135, 206, 250],
-	lightslategray: [119, 136, 153],
-	lightslategrey: [119, 136, 153],
-	lightsteelblue: [176, 196, 222],
-	lightyellow: [255, 255, 224],
-	lime: [0, 255, 0],
-	limegreen: [50, 205, 50],
-	linen: [250, 240, 230],
-	magenta: [255, 0, 255],
-	maroon: [128, 0, 0],
-	mediumaquamarine: [102, 205, 170],
-	mediumblue: [0, 0, 205],
-	mediumorchid: [186, 85, 211],
-	mediumpurple: [147, 112, 219],
-	mediumseagreen: [60, 179, 113],
-	mediumslateblue: [123, 104, 238],
-	mediumspringgreen: [0, 250, 154],
-	mediumturquoise: [72, 209, 204],
-	mediumvioletred: [199, 21, 133],
-	midnightblue: [25, 25, 112],
-	mintcream: [245, 255, 250],
-	mistyrose: [255, 228, 225],
-	moccasin: [255, 228, 181],
-	navajowhite: [255, 222, 173],
-	navy: [0, 0, 128],
-	oldlace: [253, 245, 230],
-	olive: [128, 128, 0],
-	olivedrab: [107, 142, 35],
-	orange: [255, 165, 0],
-	orangered: [255, 69, 0],
-	orchid: [218, 112, 214],
-	palegoldenrod: [238, 232, 170],
-	palegreen: [152, 251, 152],
-	paleturquoise: [175, 238, 238],
-	palevioletred: [219, 112, 147],
-	papayawhip: [255, 239, 213],
-	peachpuff: [255, 218, 185],
-	peru: [205, 133, 63],
-	pink: [255, 192, 203],
-	plum: [221, 160, 221],
-	powderblue: [176, 224, 230],
-	purple: [128, 0, 128],
-	rebeccapurple: [102, 51, 153],
-	red: [255, 0, 0],
-	rosybrown: [188, 143, 143],
-	royalblue: [65, 105, 225],
-	saddlebrown: [139, 69, 19],
-	salmon: [250, 128, 114],
-	sandybrown: [244, 164, 96],
-	seagreen: [46, 139, 87],
-	seashell: [255, 245, 238],
-	sienna: [160, 82, 45],
-	silver: [192, 192, 192],
-	skyblue: [135, 206, 235],
-	slateblue: [106, 90, 205],
-	slategray: [112, 128, 144],
-	slategrey: [112, 128, 144],
-	snow: [255, 250, 250],
-	springgreen: [0, 255, 127],
-	steelblue: [70, 130, 180],
-	tan: [210, 180, 140],
-	teal: [0, 128, 128],
-	thistle: [216, 191, 216],
-	tomato: [255, 99, 71],
-	turquoise: [64, 224, 208],
-	violet: [238, 130, 238],
-	wheat: [245, 222, 179],
-	white: [255, 255, 255],
-	whitesmoke: [245, 245, 245],
-	yellow: [255, 255, 0],
-	yellowgreen: [154, 205, 50],
+var colors = {
+  aliceblue: [240, 248, 255],
+  antiquewhite: [250, 235, 215],
+  aqua: [0, 255, 255],
+  aquamarine: [127, 255, 212],
+  azure: [240, 255, 255],
+  beige: [245, 245, 220],
+  bisque: [255, 228, 196],
+  black: [0, 0, 0],
+  blanchedalmond: [255, 235, 205],
+  blue: [0, 0, 255],
+  blueviolet: [138, 43, 226],
+  brown: [165, 42, 42],
+  burlywood: [222, 184, 135],
+  cadetblue: [95, 158, 160],
+  chartreuse: [127, 255, 0],
+  chocolate: [210, 105, 30],
+  coral: [255, 127, 80],
+  cornflowerblue: [100, 149, 237],
+  cornsilk: [255, 248, 220],
+  crimson: [220, 20, 60],
+  cyan: [0, 255, 255],
+  darkblue: [0, 0, 139],
+  darkcyan: [0, 139, 139],
+  darkgoldenrod: [184, 134, 11],
+  darkgray: [169, 169, 169],
+  darkgreen: [0, 100, 0],
+  darkgrey: [169, 169, 169],
+  darkkhaki: [189, 183, 107],
+  darkmagenta: [139, 0, 139],
+  darkolivegreen: [85, 107, 47],
+  darkorange: [255, 140, 0],
+  darkorchid: [153, 50, 204],
+  darkred: [139, 0, 0],
+  darksalmon: [233, 150, 122],
+  darkseagreen: [143, 188, 143],
+  darkslateblue: [72, 61, 139],
+  darkslategray: [47, 79, 79],
+  darkslategrey: [47, 79, 79],
+  darkturquoise: [0, 206, 209],
+  darkviolet: [148, 0, 211],
+  deeppink: [255, 20, 147],
+  deepskyblue: [0, 191, 255],
+  dimgray: [105, 105, 105],
+  dimgrey: [105, 105, 105],
+  dodgerblue: [30, 144, 255],
+  firebrick: [178, 34, 34],
+  floralwhite: [255, 250, 240],
+  forestgreen: [34, 139, 34],
+  fuchsia: [255, 0, 255],
+  gainsboro: [220, 220, 220],
+  ghostwhite: [248, 248, 255],
+  gold: [255, 215, 0],
+  goldenrod: [218, 165, 32],
+  gray: [128, 128, 128],
+  green: [0, 128, 0],
+  greenyellow: [173, 255, 47],
+  grey: [128, 128, 128],
+  honeydew: [240, 255, 240],
+  hotpink: [255, 105, 180],
+  indianred: [205, 92, 92],
+  indigo: [75, 0, 130],
+  ivory: [255, 255, 240],
+  khaki: [240, 230, 140],
+  lavender: [230, 230, 250],
+  lavenderblush: [255, 240, 245],
+  lawngreen: [124, 252, 0],
+  lemonchiffon: [255, 250, 205],
+  lightblue: [173, 216, 230],
+  lightcoral: [240, 128, 128],
+  lightcyan: [224, 255, 255],
+  lightgoldenrodyellow: [250, 250, 210],
+  lightgray: [211, 211, 211],
+  lightgreen: [144, 238, 144],
+  lightgrey: [211, 211, 211],
+  lightpink: [255, 182, 193],
+  lightsalmon: [255, 160, 122],
+  lightseagreen: [32, 178, 170],
+  lightskyblue: [135, 206, 250],
+  lightslategray: [119, 136, 153],
+  lightslategrey: [119, 136, 153],
+  lightsteelblue: [176, 196, 222],
+  lightyellow: [255, 255, 224],
+  lime: [0, 255, 0],
+  limegreen: [50, 205, 50],
+  linen: [250, 240, 230],
+  magenta: [255, 0, 255],
+  maroon: [128, 0, 0],
+  mediumaquamarine: [102, 205, 170],
+  mediumblue: [0, 0, 205],
+  mediumorchid: [186, 85, 211],
+  mediumpurple: [147, 112, 219],
+  mediumseagreen: [60, 179, 113],
+  mediumslateblue: [123, 104, 238],
+  mediumspringgreen: [0, 250, 154],
+  mediumturquoise: [72, 209, 204],
+  mediumvioletred: [199, 21, 133],
+  midnightblue: [25, 25, 112],
+  mintcream: [245, 255, 250],
+  mistyrose: [255, 228, 225],
+  moccasin: [255, 228, 181],
+  navajowhite: [255, 222, 173],
+  navy: [0, 0, 128],
+  oldlace: [253, 245, 230],
+  olive: [128, 128, 0],
+  olivedrab: [107, 142, 35],
+  orange: [255, 165, 0],
+  orangered: [255, 69, 0],
+  orchid: [218, 112, 214],
+  palegoldenrod: [238, 232, 170],
+  palegreen: [152, 251, 152],
+  paleturquoise: [175, 238, 238],
+  palevioletred: [219, 112, 147],
+  papayawhip: [255, 239, 213],
+  peachpuff: [255, 218, 185],
+  peru: [205, 133, 63],
+  pink: [255, 192, 203],
+  plum: [221, 160, 221],
+  powderblue: [176, 224, 230],
+  purple: [128, 0, 128],
+  rebeccapurple: [102, 51, 153],
+  red: [255, 0, 0],
+  rosybrown: [188, 143, 143],
+  royalblue: [65, 105, 225],
+  saddlebrown: [139, 69, 19],
+  salmon: [250, 128, 114],
+  sandybrown: [244, 164, 96],
+  seagreen: [46, 139, 87],
+  seashell: [255, 245, 238],
+  sienna: [160, 82, 45],
+  silver: [192, 192, 192],
+  skyblue: [135, 206, 235],
+  slateblue: [106, 90, 205],
+  slategray: [112, 128, 144],
+  slategrey: [112, 128, 144],
+  snow: [255, 250, 250],
+  springgreen: [0, 255, 127],
+  steelblue: [70, 130, 180],
+  tan: [210, 180, 140],
+  teal: [0, 128, 128],
+  thistle: [216, 191, 216],
+  tomato: [255, 99, 71],
+  turquoise: [64, 224, 208],
+  violet: [238, 130, 238],
+  wheat: [245, 222, 179],
+  white: [255, 255, 255],
+  whitesmoke: [245, 245, 245],
+  yellow: [255, 255, 0],
+  yellowgreen: [154, 205, 50]
+};
+for (var key in colors) {
+  Object.freeze(colors[key]);
 }
-
-for (const key in colors) Object.freeze(colors[key]);
 /* harmony default export */ __webpack_exports__["default"] = (Object.freeze(colors));
 
 /***/ }),
@@ -303,237 +631,191 @@ for (const key in colors) Object.freeze(colors[key]);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var color_name__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! color-name */ "./node_modules/color-name/index.js");
 
-
-const reverseNames = Object.create(null);
+var reverseNames = Object.create(null);
 
 // Create a list of reverse color names
-for (const name in color_name__WEBPACK_IMPORTED_MODULE_0__["default"]) {
-	if (Object.hasOwn(color_name__WEBPACK_IMPORTED_MODULE_0__["default"], name)) {
-		reverseNames[color_name__WEBPACK_IMPORTED_MODULE_0__["default"][name]] = name;
-	}
+for (var name in color_name__WEBPACK_IMPORTED_MODULE_0__["default"]) {
+  if (Object.hasOwn(color_name__WEBPACK_IMPORTED_MODULE_0__["default"], name)) {
+    reverseNames[color_name__WEBPACK_IMPORTED_MODULE_0__["default"][name]] = name;
+  }
 }
-
-const cs = {
-	to: {},
-	get: {},
+var cs = {
+  to: {},
+  get: {}
 };
-
 cs.get = function (string) {
-	const prefix = string.slice(0, 3).toLowerCase();
-	let value;
-	let model;
-	switch (prefix) {
-		case 'hsl': {
-			value = cs.get.hsl(string);
-			model = 'hsl';
-			break;
-		}
-
-		case 'hwb': {
-			value = cs.get.hwb(string);
-			model = 'hwb';
-			break;
-		}
-
-		default: {
-			value = cs.get.rgb(string);
-			model = 'rgb';
-			break;
-		}
-	}
-
-	if (!value) {
-		return null;
-	}
-
-	return {model, value};
+  var prefix = string.slice(0, 3).toLowerCase();
+  var value;
+  var model;
+  switch (prefix) {
+    case 'hsl':
+      {
+        value = cs.get.hsl(string);
+        model = 'hsl';
+        break;
+      }
+    case 'hwb':
+      {
+        value = cs.get.hwb(string);
+        model = 'hwb';
+        break;
+      }
+    default:
+      {
+        value = cs.get.rgb(string);
+        model = 'rgb';
+        break;
+      }
+  }
+  if (!value) {
+    return null;
+  }
+  return {
+    model: model,
+    value: value
+  };
 };
-
 cs.get.rgb = function (string) {
-	if (!string) {
-		return null;
-	}
+  if (!string) {
+    return null;
+  }
+  var abbr = /^#([a-f\d]{3,4})$/i;
+  var hex = /^#([a-f\d]{6})([a-f\d]{2})?$/i;
+  var rgba = /^rgba?\(\s*([+-]?(?:\d*\.)?\d+(?:e\d+)?)(?=[\s,])\s*(?:,\s*)?([+-]?(?:\d*\.)?\d+(?:e\d+)?)(?=[\s,])\s*(?:,\s*)?([+-]?(?:\d*\.)?\d+(?:e\d+)?)\s*(?:[\s,|/]\s*([+-]?(?:\d*\.)?\d+(?:e\d+)?)(%?)\s*)?\)$/i;
+  var per = /^rgba?\(\s*([+-]?[\d.]+)%\s*,?\s*([+-]?[\d.]+)%\s*,?\s*([+-]?[\d.]+)%\s*(?:[\s,|/]\s*([+-]?[\d.]+)(%?)\s*)?\)$/i;
+  var keyword = /^(\w+)$/;
+  var rgb = [0, 0, 0, 1];
+  var match;
+  var i;
+  var hexAlpha;
+  if (match = string.match(hex)) {
+    hexAlpha = match[2];
+    match = match[1];
+    for (i = 0; i < 3; i++) {
+      // https://jsperf.com/slice-vs-substr-vs-substring-methods-long-string/19
+      var i2 = i * 2;
+      rgb[i] = Number.parseInt(match.slice(i2, i2 + 2), 16);
+    }
+    if (hexAlpha) {
+      rgb[3] = Number.parseInt(hexAlpha, 16) / 255;
+    }
+  } else if (match = string.match(abbr)) {
+    match = match[1];
+    hexAlpha = match[3];
+    for (i = 0; i < 3; i++) {
+      rgb[i] = Number.parseInt(match[i] + match[i], 16);
+    }
+    if (hexAlpha) {
+      rgb[3] = Number.parseInt(hexAlpha + hexAlpha, 16) / 255;
+    }
+  } else if (match = string.match(rgba)) {
+    for (i = 0; i < 3; i++) {
+      rgb[i] = Number.parseFloat(match[i + 1]);
+    }
+    if (match[4]) {
+      rgb[3] = match[5] ? Number.parseFloat(match[4]) * 0.01 : Number.parseFloat(match[4]);
+    }
+  } else if (match = string.match(per)) {
+    for (i = 0; i < 3; i++) {
+      rgb[i] = Math.round(Number.parseFloat(match[i + 1]) * 2.55);
+    }
+    if (match[4]) {
+      rgb[3] = match[5] ? Number.parseFloat(match[4]) * 0.01 : Number.parseFloat(match[4]);
+    }
+  } else if (match = string.toLowerCase().match(keyword)) {
+    if (match[1] === 'transparent') {
+      return [0, 0, 0, 0];
+    }
+    if (!Object.hasOwn(color_name__WEBPACK_IMPORTED_MODULE_0__["default"], match[1])) {
+      return null;
+    }
 
-	const abbr = /^#([a-f\d]{3,4})$/i;
-	const hex = /^#([a-f\d]{6})([a-f\d]{2})?$/i;
-	const rgba = /^rgba?\(\s*([+-]?(?:\d*\.)?\d+(?:e\d+)?)(?=[\s,])\s*(?:,\s*)?([+-]?(?:\d*\.)?\d+(?:e\d+)?)(?=[\s,])\s*(?:,\s*)?([+-]?(?:\d*\.)?\d+(?:e\d+)?)\s*(?:[\s,|/]\s*([+-]?(?:\d*\.)?\d+(?:e\d+)?)(%?)\s*)?\)$/i;
-	const per = /^rgba?\(\s*([+-]?[\d.]+)%\s*,?\s*([+-]?[\d.]+)%\s*,?\s*([+-]?[\d.]+)%\s*(?:[\s,|/]\s*([+-]?[\d.]+)(%?)\s*)?\)$/i;
-	const keyword = /^(\w+)$/;
-
-	let rgb = [0, 0, 0, 1];
-	let match;
-	let i;
-	let hexAlpha;
-
-	if (match = string.match(hex)) {
-		hexAlpha = match[2];
-		match = match[1];
-
-		for (i = 0; i < 3; i++) {
-			// https://jsperf.com/slice-vs-substr-vs-substring-methods-long-string/19
-			const i2 = i * 2;
-			rgb[i] = Number.parseInt(match.slice(i2, i2 + 2), 16);
-		}
-
-		if (hexAlpha) {
-			rgb[3] = Number.parseInt(hexAlpha, 16) / 255;
-		}
-	} else if (match = string.match(abbr)) {
-		match = match[1];
-		hexAlpha = match[3];
-
-		for (i = 0; i < 3; i++) {
-			rgb[i] = Number.parseInt(match[i] + match[i], 16);
-		}
-
-		if (hexAlpha) {
-			rgb[3] = Number.parseInt(hexAlpha + hexAlpha, 16) / 255;
-		}
-	} else if (match = string.match(rgba)) {
-		for (i = 0; i < 3; i++) {
-			rgb[i] = Number.parseFloat(match[i + 1]);
-		}
-
-		if (match[4]) {
-			rgb[3] = match[5] ? Number.parseFloat(match[4]) * 0.01 : Number.parseFloat(match[4]);
-		}
-	} else if (match = string.match(per)) {
-		for (i = 0; i < 3; i++) {
-			rgb[i] = Math.round(Number.parseFloat(match[i + 1]) * 2.55);
-		}
-
-		if (match[4]) {
-			rgb[3] = match[5] ? Number.parseFloat(match[4]) * 0.01 : Number.parseFloat(match[4]);
-		}
-	} else if (match = string.toLowerCase().match(keyword)) {
-		if (match[1] === 'transparent') {
-			return [0, 0, 0, 0];
-		}
-
-		if (!Object.hasOwn(color_name__WEBPACK_IMPORTED_MODULE_0__["default"], match[1])) {
-			return null;
-		}
-
-		// eslint-disable-next-line unicorn/prefer-spread
-		rgb = color_name__WEBPACK_IMPORTED_MODULE_0__["default"][match[1]].slice();
-		rgb[3] = 1;
-
-		return rgb;
-	} else {
-		return null;
-	}
-
-	for (i = 0; i < 3; i++) {
-		rgb[i] = clamp(rgb[i], 0, 255);
-	}
-
-	rgb[3] = clamp(rgb[3], 0, 1);
-
-	return rgb;
+    // eslint-disable-next-line unicorn/prefer-spread
+    rgb = color_name__WEBPACK_IMPORTED_MODULE_0__["default"][match[1]].slice();
+    rgb[3] = 1;
+    return rgb;
+  } else {
+    return null;
+  }
+  for (i = 0; i < 3; i++) {
+    rgb[i] = clamp(rgb[i], 0, 255);
+  }
+  rgb[3] = clamp(rgb[3], 0, 1);
+  return rgb;
 };
-
 cs.get.hsl = function (string) {
-	if (!string) {
-		return null;
-	}
-
-	const hsl = /^hsla?\(\s*([+-]?(?:\d{0,3}\.)?\d+)(?:deg)?\s*,?\s*([+-]?[\d.]+)%\s*,?\s*([+-]?[\d.]+)%\s*(?:[,|/]\s*([+-]?(?=\.\d|\d)(?:0|[1-9]\d*)?(?:\.\d*)?(?:e[+-]?\d+)?)\s*)?\)$/i;
-	const match = string.match(hsl);
-
-	if (match) {
-		const alpha = Number.parseFloat(match[4]);
-		const h = ((Number.parseFloat(match[1]) % 360) + 360) % 360;
-		const s = clamp(Number.parseFloat(match[2]), 0, 100);
-		const l = clamp(Number.parseFloat(match[3]), 0, 100);
-		const a = clamp(Number.isNaN(alpha) ? 1 : alpha, 0, 1);
-
-		return [h, s, l, a];
-	}
-
-	return null;
+  if (!string) {
+    return null;
+  }
+  var hsl = /^hsla?\(\s*([+-]?(?:\d{0,3}\.)?\d+)(?:deg)?\s*,?\s*([+-]?[\d.]+)%\s*,?\s*([+-]?[\d.]+)%\s*(?:[,|/]\s*([+-]?(?=\.\d|\d)(?:0|[1-9]\d*)?(?:\.\d*)?(?:e[+-]?\d+)?)\s*)?\)$/i;
+  var match = string.match(hsl);
+  if (match) {
+    var alpha = Number.parseFloat(match[4]);
+    var h = (Number.parseFloat(match[1]) % 360 + 360) % 360;
+    var s = clamp(Number.parseFloat(match[2]), 0, 100);
+    var l = clamp(Number.parseFloat(match[3]), 0, 100);
+    var a = clamp(Number.isNaN(alpha) ? 1 : alpha, 0, 1);
+    return [h, s, l, a];
+  }
+  return null;
 };
-
 cs.get.hwb = function (string) {
-	if (!string) {
-		return null;
-	}
-
-	const hwb = /^hwb\(\s*([+-]?\d{0,3}(?:\.\d+)?)(?:deg)?\s*[\s,]\s*([+-]?[\d.]+)%\s*[\s,]\s*([+-]?[\d.]+)%\s*(?:[\s,]\s*([+-]?(?=\.\d|\d)(?:0|[1-9]\d*)?(?:\.\d*)?(?:e[+-]?\d+)?)\s*)?\)$/i;
-	const match = string.match(hwb);
-
-	if (match) {
-		const alpha = Number.parseFloat(match[4]);
-		const h = ((Number.parseFloat(match[1]) % 360) + 360) % 360;
-		const w = clamp(Number.parseFloat(match[2]), 0, 100);
-		const b = clamp(Number.parseFloat(match[3]), 0, 100);
-		const a = clamp(Number.isNaN(alpha) ? 1 : alpha, 0, 1);
-		return [h, w, b, a];
-	}
-
-	return null;
+  if (!string) {
+    return null;
+  }
+  var hwb = /^hwb\(\s*([+-]?\d{0,3}(?:\.\d+)?)(?:deg)?\s*[\s,]\s*([+-]?[\d.]+)%\s*[\s,]\s*([+-]?[\d.]+)%\s*(?:[\s,]\s*([+-]?(?=\.\d|\d)(?:0|[1-9]\d*)?(?:\.\d*)?(?:e[+-]?\d+)?)\s*)?\)$/i;
+  var match = string.match(hwb);
+  if (match) {
+    var alpha = Number.parseFloat(match[4]);
+    var h = (Number.parseFloat(match[1]) % 360 + 360) % 360;
+    var w = clamp(Number.parseFloat(match[2]), 0, 100);
+    var b = clamp(Number.parseFloat(match[3]), 0, 100);
+    var a = clamp(Number.isNaN(alpha) ? 1 : alpha, 0, 1);
+    return [h, w, b, a];
+  }
+  return null;
 };
-
-cs.to.hex = function (...rgba) {
-	return (
-		'#' +
-		hexDouble(rgba[0]) +
-		hexDouble(rgba[1]) +
-		hexDouble(rgba[2]) +
-		(rgba[3] < 1
-			? (hexDouble(Math.round(rgba[3] * 255)))
-			: '')
-	);
+cs.to.hex = function () {
+  return '#' + hexDouble(arguments.length <= 0 ? undefined : arguments[0]) + hexDouble(arguments.length <= 1 ? undefined : arguments[1]) + hexDouble(arguments.length <= 2 ? undefined : arguments[2]) + ((arguments.length <= 3 ? undefined : arguments[3]) < 1 ? hexDouble(Math.round((arguments.length <= 3 ? undefined : arguments[3]) * 255)) : '');
 };
-
-cs.to.rgb = function (...rgba) {
-	return rgba.length < 4 || rgba[3] === 1
-		? 'rgb(' + Math.round(rgba[0]) + ', ' + Math.round(rgba[1]) + ', ' + Math.round(rgba[2]) + ')'
-		: 'rgba(' + Math.round(rgba[0]) + ', ' + Math.round(rgba[1]) + ', ' + Math.round(rgba[2]) + ', ' + rgba[3] + ')';
+cs.to.rgb = function () {
+  return arguments.length < 4 || (arguments.length <= 3 ? undefined : arguments[3]) === 1 ? 'rgb(' + Math.round(arguments.length <= 0 ? undefined : arguments[0]) + ', ' + Math.round(arguments.length <= 1 ? undefined : arguments[1]) + ', ' + Math.round(arguments.length <= 2 ? undefined : arguments[2]) + ')' : 'rgba(' + Math.round(arguments.length <= 0 ? undefined : arguments[0]) + ', ' + Math.round(arguments.length <= 1 ? undefined : arguments[1]) + ', ' + Math.round(arguments.length <= 2 ? undefined : arguments[2]) + ', ' + (arguments.length <= 3 ? undefined : arguments[3]) + ')';
 };
-
-cs.to.rgb.percent = function (...rgba) {
-	const r = Math.round(rgba[0] / 255 * 100);
-	const g = Math.round(rgba[1] / 255 * 100);
-	const b = Math.round(rgba[2] / 255 * 100);
-
-	return rgba.length < 4 || rgba[3] === 1
-		? 'rgb(' + r + '%, ' + g + '%, ' + b + '%)'
-		: 'rgba(' + r + '%, ' + g + '%, ' + b + '%, ' + rgba[3] + ')';
+cs.to.rgb.percent = function () {
+  var r = Math.round((arguments.length <= 0 ? undefined : arguments[0]) / 255 * 100);
+  var g = Math.round((arguments.length <= 1 ? undefined : arguments[1]) / 255 * 100);
+  var b = Math.round((arguments.length <= 2 ? undefined : arguments[2]) / 255 * 100);
+  return arguments.length < 4 || (arguments.length <= 3 ? undefined : arguments[3]) === 1 ? 'rgb(' + r + '%, ' + g + '%, ' + b + '%)' : 'rgba(' + r + '%, ' + g + '%, ' + b + '%, ' + (arguments.length <= 3 ? undefined : arguments[3]) + ')';
 };
-
-cs.to.hsl = function (...hsla) {
-	return hsla.length < 4 || hsla[3] === 1
-		? 'hsl(' + hsla[0] + ', ' + hsla[1] + '%, ' + hsla[2] + '%)'
-		: 'hsla(' + hsla[0] + ', ' + hsla[1] + '%, ' + hsla[2] + '%, ' + hsla[3] + ')';
+cs.to.hsl = function () {
+  return arguments.length < 4 || (arguments.length <= 3 ? undefined : arguments[3]) === 1 ? 'hsl(' + (arguments.length <= 0 ? undefined : arguments[0]) + ', ' + (arguments.length <= 1 ? undefined : arguments[1]) + '%, ' + (arguments.length <= 2 ? undefined : arguments[2]) + '%)' : 'hsla(' + (arguments.length <= 0 ? undefined : arguments[0]) + ', ' + (arguments.length <= 1 ? undefined : arguments[1]) + '%, ' + (arguments.length <= 2 ? undefined : arguments[2]) + '%, ' + (arguments.length <= 3 ? undefined : arguments[3]) + ')';
 };
 
 // Hwb is a bit different than rgb(a) & hsl(a) since there is no alpha specific syntax
 // (hwb have alpha optional & 1 is default value)
-cs.to.hwb = function (...hwba) {
-	let a = '';
-	if (hwba.length >= 4 && hwba[3] !== 1) {
-		a = ', ' + hwba[3];
-	}
-
-	return 'hwb(' + hwba[0] + ', ' + hwba[1] + '%, ' + hwba[2] + '%' + a + ')';
+cs.to.hwb = function () {
+  var a = '';
+  if (arguments.length >= 4 && (arguments.length <= 3 ? undefined : arguments[3]) !== 1) {
+    a = ', ' + (arguments.length <= 3 ? undefined : arguments[3]);
+  }
+  return 'hwb(' + (arguments.length <= 0 ? undefined : arguments[0]) + ', ' + (arguments.length <= 1 ? undefined : arguments[1]) + '%, ' + (arguments.length <= 2 ? undefined : arguments[2]) + '%' + a + ')';
 };
-
-cs.to.keyword = function (...rgb) {
-	return reverseNames[rgb.slice(0, 3)];
+cs.to.keyword = function () {
+  for (var _len = arguments.length, rgb = new Array(_len), _key = 0; _key < _len; _key++) {
+    rgb[_key] = arguments[_key];
+  }
+  return reverseNames[rgb.slice(0, 3)];
 };
 
 // Helpers
 function clamp(number_, min, max) {
-	return Math.min(Math.max(min, number_), max);
+  return Math.min(Math.max(min, number_), max);
 }
-
 function hexDouble(number_) {
-	const string_ = Math.round(number_).toString(16).toUpperCase();
-	return (string_.length < 2) ? '0' + string_ : string_;
+  var string_ = Math.round(number_).toString(16).toUpperCase();
+  return string_.length < 2 ? '0' + string_ : string_;
 }
-
 /* harmony default export */ __webpack_exports__["default"] = (cs);
-
 
 /***/ }),
 
@@ -9739,6 +10021,2696 @@ Color.extend(contrastMethods);
 
 /***/ }),
 
+/***/ "./node_modules/define-data-property/index.js":
+/*!****************************************************!*\
+  !*** ./node_modules/define-data-property/index.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var $defineProperty = __webpack_require__(/*! es-define-property */ "./node_modules/es-define-property/index.js");
+var $SyntaxError = __webpack_require__(/*! es-errors/syntax */ "./node_modules/es-errors/syntax.js");
+var $TypeError = __webpack_require__(/*! es-errors/type */ "./node_modules/es-errors/type.js");
+var gopd = __webpack_require__(/*! gopd */ "./node_modules/gopd/index.js");
+
+/** @type {import('.')} */
+module.exports = function defineDataProperty(obj, property, value) {
+  if (!obj || _typeof(obj) !== 'object' && typeof obj !== 'function') {
+    throw new $TypeError('`obj` must be an object or a function`');
+  }
+  if (typeof property !== 'string' && _typeof(property) !== 'symbol') {
+    throw new $TypeError('`property` must be a string or a symbol`');
+  }
+  if (arguments.length > 3 && typeof arguments[3] !== 'boolean' && arguments[3] !== null) {
+    throw new $TypeError('`nonEnumerable`, if provided, must be a boolean or null');
+  }
+  if (arguments.length > 4 && typeof arguments[4] !== 'boolean' && arguments[4] !== null) {
+    throw new $TypeError('`nonWritable`, if provided, must be a boolean or null');
+  }
+  if (arguments.length > 5 && typeof arguments[5] !== 'boolean' && arguments[5] !== null) {
+    throw new $TypeError('`nonConfigurable`, if provided, must be a boolean or null');
+  }
+  if (arguments.length > 6 && typeof arguments[6] !== 'boolean') {
+    throw new $TypeError('`loose`, if provided, must be a boolean');
+  }
+  var nonEnumerable = arguments.length > 3 ? arguments[3] : null;
+  var nonWritable = arguments.length > 4 ? arguments[4] : null;
+  var nonConfigurable = arguments.length > 5 ? arguments[5] : null;
+  var loose = arguments.length > 6 ? arguments[6] : false;
+
+  /* @type {false | TypedPropertyDescriptor<unknown>} */
+  var desc = !!gopd && gopd(obj, property);
+  if ($defineProperty) {
+    $defineProperty(obj, property, {
+      configurable: nonConfigurable === null && desc ? desc.configurable : !nonConfigurable,
+      enumerable: nonEnumerable === null && desc ? desc.enumerable : !nonEnumerable,
+      value: value,
+      writable: nonWritable === null && desc ? desc.writable : !nonWritable
+    });
+  } else if (loose || !nonEnumerable && !nonWritable && !nonConfigurable) {
+    // must fall back to [[Set]], and was not explicitly asked to make non-enumerable, non-writable, or non-configurable
+    obj[property] = value; // eslint-disable-line no-param-reassign
+  } else {
+    throw new $SyntaxError('This environment does not support defining a property as non-configurable, non-writable, or non-enumerable.');
+  }
+};
+
+/***/ }),
+
+/***/ "./node_modules/define-properties/index.js":
+/*!*************************************************!*\
+  !*** ./node_modules/define-properties/index.js ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var keys = __webpack_require__(/*! object-keys */ "./node_modules/object-keys/index.js");
+var hasSymbols = typeof Symbol === 'function' && _typeof(Symbol('foo')) === 'symbol';
+var toStr = Object.prototype.toString;
+var concat = Array.prototype.concat;
+var defineDataProperty = __webpack_require__(/*! define-data-property */ "./node_modules/define-data-property/index.js");
+var isFunction = function isFunction(fn) {
+  return typeof fn === 'function' && toStr.call(fn) === '[object Function]';
+};
+var supportsDescriptors = __webpack_require__(/*! has-property-descriptors */ "./node_modules/has-property-descriptors/index.js")();
+var defineProperty = function defineProperty(object, name, value, predicate) {
+  if (name in object) {
+    if (predicate === true) {
+      if (object[name] === value) {
+        return;
+      }
+    } else if (!isFunction(predicate) || !predicate()) {
+      return;
+    }
+  }
+  if (supportsDescriptors) {
+    defineDataProperty(object, name, value, true);
+  } else {
+    defineDataProperty(object, name, value);
+  }
+};
+var defineProperties = function defineProperties(object, map) {
+  var predicates = arguments.length > 2 ? arguments[2] : {};
+  var props = keys(map);
+  if (hasSymbols) {
+    props = concat.call(props, Object.getOwnPropertySymbols(map));
+  }
+  for (var i = 0; i < props.length; i += 1) {
+    defineProperty(object, props[i], map[props[i]], predicates[props[i]]);
+  }
+};
+defineProperties.supportsDescriptors = !!supportsDescriptors;
+module.exports = defineProperties;
+
+/***/ }),
+
+/***/ "./node_modules/dunder-proto/get.js":
+/*!******************************************!*\
+  !*** ./node_modules/dunder-proto/get.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var callBind = __webpack_require__(/*! call-bind-apply-helpers */ "./node_modules/call-bind-apply-helpers/index.js");
+var gOPD = __webpack_require__(/*! gopd */ "./node_modules/gopd/index.js");
+var hasProtoAccessor;
+try {
+  // eslint-disable-next-line no-extra-parens, no-proto
+  hasProtoAccessor = /** @type {{ __proto__?: typeof Array.prototype }} */[].__proto__ === Array.prototype;
+} catch (e) {
+  if (!e || _typeof(e) !== 'object' || !('code' in e) || e.code !== 'ERR_PROTO_ACCESS') {
+    throw e;
+  }
+}
+
+// eslint-disable-next-line no-extra-parens
+var desc = !!hasProtoAccessor && gOPD && gOPD(Object.prototype, /** @type {keyof typeof Object.prototype} */'__proto__');
+var $Object = Object;
+var $getPrototypeOf = $Object.getPrototypeOf;
+
+/** @type {import('./get')} */
+module.exports = desc && typeof desc.get === 'function' ? callBind([desc.get]) : typeof $getPrototypeOf === 'function' ? /** @type {import('./get')} */function getDunder(value) {
+  // eslint-disable-next-line eqeqeq
+  return $getPrototypeOf(value == null ? value : $Object(value));
+} : false;
+
+/***/ }),
+
+/***/ "./node_modules/es-abstract-get/GetMethod.js":
+/*!***************************************************!*\
+  !*** ./node_modules/es-abstract-get/GetMethod.js ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var $TypeError = __webpack_require__(/*! es-errors/type */ "./node_modules/es-errors/type.js");
+var isCallable = __webpack_require__(/*! is-callable */ "./node_modules/is-callable/index.js");
+var inspect = __webpack_require__(/*! object-inspect */ "./node_modules/object-inspect/index.js");
+var GetV = __webpack_require__(/*! ./GetV */ "./node_modules/es-abstract-get/GetV.js");
+var isPropertyKey = __webpack_require__(/*! ./isPropertyKey */ "./node_modules/es-abstract-get/isPropertyKey.js");
+
+// https://262.ecma-international.org/6.0/#sec-getmethod
+
+/** @type {import('./GetMethod')} */
+module.exports = function GetMethod(O, P) {
+  // 7.3.9.1
+  if (!isPropertyKey(P)) {
+    throw new $TypeError('Assertion failed: P is not a Property Key');
+  }
+
+  // 7.3.9.2
+  var func = GetV(O, P);
+
+  // 7.3.9.4
+  if (func == null) {
+    return void 0;
+  }
+
+  // 7.3.9.5
+  if (!isCallable(func)) {
+    throw new $TypeError(inspect(P) + ' is not a function: ' + inspect(func));
+  }
+
+  // 7.3.9.6
+  return func;
+};
+
+/***/ }),
+
+/***/ "./node_modules/es-abstract-get/GetV.js":
+/*!**********************************************!*\
+  !*** ./node_modules/es-abstract-get/GetV.js ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var $TypeError = __webpack_require__(/*! es-errors/type */ "./node_modules/es-errors/type.js");
+var inspect = __webpack_require__(/*! object-inspect */ "./node_modules/object-inspect/index.js");
+var isPropertyKey = __webpack_require__(/*! ./isPropertyKey */ "./node_modules/es-abstract-get/isPropertyKey.js");
+
+// https://262.ecma-international.org/6.0/#sec-getv
+
+/** @type {import('./GetV')} */
+module.exports = function GetV(V, P) {
+  // 7.3.2.1
+  if (!isPropertyKey(P)) {
+    throw new $TypeError('Assertion failed: P is not a Property Key, got ' + inspect(P));
+  }
+
+  // 7.3.2.2-3
+  // var O = ToObject(V);
+
+  // 7.3.2.4
+  return (/** @type {Record<typeof P, unknown>} */V[P]
+  ); // O.[[Get]](P, V)
+};
+
+/***/ }),
+
+/***/ "./node_modules/es-abstract-get/isPropertyKey.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/es-abstract-get/isPropertyKey.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./isPropertyKey')} */
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+module.exports = function isPropertyKey(argument) {
+  return typeof argument === 'string' || _typeof(argument) === 'symbol';
+};
+
+/***/ }),
+
+/***/ "./node_modules/es-abstract/2024/HasOwnProperty.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/es-abstract/2024/HasOwnProperty.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var $TypeError = __webpack_require__(/*! es-errors/type */ "./node_modules/es-errors/type.js");
+var hasOwn = __webpack_require__(/*! hasown */ "./node_modules/hasown/index.js");
+var isObject = __webpack_require__(/*! es-object-atoms/isObject */ "./node_modules/es-object-atoms/isObject.js");
+var isPropertyKey = __webpack_require__(/*! ../helpers/isPropertyKey */ "./node_modules/es-abstract/helpers/isPropertyKey.js");
+
+// https://262.ecma-international.org/6.0/#sec-hasownproperty
+
+module.exports = function HasOwnProperty(O, P) {
+  if (!isObject(O)) {
+    throw new $TypeError('Assertion failed: `O` must be an Object');
+  }
+  if (!isPropertyKey(P)) {
+    throw new $TypeError('Assertion failed: `P` must be a Property Key');
+  }
+  return hasOwn(O, P);
+};
+
+/***/ }),
+
+/***/ "./node_modules/es-abstract/2024/ToPrimitive.js":
+/*!******************************************************!*\
+  !*** ./node_modules/es-abstract/2024/ToPrimitive.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var toPrimitive = __webpack_require__(/*! es-to-primitive/es2015 */ "./node_modules/es-to-primitive/es2015.js");
+
+// https://262.ecma-international.org/6.0/#sec-toprimitive
+
+module.exports = function ToPrimitive(input) {
+  if (arguments.length > 1) {
+    return toPrimitive(input, arguments[1]);
+  }
+  return toPrimitive(input);
+};
+
+/***/ }),
+
+/***/ "./node_modules/es-abstract/2024/ToPropertyKey.js":
+/*!********************************************************!*\
+  !*** ./node_modules/es-abstract/2024/ToPropertyKey.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var GetIntrinsic = __webpack_require__(/*! get-intrinsic */ "./node_modules/get-intrinsic/index.js");
+var $String = GetIntrinsic('%String%');
+var ToPrimitive = __webpack_require__(/*! ./ToPrimitive */ "./node_modules/es-abstract/2024/ToPrimitive.js");
+var ToString = __webpack_require__(/*! ./ToString */ "./node_modules/es-abstract/2024/ToString.js");
+
+// https://262.ecma-international.org/6.0/#sec-topropertykey
+
+module.exports = function ToPropertyKey(argument) {
+  var key = ToPrimitive(argument, $String);
+  return _typeof(key) === 'symbol' ? key : ToString(key);
+};
+
+/***/ }),
+
+/***/ "./node_modules/es-abstract/2024/ToString.js":
+/*!***************************************************!*\
+  !*** ./node_modules/es-abstract/2024/ToString.js ***!
+  \***************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var GetIntrinsic = __webpack_require__(/*! get-intrinsic */ "./node_modules/get-intrinsic/index.js");
+var $String = GetIntrinsic('%String%');
+var $TypeError = __webpack_require__(/*! es-errors/type */ "./node_modules/es-errors/type.js");
+
+// https://262.ecma-international.org/6.0/#sec-tostring
+
+module.exports = function ToString(argument) {
+  if (_typeof(argument) === 'symbol') {
+    throw new $TypeError('Cannot convert a Symbol value to a string');
+  }
+  return $String(argument);
+};
+
+/***/ }),
+
+/***/ "./node_modules/es-abstract/helpers/isPropertyKey.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/es-abstract/helpers/isPropertyKey.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+module.exports = function isPropertyKey(argument) {
+  return typeof argument === 'string' || _typeof(argument) === 'symbol';
+};
+
+/***/ }),
+
+/***/ "./node_modules/es-define-property/index.js":
+/*!**************************************************!*\
+  !*** ./node_modules/es-define-property/index.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('.')} */
+var $defineProperty = Object.defineProperty || false;
+if ($defineProperty) {
+  try {
+    $defineProperty({}, 'a', {
+      value: 1
+    });
+  } catch (e) {
+    // IE 8 has a broken defineProperty
+    $defineProperty = false;
+  }
+}
+module.exports = $defineProperty;
+
+/***/ }),
+
+/***/ "./node_modules/es-errors/eval.js":
+/*!****************************************!*\
+  !*** ./node_modules/es-errors/eval.js ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./eval')} */
+module.exports = EvalError;
+
+/***/ }),
+
+/***/ "./node_modules/es-errors/index.js":
+/*!*****************************************!*\
+  !*** ./node_modules/es-errors/index.js ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('.')} */
+module.exports = Error;
+
+/***/ }),
+
+/***/ "./node_modules/es-errors/range.js":
+/*!*****************************************!*\
+  !*** ./node_modules/es-errors/range.js ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./range')} */
+module.exports = RangeError;
+
+/***/ }),
+
+/***/ "./node_modules/es-errors/ref.js":
+/*!***************************************!*\
+  !*** ./node_modules/es-errors/ref.js ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./ref')} */
+module.exports = ReferenceError;
+
+/***/ }),
+
+/***/ "./node_modules/es-errors/syntax.js":
+/*!******************************************!*\
+  !*** ./node_modules/es-errors/syntax.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./syntax')} */
+module.exports = SyntaxError;
+
+/***/ }),
+
+/***/ "./node_modules/es-errors/type.js":
+/*!****************************************!*\
+  !*** ./node_modules/es-errors/type.js ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./type')} */
+module.exports = TypeError;
+
+/***/ }),
+
+/***/ "./node_modules/es-errors/uri.js":
+/*!***************************************!*\
+  !*** ./node_modules/es-errors/uri.js ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./uri')} */
+module.exports = URIError;
+
+/***/ }),
+
+/***/ "./node_modules/es-object-atoms/RequireObjectCoercible.js":
+/*!****************************************************************!*\
+  !*** ./node_modules/es-object-atoms/RequireObjectCoercible.js ***!
+  \****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var $TypeError = __webpack_require__(/*! es-errors/type */ "./node_modules/es-errors/type.js");
+
+/** @type {import('./RequireObjectCoercible')} */
+module.exports = function RequireObjectCoercible(value) {
+  if (value == null) {
+    throw new $TypeError(arguments.length > 0 && arguments[1] || 'Cannot call method on ' + value);
+  }
+  return value;
+};
+
+/***/ }),
+
+/***/ "./node_modules/es-object-atoms/ToObject.js":
+/*!**************************************************!*\
+  !*** ./node_modules/es-object-atoms/ToObject.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var $Object = __webpack_require__(/*! ./ */ "./node_modules/es-object-atoms/index.js");
+var RequireObjectCoercible = __webpack_require__(/*! ./RequireObjectCoercible */ "./node_modules/es-object-atoms/RequireObjectCoercible.js");
+
+/** @type {import('./ToObject')} */
+module.exports = function ToObject(value) {
+  RequireObjectCoercible(value);
+  return $Object(value);
+};
+
+/***/ }),
+
+/***/ "./node_modules/es-object-atoms/index.js":
+/*!***********************************************!*\
+  !*** ./node_modules/es-object-atoms/index.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('.')} */
+module.exports = Object;
+
+/***/ }),
+
+/***/ "./node_modules/es-object-atoms/isObject.js":
+/*!**************************************************!*\
+  !*** ./node_modules/es-object-atoms/isObject.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./isObject')} */
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+module.exports = function isObject(x) {
+  return !!x && (typeof x === 'function' || _typeof(x) === 'object');
+};
+
+/***/ }),
+
+/***/ "./node_modules/es-to-primitive/es2015.js":
+/*!************************************************!*\
+  !*** ./node_modules/es-to-primitive/es2015.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var hasSymbols = typeof Symbol === 'function' && _typeof(Symbol.iterator) === 'symbol';
+var isCallable = __webpack_require__(/*! is-callable */ "./node_modules/is-callable/index.js");
+var isDate = __webpack_require__(/*! is-date-object */ "./node_modules/is-date-object/index.js");
+var isSymbol = __webpack_require__(/*! is-symbol */ "./node_modules/is-symbol/index.js");
+var $TypeError = __webpack_require__(/*! es-errors/type */ "./node_modules/es-errors/type.js");
+var isPrimitive = __webpack_require__(/*! ./helpers/isPrimitive */ "./node_modules/es-to-primitive/helpers/isPrimitive.js");
+
+/** @import { primitiveES6 } from './es2015' */
+
+/** @type {(O: { valueOf?: () => unknown, toString?: () => unknown }, hint: 'number' | 'string') => primitiveES6} */
+function OrdinaryToPrimitive(O, hint) {
+  if (typeof O === 'undefined' || O === null) {
+    throw new $TypeError('Cannot call method on ' + O);
+  }
+  if (typeof hint !== 'string' || hint !== 'number' && hint !== 'string') {
+    throw new $TypeError('hint must be "string" or "number"');
+  }
+  /** @type {('toString' | 'valueOf')[]} */
+  var methodNames = hint === 'string' ? ['toString', 'valueOf'] : ['valueOf', 'toString'];
+  var method, result, i;
+  for (i = 0; i < methodNames.length; ++i) {
+    method = O[methodNames[i]];
+    if (isCallable(method)) {
+      result = method.call(O);
+      if (isPrimitive(result)) {
+        return (/** @type {primitiveES6} */result
+        );
+      }
+    }
+  }
+  throw new $TypeError('No default value');
+}
+var GetMethod = __webpack_require__(/*! es-abstract-get/GetMethod */ "./node_modules/es-abstract-get/GetMethod.js");
+
+/** @type {import('./es2015')} */
+// http://www.ecma-international.org/ecma-262/6.0/#sec-toprimitive
+module.exports = function ToPrimitive(input) {
+  if (isPrimitive(input)) {
+    return (/** @type {primitiveES6} */input
+    );
+  }
+  /** @type {'default' | 'string' | 'number'} */
+  var hint = 'default';
+  if (arguments.length > 1) {
+    if (arguments[1] === String) {
+      hint = 'string';
+    } else if (arguments[1] === Number) {
+      hint = 'number';
+    }
+  }
+  var exoticToPrim;
+  if (hasSymbols) {
+    if (Symbol.toPrimitive) {
+      exoticToPrim = GetMethod( /** @type {{ [k in SymbolConstructor['toPrimitive']]?: Function }} */
+      input, Symbol.toPrimitive);
+    } else if (isSymbol(input)) {
+      exoticToPrim = Symbol.prototype.valueOf;
+    }
+  }
+  if (typeof exoticToPrim !== 'undefined') {
+    var result = exoticToPrim.call(input, hint);
+    if (isPrimitive(result)) {
+      return (/** @type {primitiveES6} */result
+      );
+    }
+    throw new $TypeError('unable to convert exotic object to primitive');
+  }
+  if (hint === 'default' && (isDate(input) || isSymbol(input))) {
+    hint = /** @type {const} */'string';
+  }
+  return OrdinaryToPrimitive(input, hint === 'default' ? 'number' : hint);
+};
+
+/***/ }),
+
+/***/ "./node_modules/es-to-primitive/helpers/isPrimitive.js":
+/*!*************************************************************!*\
+  !*** ./node_modules/es-to-primitive/helpers/isPrimitive.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @import { primitive } from '../' */
+/** @import { primitiveES5 } from '../es5' */
+
+/** @type {<T extends primitive | primitiveES5>(value: unknown) => value is T} */
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+module.exports = function isPrimitive(value) {
+  return value === null || typeof value !== 'function' && _typeof(value) !== 'object';
+};
+
+/***/ }),
+
+/***/ "./node_modules/function-bind/implementation.js":
+/*!******************************************************!*\
+  !*** ./node_modules/function-bind/implementation.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/* eslint no-invalid-this: 1 */
+var ERROR_MESSAGE = 'Function.prototype.bind called on incompatible ';
+var toStr = Object.prototype.toString;
+var max = Math.max;
+var funcType = '[object Function]';
+var concatty = function concatty(a, b) {
+  var arr = [];
+  for (var i = 0; i < a.length; i += 1) {
+    arr[i] = a[i];
+  }
+  for (var j = 0; j < b.length; j += 1) {
+    arr[j + a.length] = b[j];
+  }
+  return arr;
+};
+var slicy = function slicy(arrLike, offset) {
+  var arr = [];
+  for (var i = offset || 0, j = 0; i < arrLike.length; i += 1, j += 1) {
+    arr[j] = arrLike[i];
+  }
+  return arr;
+};
+var joiny = function joiny(arr, joiner) {
+  var str = '';
+  for (var i = 0; i < arr.length; i += 1) {
+    str += arr[i];
+    if (i + 1 < arr.length) {
+      str += joiner;
+    }
+  }
+  return str;
+};
+module.exports = function bind(that) {
+  var target = this;
+  if (typeof target !== 'function' || toStr.apply(target) !== funcType) {
+    throw new TypeError(ERROR_MESSAGE + target);
+  }
+  var args = slicy(arguments, 1);
+  var bound;
+  var binder = function binder() {
+    if (this instanceof bound) {
+      var result = target.apply(this, concatty(args, arguments));
+      if (Object(result) === result) {
+        return result;
+      }
+      return this;
+    }
+    return target.apply(that, concatty(args, arguments));
+  };
+  var boundLength = max(0, target.length - args.length);
+  var boundArgs = [];
+  for (var i = 0; i < boundLength; i++) {
+    boundArgs[i] = '$' + i;
+  }
+  bound = Function('binder', 'return function (' + joiny(boundArgs, ',') + '){ return binder.apply(this,arguments); }')(binder);
+  if (target.prototype) {
+    var Empty = function Empty() {};
+    Empty.prototype = target.prototype;
+    bound.prototype = new Empty();
+    Empty.prototype = null;
+  }
+  return bound;
+};
+
+/***/ }),
+
+/***/ "./node_modules/function-bind/index.js":
+/*!*********************************************!*\
+  !*** ./node_modules/function-bind/index.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var implementation = __webpack_require__(/*! ./implementation */ "./node_modules/function-bind/implementation.js");
+module.exports = Function.prototype.bind || implementation;
+
+/***/ }),
+
+/***/ "./node_modules/get-intrinsic/index.js":
+/*!*********************************************!*\
+  !*** ./node_modules/get-intrinsic/index.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var undefined;
+var $Object = __webpack_require__(/*! es-object-atoms */ "./node_modules/es-object-atoms/index.js");
+var $Error = __webpack_require__(/*! es-errors */ "./node_modules/es-errors/index.js");
+var $EvalError = __webpack_require__(/*! es-errors/eval */ "./node_modules/es-errors/eval.js");
+var $RangeError = __webpack_require__(/*! es-errors/range */ "./node_modules/es-errors/range.js");
+var $ReferenceError = __webpack_require__(/*! es-errors/ref */ "./node_modules/es-errors/ref.js");
+var $SyntaxError = __webpack_require__(/*! es-errors/syntax */ "./node_modules/es-errors/syntax.js");
+var $TypeError = __webpack_require__(/*! es-errors/type */ "./node_modules/es-errors/type.js");
+var $URIError = __webpack_require__(/*! es-errors/uri */ "./node_modules/es-errors/uri.js");
+var abs = __webpack_require__(/*! math-intrinsics/abs */ "./node_modules/math-intrinsics/abs.js");
+var floor = __webpack_require__(/*! math-intrinsics/floor */ "./node_modules/math-intrinsics/floor.js");
+var max = __webpack_require__(/*! math-intrinsics/max */ "./node_modules/math-intrinsics/max.js");
+var min = __webpack_require__(/*! math-intrinsics/min */ "./node_modules/math-intrinsics/min.js");
+var pow = __webpack_require__(/*! math-intrinsics/pow */ "./node_modules/math-intrinsics/pow.js");
+var round = __webpack_require__(/*! math-intrinsics/round */ "./node_modules/math-intrinsics/round.js");
+var sign = __webpack_require__(/*! math-intrinsics/sign */ "./node_modules/math-intrinsics/sign.js");
+var $Function = Function;
+
+// eslint-disable-next-line consistent-return
+var getEvalledConstructor = function getEvalledConstructor(expressionSyntax) {
+  try {
+    return $Function('"use strict"; return (' + expressionSyntax + ').constructor;')();
+  } catch (e) {}
+};
+var $gOPD = __webpack_require__(/*! gopd */ "./node_modules/gopd/index.js");
+var $defineProperty = __webpack_require__(/*! es-define-property */ "./node_modules/es-define-property/index.js");
+var throwTypeError = function throwTypeError() {
+  throw new $TypeError();
+};
+var ThrowTypeError = $gOPD ? function () {
+  try {
+    // eslint-disable-next-line no-unused-expressions, no-caller, no-restricted-properties
+    arguments.callee; // IE 8 does not throw here
+    return throwTypeError;
+  } catch (calleeThrows) {
+    try {
+      // IE 8 throws on Object.getOwnPropertyDescriptor(arguments, '')
+      return $gOPD(arguments, 'callee').get;
+    } catch (gOPDthrows) {
+      return throwTypeError;
+    }
+  }
+}() : throwTypeError;
+var hasSymbols = __webpack_require__(/*! has-symbols */ "./node_modules/has-symbols/index.js")();
+var getProto = __webpack_require__(/*! get-proto */ "./node_modules/get-proto/index.js");
+var $ObjectGPO = __webpack_require__(/*! get-proto/Object.getPrototypeOf */ "./node_modules/get-proto/Object.getPrototypeOf.js");
+var $ReflectGPO = __webpack_require__(/*! get-proto/Reflect.getPrototypeOf */ "./node_modules/get-proto/Reflect.getPrototypeOf.js");
+var $apply = __webpack_require__(/*! call-bind-apply-helpers/functionApply */ "./node_modules/call-bind-apply-helpers/functionApply.js");
+var $call = __webpack_require__(/*! call-bind-apply-helpers/functionCall */ "./node_modules/call-bind-apply-helpers/functionCall.js");
+var needsEval = {};
+var TypedArray = typeof Uint8Array === 'undefined' || !getProto ? undefined : getProto(Uint8Array);
+var INTRINSICS = {
+  __proto__: null,
+  '%AggregateError%': typeof AggregateError === 'undefined' ? undefined : AggregateError,
+  '%Array%': Array,
+  '%ArrayBuffer%': typeof ArrayBuffer === 'undefined' ? undefined : ArrayBuffer,
+  '%ArrayIteratorPrototype%': hasSymbols && getProto ? getProto([][Symbol.iterator]()) : undefined,
+  '%AsyncFromSyncIteratorPrototype%': undefined,
+  '%AsyncFunction%': needsEval,
+  '%AsyncGenerator%': needsEval,
+  '%AsyncGeneratorFunction%': needsEval,
+  '%AsyncIteratorPrototype%': needsEval,
+  '%Atomics%': typeof Atomics === 'undefined' ? undefined : Atomics,
+  '%BigInt%': typeof BigInt === 'undefined' ? undefined : BigInt,
+  '%BigInt64Array%': typeof BigInt64Array === 'undefined' ? undefined : BigInt64Array,
+  '%BigUint64Array%': typeof BigUint64Array === 'undefined' ? undefined : BigUint64Array,
+  '%Boolean%': Boolean,
+  '%DataView%': typeof DataView === 'undefined' ? undefined : DataView,
+  '%Date%': Date,
+  '%decodeURI%': decodeURI,
+  '%decodeURIComponent%': decodeURIComponent,
+  '%encodeURI%': encodeURI,
+  '%encodeURIComponent%': encodeURIComponent,
+  '%Error%': $Error,
+  '%eval%': eval,
+  // eslint-disable-line no-eval
+  '%EvalError%': $EvalError,
+  '%Float16Array%': typeof Float16Array === 'undefined' ? undefined : Float16Array,
+  '%Float32Array%': typeof Float32Array === 'undefined' ? undefined : Float32Array,
+  '%Float64Array%': typeof Float64Array === 'undefined' ? undefined : Float64Array,
+  '%FinalizationRegistry%': typeof FinalizationRegistry === 'undefined' ? undefined : FinalizationRegistry,
+  '%Function%': $Function,
+  '%GeneratorFunction%': needsEval,
+  '%Int8Array%': typeof Int8Array === 'undefined' ? undefined : Int8Array,
+  '%Int16Array%': typeof Int16Array === 'undefined' ? undefined : Int16Array,
+  '%Int32Array%': typeof Int32Array === 'undefined' ? undefined : Int32Array,
+  '%isFinite%': isFinite,
+  '%isNaN%': isNaN,
+  '%IteratorPrototype%': hasSymbols && getProto ? getProto(getProto([][Symbol.iterator]())) : undefined,
+  '%JSON%': (typeof JSON === "undefined" ? "undefined" : _typeof(JSON)) === 'object' ? JSON : undefined,
+  '%Map%': typeof Map === 'undefined' ? undefined : Map,
+  '%MapIteratorPrototype%': typeof Map === 'undefined' || !hasSymbols || !getProto ? undefined : getProto(new Map()[Symbol.iterator]()),
+  '%Math%': Math,
+  '%Number%': Number,
+  '%Object%': $Object,
+  '%Object.getOwnPropertyDescriptor%': $gOPD,
+  '%parseFloat%': parseFloat,
+  '%parseInt%': parseInt,
+  '%Promise%': typeof Promise === 'undefined' ? undefined : Promise,
+  '%Proxy%': typeof Proxy === 'undefined' ? undefined : Proxy,
+  '%RangeError%': $RangeError,
+  '%ReferenceError%': $ReferenceError,
+  '%Reflect%': typeof Reflect === 'undefined' ? undefined : Reflect,
+  '%RegExp%': RegExp,
+  '%Set%': typeof Set === 'undefined' ? undefined : Set,
+  '%SetIteratorPrototype%': typeof Set === 'undefined' || !hasSymbols || !getProto ? undefined : getProto(new Set()[Symbol.iterator]()),
+  '%SharedArrayBuffer%': typeof SharedArrayBuffer === 'undefined' ? undefined : SharedArrayBuffer,
+  '%String%': String,
+  '%StringIteratorPrototype%': hasSymbols && getProto ? getProto(''[Symbol.iterator]()) : undefined,
+  '%Symbol%': hasSymbols ? Symbol : undefined,
+  '%SyntaxError%': $SyntaxError,
+  '%ThrowTypeError%': ThrowTypeError,
+  '%TypedArray%': TypedArray,
+  '%TypeError%': $TypeError,
+  '%Uint8Array%': typeof Uint8Array === 'undefined' ? undefined : Uint8Array,
+  '%Uint8ClampedArray%': typeof Uint8ClampedArray === 'undefined' ? undefined : Uint8ClampedArray,
+  '%Uint16Array%': typeof Uint16Array === 'undefined' ? undefined : Uint16Array,
+  '%Uint32Array%': typeof Uint32Array === 'undefined' ? undefined : Uint32Array,
+  '%URIError%': $URIError,
+  '%WeakMap%': typeof WeakMap === 'undefined' ? undefined : WeakMap,
+  '%WeakRef%': typeof WeakRef === 'undefined' ? undefined : WeakRef,
+  '%WeakSet%': typeof WeakSet === 'undefined' ? undefined : WeakSet,
+  '%Function.prototype.call%': $call,
+  '%Function.prototype.apply%': $apply,
+  '%Object.defineProperty%': $defineProperty,
+  '%Object.getPrototypeOf%': $ObjectGPO,
+  '%Math.abs%': abs,
+  '%Math.floor%': floor,
+  '%Math.max%': max,
+  '%Math.min%': min,
+  '%Math.pow%': pow,
+  '%Math.round%': round,
+  '%Math.sign%': sign,
+  '%Reflect.getPrototypeOf%': $ReflectGPO
+};
+if (getProto) {
+  try {
+    null.error; // eslint-disable-line no-unused-expressions
+  } catch (e) {
+    // https://github.com/tc39/proposal-shadowrealm/pull/384#issuecomment-1364264229
+    var errorProto = getProto(getProto(e));
+    INTRINSICS['%Error.prototype%'] = errorProto;
+  }
+}
+var doEval = function doEval(name) {
+  var value;
+  if (name === '%AsyncFunction%') {
+    value = getEvalledConstructor('async function () {}');
+  } else if (name === '%GeneratorFunction%') {
+    value = getEvalledConstructor('function* () {}');
+  } else if (name === '%AsyncGeneratorFunction%') {
+    value = getEvalledConstructor('async function* () {}');
+  } else if (name === '%AsyncGenerator%') {
+    var fn = doEval('%AsyncGeneratorFunction%');
+    if (fn) {
+      value = fn.prototype;
+    }
+  } else if (name === '%AsyncIteratorPrototype%') {
+    var gen = doEval('%AsyncGenerator%');
+    if (gen && getProto) {
+      value = getProto(gen.prototype);
+    }
+  }
+  INTRINSICS[name] = value;
+  return value;
+};
+var LEGACY_ALIASES = {
+  __proto__: null,
+  '%ArrayBufferPrototype%': ['ArrayBuffer', 'prototype'],
+  '%ArrayPrototype%': ['Array', 'prototype'],
+  '%ArrayProto_entries%': ['Array', 'prototype', 'entries'],
+  '%ArrayProto_forEach%': ['Array', 'prototype', 'forEach'],
+  '%ArrayProto_keys%': ['Array', 'prototype', 'keys'],
+  '%ArrayProto_values%': ['Array', 'prototype', 'values'],
+  '%AsyncFunctionPrototype%': ['AsyncFunction', 'prototype'],
+  '%AsyncGenerator%': ['AsyncGeneratorFunction', 'prototype'],
+  '%AsyncGeneratorPrototype%': ['AsyncGeneratorFunction', 'prototype', 'prototype'],
+  '%BooleanPrototype%': ['Boolean', 'prototype'],
+  '%DataViewPrototype%': ['DataView', 'prototype'],
+  '%DatePrototype%': ['Date', 'prototype'],
+  '%ErrorPrototype%': ['Error', 'prototype'],
+  '%EvalErrorPrototype%': ['EvalError', 'prototype'],
+  '%Float32ArrayPrototype%': ['Float32Array', 'prototype'],
+  '%Float64ArrayPrototype%': ['Float64Array', 'prototype'],
+  '%FunctionPrototype%': ['Function', 'prototype'],
+  '%Generator%': ['GeneratorFunction', 'prototype'],
+  '%GeneratorPrototype%': ['GeneratorFunction', 'prototype', 'prototype'],
+  '%Int8ArrayPrototype%': ['Int8Array', 'prototype'],
+  '%Int16ArrayPrototype%': ['Int16Array', 'prototype'],
+  '%Int32ArrayPrototype%': ['Int32Array', 'prototype'],
+  '%JSONParse%': ['JSON', 'parse'],
+  '%JSONStringify%': ['JSON', 'stringify'],
+  '%MapPrototype%': ['Map', 'prototype'],
+  '%NumberPrototype%': ['Number', 'prototype'],
+  '%ObjectPrototype%': ['Object', 'prototype'],
+  '%ObjProto_toString%': ['Object', 'prototype', 'toString'],
+  '%ObjProto_valueOf%': ['Object', 'prototype', 'valueOf'],
+  '%PromisePrototype%': ['Promise', 'prototype'],
+  '%PromiseProto_then%': ['Promise', 'prototype', 'then'],
+  '%Promise_all%': ['Promise', 'all'],
+  '%Promise_reject%': ['Promise', 'reject'],
+  '%Promise_resolve%': ['Promise', 'resolve'],
+  '%RangeErrorPrototype%': ['RangeError', 'prototype'],
+  '%ReferenceErrorPrototype%': ['ReferenceError', 'prototype'],
+  '%RegExpPrototype%': ['RegExp', 'prototype'],
+  '%SetPrototype%': ['Set', 'prototype'],
+  '%SharedArrayBufferPrototype%': ['SharedArrayBuffer', 'prototype'],
+  '%StringPrototype%': ['String', 'prototype'],
+  '%SymbolPrototype%': ['Symbol', 'prototype'],
+  '%SyntaxErrorPrototype%': ['SyntaxError', 'prototype'],
+  '%TypedArrayPrototype%': ['TypedArray', 'prototype'],
+  '%TypeErrorPrototype%': ['TypeError', 'prototype'],
+  '%Uint8ArrayPrototype%': ['Uint8Array', 'prototype'],
+  '%Uint8ClampedArrayPrototype%': ['Uint8ClampedArray', 'prototype'],
+  '%Uint16ArrayPrototype%': ['Uint16Array', 'prototype'],
+  '%Uint32ArrayPrototype%': ['Uint32Array', 'prototype'],
+  '%URIErrorPrototype%': ['URIError', 'prototype'],
+  '%WeakMapPrototype%': ['WeakMap', 'prototype'],
+  '%WeakSetPrototype%': ['WeakSet', 'prototype']
+};
+var bind = __webpack_require__(/*! function-bind */ "./node_modules/function-bind/index.js");
+var hasOwn = __webpack_require__(/*! hasown */ "./node_modules/hasown/index.js");
+var $concat = bind.call($call, Array.prototype.concat);
+var $spliceApply = bind.call($apply, Array.prototype.splice);
+var $replace = bind.call($call, String.prototype.replace);
+var $strSlice = bind.call($call, String.prototype.slice);
+var $exec = bind.call($call, RegExp.prototype.exec);
+
+/* adapted from https://github.com/lodash/lodash/blob/4.17.15/dist/lodash.js#L6735-L6744 */
+var rePropName = /[^%.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|%$))/g;
+var reEscapeChar = /\\(\\)?/g; /** Used to match backslashes in property paths. */
+var stringToPath = function stringToPath(string) {
+  var first = $strSlice(string, 0, 1);
+  var last = $strSlice(string, -1);
+  if (first === '%' && last !== '%') {
+    throw new $SyntaxError('invalid intrinsic syntax, expected closing `%`');
+  } else if (last === '%' && first !== '%') {
+    throw new $SyntaxError('invalid intrinsic syntax, expected opening `%`');
+  }
+  var result = [];
+  $replace(string, rePropName, function (match, number, quote, subString) {
+    result[result.length] = quote ? $replace(subString, reEscapeChar, '$1') : number || match;
+  });
+  return result;
+};
+/* end adaptation */
+
+var getBaseIntrinsic = function getBaseIntrinsic(name, allowMissing) {
+  var intrinsicName = name;
+  var alias;
+  if (hasOwn(LEGACY_ALIASES, intrinsicName)) {
+    alias = LEGACY_ALIASES[intrinsicName];
+    intrinsicName = '%' + alias[0] + '%';
+  }
+  if (hasOwn(INTRINSICS, intrinsicName)) {
+    var value = INTRINSICS[intrinsicName];
+    if (value === needsEval) {
+      value = doEval(intrinsicName);
+    }
+    if (typeof value === 'undefined' && !allowMissing) {
+      throw new $TypeError('intrinsic ' + name + ' exists, but is not available. Please file an issue!');
+    }
+    return {
+      alias: alias,
+      name: intrinsicName,
+      value: value
+    };
+  }
+  throw new $SyntaxError('intrinsic ' + name + ' does not exist!');
+};
+module.exports = function GetIntrinsic(name, allowMissing) {
+  if (typeof name !== 'string' || name.length === 0) {
+    throw new $TypeError('intrinsic name must be a non-empty string');
+  }
+  if (arguments.length > 1 && typeof allowMissing !== 'boolean') {
+    throw new $TypeError('"allowMissing" argument must be a boolean');
+  }
+  if ($exec(/^%?[^%]*%?$/, name) === null) {
+    throw new $SyntaxError('`%` may not be present anywhere but at the beginning and end of the intrinsic name');
+  }
+  var parts = stringToPath(name);
+  var intrinsicBaseName = parts.length > 0 ? parts[0] : '';
+  var intrinsic = getBaseIntrinsic('%' + intrinsicBaseName + '%', allowMissing);
+  var intrinsicRealName = intrinsic.name;
+  var value = intrinsic.value;
+  var skipFurtherCaching = false;
+  var alias = intrinsic.alias;
+  if (alias) {
+    intrinsicBaseName = alias[0];
+    $spliceApply(parts, $concat([0, 1], alias));
+  }
+  for (var i = 1, isOwn = true; i < parts.length; i += 1) {
+    var part = parts[i];
+    var first = $strSlice(part, 0, 1);
+    var last = $strSlice(part, -1);
+    if ((first === '"' || first === "'" || first === '`' || last === '"' || last === "'" || last === '`') && first !== last) {
+      throw new $SyntaxError('property names with quotes must have matching quotes');
+    }
+    if (part === 'constructor' || !isOwn) {
+      skipFurtherCaching = true;
+    }
+    intrinsicBaseName += '.' + part;
+    intrinsicRealName = '%' + intrinsicBaseName + '%';
+    if (hasOwn(INTRINSICS, intrinsicRealName)) {
+      value = INTRINSICS[intrinsicRealName];
+    } else if (value != null) {
+      if (!(part in value)) {
+        if (!allowMissing) {
+          throw new $TypeError('base intrinsic for ' + name + ' exists, but the property is not available.');
+        }
+        return void undefined;
+      }
+      if ($gOPD && i + 1 >= parts.length) {
+        var desc = $gOPD(value, part);
+        isOwn = !!desc;
+
+        // By convention, when a data property is converted to an accessor
+        // property to emulate a data property that does not suffer from
+        // the override mistake, that accessor's getter is marked with
+        // an `originalValue` property. Here, when we detect this, we
+        // uphold the illusion by pretending to see that original data
+        // property, i.e., returning the value rather than the getter
+        // itself.
+        if (isOwn && 'get' in desc && !('originalValue' in desc.get)) {
+          value = desc.get;
+        } else {
+          value = value[part];
+        }
+      } else {
+        isOwn = hasOwn(value, part);
+        value = value[part];
+      }
+      if (isOwn && !skipFurtherCaching) {
+        INTRINSICS[intrinsicRealName] = value;
+      }
+    }
+  }
+  return value;
+};
+
+/***/ }),
+
+/***/ "./node_modules/get-proto/Object.getPrototypeOf.js":
+/*!*********************************************************!*\
+  !*** ./node_modules/get-proto/Object.getPrototypeOf.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var $Object = __webpack_require__(/*! es-object-atoms */ "./node_modules/es-object-atoms/index.js");
+
+/** @type {import('./Object.getPrototypeOf')} */
+module.exports = $Object.getPrototypeOf || null;
+
+/***/ }),
+
+/***/ "./node_modules/get-proto/Reflect.getPrototypeOf.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/get-proto/Reflect.getPrototypeOf.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./Reflect.getPrototypeOf')} */
+module.exports = typeof Reflect !== 'undefined' && Reflect.getPrototypeOf || null;
+
+/***/ }),
+
+/***/ "./node_modules/get-proto/index.js":
+/*!*****************************************!*\
+  !*** ./node_modules/get-proto/index.js ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var reflectGetProto = __webpack_require__(/*! ./Reflect.getPrototypeOf */ "./node_modules/get-proto/Reflect.getPrototypeOf.js");
+var originalGetProto = __webpack_require__(/*! ./Object.getPrototypeOf */ "./node_modules/get-proto/Object.getPrototypeOf.js");
+var getDunderProto = __webpack_require__(/*! dunder-proto/get */ "./node_modules/dunder-proto/get.js");
+
+/** @type {import('.')} */
+module.exports = reflectGetProto ? function getProto(O) {
+  // @ts-expect-error TS can't narrow inside a closure, for some reason
+  return reflectGetProto(O);
+} : originalGetProto ? function getProto(O) {
+  if (!O || _typeof(O) !== 'object' && typeof O !== 'function') {
+    throw new TypeError('getProto: not an object');
+  }
+  // @ts-expect-error TS can't narrow inside a closure, for some reason
+  return originalGetProto(O);
+} : getDunderProto ? function getProto(O) {
+  // @ts-expect-error TS can't narrow inside a closure, for some reason
+  return getDunderProto(O);
+} : null;
+
+/***/ }),
+
+/***/ "./node_modules/gopd/gOPD.js":
+/*!***********************************!*\
+  !*** ./node_modules/gopd/gOPD.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./gOPD')} */
+module.exports = Object.getOwnPropertyDescriptor;
+
+/***/ }),
+
+/***/ "./node_modules/gopd/index.js":
+/*!************************************!*\
+  !*** ./node_modules/gopd/index.js ***!
+  \************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('.')} */
+var $gOPD = __webpack_require__(/*! ./gOPD */ "./node_modules/gopd/gOPD.js");
+if ($gOPD) {
+  try {
+    $gOPD([], 'length');
+  } catch (e) {
+    // IE 8 has a broken gOPD
+    $gOPD = null;
+  }
+}
+module.exports = $gOPD;
+
+/***/ }),
+
+/***/ "./node_modules/has-property-descriptors/index.js":
+/*!********************************************************!*\
+  !*** ./node_modules/has-property-descriptors/index.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var $defineProperty = __webpack_require__(/*! es-define-property */ "./node_modules/es-define-property/index.js");
+var hasPropertyDescriptors = function hasPropertyDescriptors() {
+  return !!$defineProperty;
+};
+hasPropertyDescriptors.hasArrayLengthDefineBug = function hasArrayLengthDefineBug() {
+  // node v0.6 has a bug where array lengths can be Set but not Defined
+  if (!$defineProperty) {
+    return null;
+  }
+  try {
+    return $defineProperty([], 'length', {
+      value: 1
+    }).length !== 1;
+  } catch (e) {
+    // In Firefox 4-22, defining length on an array throws an exception.
+    return true;
+  }
+};
+module.exports = hasPropertyDescriptors;
+
+/***/ }),
+
+/***/ "./node_modules/has-symbols/index.js":
+/*!*******************************************!*\
+  !*** ./node_modules/has-symbols/index.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var origSymbol = typeof Symbol !== 'undefined' && Symbol;
+var hasSymbolSham = __webpack_require__(/*! ./shams */ "./node_modules/has-symbols/shams.js");
+
+/** @type {import('.')} */
+module.exports = function hasNativeSymbols() {
+  if (typeof origSymbol !== 'function') {
+    return false;
+  }
+  if (typeof Symbol !== 'function') {
+    return false;
+  }
+  if (_typeof(origSymbol('foo')) !== 'symbol') {
+    return false;
+  }
+  if (_typeof(Symbol('bar')) !== 'symbol') {
+    return false;
+  }
+  return hasSymbolSham();
+};
+
+/***/ }),
+
+/***/ "./node_modules/has-symbols/shams.js":
+/*!*******************************************!*\
+  !*** ./node_modules/has-symbols/shams.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./shams')} */
+/* eslint complexity: [2, 18], max-statements: [2, 33] */
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+module.exports = function hasSymbols() {
+  if (typeof Symbol !== 'function' || typeof Object.getOwnPropertySymbols !== 'function') {
+    return false;
+  }
+  if (_typeof(Symbol.iterator) === 'symbol') {
+    return true;
+  }
+
+  /** @type {{ [k in symbol]?: unknown }} */
+  var obj = {};
+  var sym = Symbol('test');
+  var symObj = Object(sym);
+  if (typeof sym === 'string') {
+    return false;
+  }
+  if (Object.prototype.toString.call(sym) !== '[object Symbol]') {
+    return false;
+  }
+  if (Object.prototype.toString.call(symObj) !== '[object Symbol]') {
+    return false;
+  }
+
+  // temp disabled per https://github.com/ljharb/object.assign/issues/17
+  // if (sym instanceof Symbol) { return false; }
+  // temp disabled per https://github.com/WebReflection/get-own-property-symbols/issues/4
+  // if (!(symObj instanceof Symbol)) { return false; }
+
+  // if (typeof Symbol.prototype.toString !== 'function') { return false; }
+  // if (String(sym) !== Symbol.prototype.toString.call(sym)) { return false; }
+
+  var symVal = 42;
+  obj[sym] = symVal;
+  for (var _ in obj) {
+    return false;
+  } // eslint-disable-line no-restricted-syntax, no-unreachable-loop
+  if (typeof Object.keys === 'function' && Object.keys(obj).length !== 0) {
+    return false;
+  }
+  if (typeof Object.getOwnPropertyNames === 'function' && Object.getOwnPropertyNames(obj).length !== 0) {
+    return false;
+  }
+  var syms = Object.getOwnPropertySymbols(obj);
+  if (syms.length !== 1 || syms[0] !== sym) {
+    return false;
+  }
+  if (!Object.prototype.propertyIsEnumerable.call(obj, sym)) {
+    return false;
+  }
+  if (typeof Object.getOwnPropertyDescriptor === 'function') {
+    // eslint-disable-next-line no-extra-parens
+    var descriptor = /** @type {PropertyDescriptor} */Object.getOwnPropertyDescriptor(obj, sym);
+    if (descriptor.value !== symVal || descriptor.enumerable !== true) {
+      return false;
+    }
+  }
+  return true;
+};
+
+/***/ }),
+
+/***/ "./node_modules/has-tostringtag/shams.js":
+/*!***********************************************!*\
+  !*** ./node_modules/has-tostringtag/shams.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var hasSymbols = __webpack_require__(/*! has-symbols/shams */ "./node_modules/has-symbols/shams.js");
+
+/** @type {import('.')} */
+module.exports = function hasToStringTagShams() {
+  return hasSymbols() && !!Symbol.toStringTag;
+};
+
+/***/ }),
+
+/***/ "./node_modules/hasown/index.js":
+/*!**************************************!*\
+  !*** ./node_modules/hasown/index.js ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var call = Function.prototype.call;
+var $hasOwn = Object.prototype.hasOwnProperty;
+var bind = __webpack_require__(/*! function-bind */ "./node_modules/function-bind/index.js");
+
+/** @type {import('.')} */
+module.exports = bind.call(call, $hasOwn);
+
+/***/ }),
+
+/***/ "./node_modules/is-callable/index.js":
+/*!*******************************************!*\
+  !*** ./node_modules/is-callable/index.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var fnToStr = Function.prototype.toString;
+var reflectApply = (typeof Reflect === "undefined" ? "undefined" : _typeof(Reflect)) === 'object' && Reflect !== null && Reflect.apply;
+var badArrayLike;
+var isCallableMarker;
+if (typeof reflectApply === 'function' && typeof Object.defineProperty === 'function') {
+  try {
+    badArrayLike = Object.defineProperty({}, 'length', {
+      get: function get() {
+        throw isCallableMarker;
+      }
+    });
+    isCallableMarker = {};
+    // eslint-disable-next-line no-throw-literal
+    reflectApply(function () {
+      throw 42;
+    }, null, badArrayLike);
+  } catch (_) {
+    if (_ !== isCallableMarker) {
+      reflectApply = null;
+    }
+  }
+} else {
+  reflectApply = null;
+}
+var constructorRegex = /^\s*class\b/;
+var isES6ClassFn = function isES6ClassFunction(value) {
+  try {
+    var fnStr = fnToStr.call(value);
+    return constructorRegex.test(fnStr);
+  } catch (e) {
+    return false; // not a function
+  }
+};
+
+var tryFunctionObject = function tryFunctionToStr(value) {
+  try {
+    if (isES6ClassFn(value)) {
+      return false;
+    }
+    fnToStr.call(value);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+var toStr = Object.prototype.toString;
+var objectClass = '[object Object]';
+var fnClass = '[object Function]';
+var genClass = '[object GeneratorFunction]';
+var ddaClass = '[object HTMLAllCollection]'; // IE 11
+var ddaClass2 = '[object HTML document.all class]';
+var ddaClass3 = '[object HTMLCollection]'; // IE 9-10
+var hasToStringTag = typeof Symbol === 'function' && !!Symbol.toStringTag; // better: use `has-tostringtag`
+
+var isIE68 = !(0 in [,]); // eslint-disable-line no-sparse-arrays, comma-spacing
+
+var isDDA = function isDocumentDotAll() {
+  return false;
+};
+if ((typeof document === "undefined" ? "undefined" : _typeof(document)) === 'object') {
+  // Firefox 3 canonicalizes DDA to undefined when it's not accessed directly
+  var all = document.all;
+  if (toStr.call(all) === toStr.call(document.all)) {
+    isDDA = function isDocumentDotAll(value) {
+      /* globals document: false */
+      // in IE 6-8, typeof document.all is "object" and it's truthy
+      if ((isIE68 || !value) && (typeof value === 'undefined' || _typeof(value) === 'object')) {
+        try {
+          var str = toStr.call(value);
+          return (str === ddaClass || str === ddaClass2 || str === ddaClass3 // opera 12.16
+          || str === objectClass // IE 6-8
+          ) && value('') == null; // eslint-disable-line eqeqeq
+        } catch (e) {/**/}
+      }
+      return false;
+    };
+  }
+}
+module.exports = reflectApply ? function isCallable(value) {
+  if (isDDA(value)) {
+    return true;
+  }
+  if (!value) {
+    return false;
+  }
+  if (typeof value !== 'function' && _typeof(value) !== 'object') {
+    return false;
+  }
+  try {
+    reflectApply(value, null, badArrayLike);
+  } catch (e) {
+    if (e !== isCallableMarker) {
+      return false;
+    }
+  }
+  return !isES6ClassFn(value) && tryFunctionObject(value);
+} : function isCallable(value) {
+  if (isDDA(value)) {
+    return true;
+  }
+  if (!value) {
+    return false;
+  }
+  if (typeof value !== 'function' && _typeof(value) !== 'object') {
+    return false;
+  }
+  if (hasToStringTag) {
+    return tryFunctionObject(value);
+  }
+  if (isES6ClassFn(value)) {
+    return false;
+  }
+  var strClass = toStr.call(value);
+  if (strClass !== fnClass && strClass !== genClass && !/^\[object HTML/.test(strClass)) {
+    return false;
+  }
+  return tryFunctionObject(value);
+};
+
+/***/ }),
+
+/***/ "./node_modules/is-date-object/index.js":
+/*!**********************************************!*\
+  !*** ./node_modules/is-date-object/index.js ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var callBound = __webpack_require__(/*! call-bound */ "./node_modules/call-bound/index.js");
+var getDay = callBound('Date.prototype.getDay');
+/** @type {import('.')} */
+var tryDateObject = function tryDateGetDayCall(value) {
+  try {
+    getDay(value);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+/** @type {(value: unknown) => string} */
+var toStr = callBound('Object.prototype.toString');
+var dateClass = '[object Date]';
+var hasToStringTag = __webpack_require__(/*! has-tostringtag/shams */ "./node_modules/has-tostringtag/shams.js")();
+
+/** @type {import('.')} */
+module.exports = function isDateObject(value) {
+  if (_typeof(value) !== 'object' || value === null) {
+    return false;
+  }
+  return hasToStringTag ? tryDateObject(value) : toStr(value) === dateClass;
+};
+
+/***/ }),
+
+/***/ "./node_modules/is-regex/index.js":
+/*!****************************************!*\
+  !*** ./node_modules/is-regex/index.js ***!
+  \****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var callBound = __webpack_require__(/*! call-bound */ "./node_modules/call-bound/index.js");
+var hasToStringTag = __webpack_require__(/*! has-tostringtag/shams */ "./node_modules/has-tostringtag/shams.js")();
+var hasOwn = __webpack_require__(/*! hasown */ "./node_modules/hasown/index.js");
+var gOPD = __webpack_require__(/*! gopd */ "./node_modules/gopd/index.js");
+
+/** @type {import('.')} */
+var fn;
+if (hasToStringTag) {
+  /** @type {(receiver: ThisParameterType<typeof RegExp.prototype.exec>, ...args: Parameters<typeof RegExp.prototype.exec>) => ReturnType<typeof RegExp.prototype.exec>} */
+  var $exec = callBound('RegExp.prototype.exec');
+  /** @type {object} */
+  var isRegexMarker = {};
+  var throwRegexMarker = function throwRegexMarker() {
+    throw isRegexMarker;
+  };
+  /** @type {{ toString(): never, valueOf(): never, [Symbol.toPrimitive]?(): never }} */
+  var badStringifier = {
+    toString: throwRegexMarker,
+    valueOf: throwRegexMarker
+  };
+  if (_typeof(Symbol.toPrimitive) === 'symbol') {
+    badStringifier[Symbol.toPrimitive] = throwRegexMarker;
+  }
+
+  /** @type {import('.')} */
+  // @ts-expect-error TS can't figure out that the $exec call always throws
+  // eslint-disable-next-line consistent-return
+  fn = function isRegex(value) {
+    if (!value || _typeof(value) !== 'object') {
+      return false;
+    }
+
+    // eslint-disable-next-line no-extra-parens
+    var descriptor = /** @type {NonNullable<typeof gOPD>} */gOPD( /** @type {{ lastIndex?: unknown }} */value, 'lastIndex');
+    var hasLastIndexDataProperty = descriptor && hasOwn(descriptor, 'value');
+    if (!hasLastIndexDataProperty) {
+      return false;
+    }
+    try {
+      // eslint-disable-next-line no-extra-parens
+      $exec(value, /** @type {string} */ /** @type {unknown} */badStringifier);
+    } catch (e) {
+      return e === isRegexMarker;
+    }
+  };
+} else {
+  /** @type {(receiver: ThisParameterType<typeof Object.prototype.toString>, ...args: Parameters<typeof Object.prototype.toString>) => ReturnType<typeof Object.prototype.toString>} */
+  var $toString = callBound('Object.prototype.toString');
+  /** @const @type {'[object RegExp]'} */
+  var regexClass = '[object RegExp]';
+
+  /** @type {import('.')} */
+  fn = function isRegex(value) {
+    // In older browsers, typeof regex incorrectly returns 'function'
+    if (!value || _typeof(value) !== 'object' && typeof value !== 'function') {
+      return false;
+    }
+    return $toString(value) === regexClass;
+  };
+}
+module.exports = fn;
+
+/***/ }),
+
+/***/ "./node_modules/is-symbol/index.js":
+/*!*****************************************!*\
+  !*** ./node_modules/is-symbol/index.js ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var callBound = __webpack_require__(/*! call-bound */ "./node_modules/call-bound/index.js");
+var $toString = callBound('Object.prototype.toString');
+var hasSymbols = __webpack_require__(/*! has-symbols */ "./node_modules/has-symbols/index.js")();
+var safeRegexTest = __webpack_require__(/*! safe-regex-test */ "./node_modules/safe-regex-test/index.js");
+if (hasSymbols) {
+  var $symToStr = callBound('Symbol.prototype.toString');
+  var isSymString = safeRegexTest(/^Symbol\(.*\)$/);
+
+  /** @type {(value: object) => value is Symbol} */
+  var isSymbolObject = function isRealSymbolObject(value) {
+    if (_typeof(value.valueOf()) !== 'symbol') {
+      return false;
+    }
+    return isSymString($symToStr(value));
+  };
+
+  /** @type {import('.')} */
+  module.exports = function isSymbol(value) {
+    if (_typeof(value) === 'symbol') {
+      return true;
+    }
+    if (!value || _typeof(value) !== 'object' || $toString(value) !== '[object Symbol]') {
+      return false;
+    }
+    try {
+      return isSymbolObject(value);
+    } catch (e) {
+      return false;
+    }
+  };
+} else {
+  /** @type {import('.')} */
+  module.exports = function isSymbol(value) {
+    // this environment does not support Symbols.
+    return  false && false;
+  };
+}
+
+/***/ }),
+
+/***/ "./node_modules/math-intrinsics/abs.js":
+/*!*********************************************!*\
+  !*** ./node_modules/math-intrinsics/abs.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./abs')} */
+module.exports = Math.abs;
+
+/***/ }),
+
+/***/ "./node_modules/math-intrinsics/floor.js":
+/*!***********************************************!*\
+  !*** ./node_modules/math-intrinsics/floor.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./floor')} */
+module.exports = Math.floor;
+
+/***/ }),
+
+/***/ "./node_modules/math-intrinsics/isNaN.js":
+/*!***********************************************!*\
+  !*** ./node_modules/math-intrinsics/isNaN.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./isNaN')} */
+module.exports = Number.isNaN || function isNaN(a) {
+  return a !== a;
+};
+
+/***/ }),
+
+/***/ "./node_modules/math-intrinsics/max.js":
+/*!*********************************************!*\
+  !*** ./node_modules/math-intrinsics/max.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./max')} */
+module.exports = Math.max;
+
+/***/ }),
+
+/***/ "./node_modules/math-intrinsics/min.js":
+/*!*********************************************!*\
+  !*** ./node_modules/math-intrinsics/min.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./min')} */
+module.exports = Math.min;
+
+/***/ }),
+
+/***/ "./node_modules/math-intrinsics/pow.js":
+/*!*********************************************!*\
+  !*** ./node_modules/math-intrinsics/pow.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./pow')} */
+module.exports = Math.pow;
+
+/***/ }),
+
+/***/ "./node_modules/math-intrinsics/round.js":
+/*!***********************************************!*\
+  !*** ./node_modules/math-intrinsics/round.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/** @type {import('./round')} */
+module.exports = Math.round;
+
+/***/ }),
+
+/***/ "./node_modules/math-intrinsics/sign.js":
+/*!**********************************************!*\
+  !*** ./node_modules/math-intrinsics/sign.js ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var $isNaN = __webpack_require__(/*! ./isNaN */ "./node_modules/math-intrinsics/isNaN.js");
+
+/** @type {import('./sign')} */
+module.exports = function sign(number) {
+  if ($isNaN(number) || number === 0) {
+    return number;
+  }
+  return number < 0 ? -1 : +1;
+};
+
+/***/ }),
+
+/***/ "./node_modules/object-inspect/index.js":
+/*!**********************************************!*\
+  !*** ./node_modules/object-inspect/index.js ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global) {function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var hasMap = typeof Map === 'function' && Map.prototype;
+var mapSizeDescriptor = Object.getOwnPropertyDescriptor && hasMap ? Object.getOwnPropertyDescriptor(Map.prototype, 'size') : null;
+var mapSize = hasMap && mapSizeDescriptor && typeof mapSizeDescriptor.get === 'function' ? mapSizeDescriptor.get : null;
+var mapForEach = hasMap && Map.prototype.forEach;
+var hasSet = typeof Set === 'function' && Set.prototype;
+var setSizeDescriptor = Object.getOwnPropertyDescriptor && hasSet ? Object.getOwnPropertyDescriptor(Set.prototype, 'size') : null;
+var setSize = hasSet && setSizeDescriptor && typeof setSizeDescriptor.get === 'function' ? setSizeDescriptor.get : null;
+var setForEach = hasSet && Set.prototype.forEach;
+var hasWeakMap = typeof WeakMap === 'function' && WeakMap.prototype;
+var weakMapHas = hasWeakMap ? WeakMap.prototype.has : null;
+var hasWeakSet = typeof WeakSet === 'function' && WeakSet.prototype;
+var weakSetHas = hasWeakSet ? WeakSet.prototype.has : null;
+var hasWeakRef = typeof WeakRef === 'function' && WeakRef.prototype;
+var weakRefDeref = hasWeakRef ? WeakRef.prototype.deref : null;
+var booleanValueOf = Boolean.prototype.valueOf;
+var objectToString = Object.prototype.toString;
+var functionToString = Function.prototype.toString;
+var $match = String.prototype.match;
+var $slice = String.prototype.slice;
+var $replace = String.prototype.replace;
+var $toUpperCase = String.prototype.toUpperCase;
+var $toLowerCase = String.prototype.toLowerCase;
+var $test = RegExp.prototype.test;
+var $concat = Array.prototype.concat;
+var $join = Array.prototype.join;
+var $arrSlice = Array.prototype.slice;
+var $floor = Math.floor;
+var bigIntValueOf = typeof BigInt === 'function' ? BigInt.prototype.valueOf : null;
+var gOPS = Object.getOwnPropertySymbols;
+var symToString = typeof Symbol === 'function' && _typeof(Symbol.iterator) === 'symbol' ? Symbol.prototype.toString : null;
+var hasShammedSymbols = typeof Symbol === 'function' && _typeof(Symbol.iterator) === 'object';
+// ie, `has-tostringtag/shams
+var toStringTag = typeof Symbol === 'function' && Symbol.toStringTag && (_typeof(Symbol.toStringTag) === hasShammedSymbols ? 'object' : 'symbol') ? Symbol.toStringTag : null;
+var isEnumerable = Object.prototype.propertyIsEnumerable;
+var gPO = (typeof Reflect === 'function' ? Reflect.getPrototypeOf : Object.getPrototypeOf) || ([].__proto__ === Array.prototype // eslint-disable-line no-proto
+? function (O) {
+  return O.__proto__; // eslint-disable-line no-proto
+} : null);
+function addNumericSeparator(num, str) {
+  if (num === Infinity || num === -Infinity || num !== num || num && num > -1000 && num < 1000 || $test.call(/e/, str)) {
+    return str;
+  }
+  var sepRegex = /[0-9](?=(?:[0-9]{3})+(?![0-9]))/g;
+  if (typeof num === 'number') {
+    var _int = num < 0 ? -$floor(-num) : $floor(num); // trunc(num)
+    if (_int !== num) {
+      var intStr = String(_int);
+      var dec = $slice.call(str, intStr.length + 1);
+      return $replace.call(intStr, sepRegex, '$&_') + '.' + $replace.call($replace.call(dec, /([0-9]{3})/g, '$&_'), /_$/, '');
+    }
+  }
+  return $replace.call(str, sepRegex, '$&_');
+}
+var utilInspect = __webpack_require__(/*! ./util.inspect */ 0);
+var inspectCustom = utilInspect.custom;
+var inspectSymbol = isSymbol(inspectCustom) ? inspectCustom : null;
+var quotes = {
+  __proto__: null,
+  'double': '"',
+  single: "'"
+};
+var quoteREs = {
+  __proto__: null,
+  'double': /(["\\])/g,
+  single: /(['\\])/g
+};
+module.exports = function inspect_(obj, options, depth, seen) {
+  var opts = options || {};
+  if (has(opts, 'quoteStyle') && !has(quotes, opts.quoteStyle)) {
+    throw new TypeError('option "quoteStyle" must be "single" or "double"');
+  }
+  if (has(opts, 'maxStringLength') && (typeof opts.maxStringLength === 'number' ? opts.maxStringLength < 0 && opts.maxStringLength !== Infinity : opts.maxStringLength !== null)) {
+    throw new TypeError('option "maxStringLength", if provided, must be a positive integer, Infinity, or `null`');
+  }
+  var customInspect = has(opts, 'customInspect') ? opts.customInspect : true;
+  if (typeof customInspect !== 'boolean' && customInspect !== 'symbol') {
+    throw new TypeError('option "customInspect", if provided, must be `true`, `false`, or `\'symbol\'`');
+  }
+  if (has(opts, 'indent') && opts.indent !== null && opts.indent !== '\t' && !(parseInt(opts.indent, 10) === opts.indent && opts.indent > 0)) {
+    throw new TypeError('option "indent" must be "\\t", an integer > 0, or `null`');
+  }
+  if (has(opts, 'numericSeparator') && typeof opts.numericSeparator !== 'boolean') {
+    throw new TypeError('option "numericSeparator", if provided, must be `true` or `false`');
+  }
+  var numericSeparator = opts.numericSeparator;
+  if (typeof obj === 'undefined') {
+    return 'undefined';
+  }
+  if (obj === null) {
+    return 'null';
+  }
+  if (typeof obj === 'boolean') {
+    return obj ? 'true' : 'false';
+  }
+  if (typeof obj === 'string') {
+    return inspectString(obj, opts);
+  }
+  if (typeof obj === 'number') {
+    if (obj === 0) {
+      return Infinity / obj > 0 ? '0' : '-0';
+    }
+    var str = String(obj);
+    return numericSeparator ? addNumericSeparator(obj, str) : str;
+  }
+  if (typeof obj === 'bigint') {
+    var bigIntStr = String(obj) + 'n';
+    return numericSeparator ? addNumericSeparator(obj, bigIntStr) : bigIntStr;
+  }
+  var maxDepth = typeof opts.depth === 'undefined' ? 5 : opts.depth;
+  if (typeof depth === 'undefined') {
+    depth = 0;
+  }
+  if (depth >= maxDepth && maxDepth > 0 && _typeof(obj) === 'object') {
+    return isArray(obj) ? '[Array]' : '[Object]';
+  }
+  var indent = getIndent(opts, depth);
+  if (typeof seen === 'undefined') {
+    seen = [];
+  } else if (indexOf(seen, obj) >= 0) {
+    return '[Circular]';
+  }
+  function inspect(value, from, noIndent) {
+    if (from) {
+      seen = $arrSlice.call(seen);
+      seen.push(from);
+    }
+    if (noIndent) {
+      var newOpts = {
+        depth: opts.depth
+      };
+      if (has(opts, 'quoteStyle')) {
+        newOpts.quoteStyle = opts.quoteStyle;
+      }
+      return inspect_(value, newOpts, depth + 1, seen);
+    }
+    return inspect_(value, opts, depth + 1, seen);
+  }
+  if (typeof obj === 'function' && !isRegExp(obj)) {
+    // in older engines, regexes are callable
+    var name = nameOf(obj);
+    var keys = arrObjKeys(obj, inspect);
+    return '[Function' + (name ? ': ' + name : ' (anonymous)') + ']' + (keys.length > 0 ? ' { ' + $join.call(keys, ', ') + ' }' : '');
+  }
+  if (isSymbol(obj)) {
+    var symString = hasShammedSymbols ? $replace.call(String(obj), /^(Symbol\(.*\))_[^)]*$/, '$1') : symToString.call(obj);
+    return _typeof(obj) === 'object' && !hasShammedSymbols ? markBoxed(symString) : symString;
+  }
+  if (isElement(obj)) {
+    var s = '<' + $toLowerCase.call(String(obj.nodeName));
+    var attrs = obj.attributes || [];
+    for (var i = 0; i < attrs.length; i++) {
+      s += ' ' + attrs[i].name + '=' + wrapQuotes(quote(attrs[i].value), 'double', opts);
+    }
+    s += '>';
+    if (obj.childNodes && obj.childNodes.length) {
+      s += '...';
+    }
+    s += '</' + $toLowerCase.call(String(obj.nodeName)) + '>';
+    return s;
+  }
+  if (isArray(obj)) {
+    if (obj.length === 0) {
+      return '[]';
+    }
+    var xs = arrObjKeys(obj, inspect);
+    if (indent && !singleLineValues(xs)) {
+      return '[' + indentedJoin(xs, indent) + ']';
+    }
+    return '[ ' + $join.call(xs, ', ') + ' ]';
+  }
+  if (isError(obj)) {
+    var parts = arrObjKeys(obj, inspect);
+    if (!('cause' in Error.prototype) && 'cause' in obj && !isEnumerable.call(obj, 'cause')) {
+      return '{ [' + String(obj) + '] ' + $join.call($concat.call('[cause]: ' + inspect(obj.cause), parts), ', ') + ' }';
+    }
+    if (parts.length === 0) {
+      return '[' + String(obj) + ']';
+    }
+    return '{ [' + String(obj) + '] ' + $join.call(parts, ', ') + ' }';
+  }
+  if (_typeof(obj) === 'object' && customInspect) {
+    if (inspectSymbol && typeof obj[inspectSymbol] === 'function' && utilInspect) {
+      return utilInspect(obj, {
+        depth: maxDepth - depth
+      });
+    } else if (customInspect !== 'symbol' && typeof obj.inspect === 'function') {
+      return obj.inspect();
+    }
+  }
+  if (isMap(obj)) {
+    var mapParts = [];
+    if (mapForEach) {
+      mapForEach.call(obj, function (value, key) {
+        mapParts.push(inspect(key, obj, true) + ' => ' + inspect(value, obj));
+      });
+    }
+    return collectionOf('Map', mapSize.call(obj), mapParts, indent);
+  }
+  if (isSet(obj)) {
+    var setParts = [];
+    if (setForEach) {
+      setForEach.call(obj, function (value) {
+        setParts.push(inspect(value, obj));
+      });
+    }
+    return collectionOf('Set', setSize.call(obj), setParts, indent);
+  }
+  if (isWeakMap(obj)) {
+    return weakCollectionOf('WeakMap');
+  }
+  if (isWeakSet(obj)) {
+    return weakCollectionOf('WeakSet');
+  }
+  if (isWeakRef(obj)) {
+    return weakCollectionOf('WeakRef');
+  }
+  if (isNumber(obj)) {
+    return markBoxed(inspect(Number(obj)));
+  }
+  if (isBigInt(obj)) {
+    return markBoxed(inspect(bigIntValueOf.call(obj)));
+  }
+  if (isBoolean(obj)) {
+    return markBoxed(booleanValueOf.call(obj));
+  }
+  if (isString(obj)) {
+    return markBoxed(inspect(String(obj)));
+  }
+  // note: in IE 8, sometimes `global !== window` but both are the prototypes of each other
+  /* eslint-env browser */
+  if (typeof window !== 'undefined' && obj === window) {
+    return '{ [object Window] }';
+  }
+  if (typeof globalThis !== 'undefined' && obj === globalThis || typeof global !== 'undefined' && obj === global) {
+    return '{ [object globalThis] }';
+  }
+  if (!isDate(obj) && !isRegExp(obj)) {
+    var ys = arrObjKeys(obj, inspect);
+    var isPlainObject = gPO ? gPO(obj) === Object.prototype : obj instanceof Object || obj.constructor === Object;
+    var protoTag = obj instanceof Object ? '' : 'null prototype';
+    var stringTag = !isPlainObject && toStringTag && Object(obj) === obj && toStringTag in obj ? $slice.call(toStr(obj), 8, -1) : protoTag ? 'Object' : '';
+    var constructorTag = isPlainObject || typeof obj.constructor !== 'function' ? '' : obj.constructor.name ? obj.constructor.name + ' ' : '';
+    var tag = constructorTag + (stringTag || protoTag ? '[' + $join.call($concat.call([], stringTag || [], protoTag || []), ': ') + '] ' : '');
+    if (ys.length === 0) {
+      return tag + '{}';
+    }
+    if (indent) {
+      return tag + '{' + indentedJoin(ys, indent) + '}';
+    }
+    return tag + '{ ' + $join.call(ys, ', ') + ' }';
+  }
+  return String(obj);
+};
+function wrapQuotes(s, defaultStyle, opts) {
+  var style = opts.quoteStyle || defaultStyle;
+  var quoteChar = quotes[style];
+  return quoteChar + s + quoteChar;
+}
+function quote(s) {
+  return $replace.call(String(s), /"/g, '&quot;');
+}
+function canTrustToString(obj) {
+  return !toStringTag || !(_typeof(obj) === 'object' && (toStringTag in obj || typeof obj[toStringTag] !== 'undefined'));
+}
+function isArray(obj) {
+  return toStr(obj) === '[object Array]' && canTrustToString(obj);
+}
+function isDate(obj) {
+  return toStr(obj) === '[object Date]' && canTrustToString(obj);
+}
+function isRegExp(obj) {
+  return toStr(obj) === '[object RegExp]' && canTrustToString(obj);
+}
+function isError(obj) {
+  return toStr(obj) === '[object Error]' && canTrustToString(obj);
+}
+function isString(obj) {
+  return toStr(obj) === '[object String]' && canTrustToString(obj);
+}
+function isNumber(obj) {
+  return toStr(obj) === '[object Number]' && canTrustToString(obj);
+}
+function isBoolean(obj) {
+  return toStr(obj) === '[object Boolean]' && canTrustToString(obj);
+}
+
+// Symbol and BigInt do have Symbol.toStringTag by spec, so that can't be used to eliminate false positives
+function isSymbol(obj) {
+  if (hasShammedSymbols) {
+    return obj && _typeof(obj) === 'object' && obj instanceof Symbol;
+  }
+  if (_typeof(obj) === 'symbol') {
+    return true;
+  }
+  if (!obj || _typeof(obj) !== 'object' || !symToString) {
+    return false;
+  }
+  try {
+    symToString.call(obj);
+    return true;
+  } catch (e) {}
+  return false;
+}
+function isBigInt(obj) {
+  if (!obj || _typeof(obj) !== 'object' || !bigIntValueOf) {
+    return false;
+  }
+  try {
+    bigIntValueOf.call(obj);
+    return true;
+  } catch (e) {}
+  return false;
+}
+var hasOwn = Object.prototype.hasOwnProperty || function (key) {
+  return key in this;
+};
+function has(obj, key) {
+  return hasOwn.call(obj, key);
+}
+function toStr(obj) {
+  return objectToString.call(obj);
+}
+function nameOf(f) {
+  if (f.name) {
+    return f.name;
+  }
+  var m = $match.call(functionToString.call(f), /^function\s*([\w$]+)/);
+  if (m) {
+    return m[1];
+  }
+  return null;
+}
+function indexOf(xs, x) {
+  if (xs.indexOf) {
+    return xs.indexOf(x);
+  }
+  for (var i = 0, l = xs.length; i < l; i++) {
+    if (xs[i] === x) {
+      return i;
+    }
+  }
+  return -1;
+}
+function isMap(x) {
+  if (!mapSize || !x || _typeof(x) !== 'object') {
+    return false;
+  }
+  try {
+    mapSize.call(x);
+    try {
+      setSize.call(x);
+    } catch (s) {
+      return true;
+    }
+    return x instanceof Map; // core-js workaround, pre-v2.5.0
+  } catch (e) {}
+  return false;
+}
+function isWeakMap(x) {
+  if (!weakMapHas || !x || _typeof(x) !== 'object') {
+    return false;
+  }
+  try {
+    weakMapHas.call(x, weakMapHas);
+    try {
+      weakSetHas.call(x, weakSetHas);
+    } catch (s) {
+      return true;
+    }
+    return x instanceof WeakMap; // core-js workaround, pre-v2.5.0
+  } catch (e) {}
+  return false;
+}
+function isWeakRef(x) {
+  if (!weakRefDeref || !x || _typeof(x) !== 'object') {
+    return false;
+  }
+  try {
+    weakRefDeref.call(x);
+    return true;
+  } catch (e) {}
+  return false;
+}
+function isSet(x) {
+  if (!setSize || !x || _typeof(x) !== 'object') {
+    return false;
+  }
+  try {
+    setSize.call(x);
+    try {
+      mapSize.call(x);
+    } catch (m) {
+      return true;
+    }
+    return x instanceof Set; // core-js workaround, pre-v2.5.0
+  } catch (e) {}
+  return false;
+}
+function isWeakSet(x) {
+  if (!weakSetHas || !x || _typeof(x) !== 'object') {
+    return false;
+  }
+  try {
+    weakSetHas.call(x, weakSetHas);
+    try {
+      weakMapHas.call(x, weakMapHas);
+    } catch (s) {
+      return true;
+    }
+    return x instanceof WeakSet; // core-js workaround, pre-v2.5.0
+  } catch (e) {}
+  return false;
+}
+function isElement(x) {
+  if (!x || _typeof(x) !== 'object') {
+    return false;
+  }
+  if (typeof HTMLElement !== 'undefined' && x instanceof HTMLElement) {
+    return true;
+  }
+  return typeof x.nodeName === 'string' && typeof x.getAttribute === 'function';
+}
+function inspectString(str, opts) {
+  if (str.length > opts.maxStringLength) {
+    var remaining = str.length - opts.maxStringLength;
+    var trailer = '... ' + remaining + ' more character' + (remaining > 1 ? 's' : '');
+    return inspectString($slice.call(str, 0, opts.maxStringLength), opts) + trailer;
+  }
+  var quoteRE = quoteREs[opts.quoteStyle || 'single'];
+  quoteRE.lastIndex = 0;
+  // eslint-disable-next-line no-control-regex
+  var s = $replace.call($replace.call(str, quoteRE, '\\$1'), /[\x00-\x1f]/g, lowbyte);
+  return wrapQuotes(s, 'single', opts);
+}
+function lowbyte(c) {
+  var n = c.charCodeAt(0);
+  var x = {
+    8: 'b',
+    9: 't',
+    10: 'n',
+    12: 'f',
+    13: 'r'
+  }[n];
+  if (x) {
+    return '\\' + x;
+  }
+  return '\\x' + (n < 0x10 ? '0' : '') + $toUpperCase.call(n.toString(16));
+}
+function markBoxed(str) {
+  return 'Object(' + str + ')';
+}
+function weakCollectionOf(type) {
+  return type + ' { ? }';
+}
+function collectionOf(type, size, entries, indent) {
+  var joinedEntries = indent ? indentedJoin(entries, indent) : $join.call(entries, ', ');
+  return type + ' (' + size + ') {' + joinedEntries + '}';
+}
+function singleLineValues(xs) {
+  for (var i = 0; i < xs.length; i++) {
+    if (indexOf(xs[i], '\n') >= 0) {
+      return false;
+    }
+  }
+  return true;
+}
+function getIndent(opts, depth) {
+  var baseIndent;
+  if (opts.indent === '\t') {
+    baseIndent = '\t';
+  } else if (typeof opts.indent === 'number' && opts.indent > 0) {
+    baseIndent = $join.call(Array(opts.indent + 1), ' ');
+  } else {
+    return null;
+  }
+  return {
+    base: baseIndent,
+    prev: $join.call(Array(depth + 1), baseIndent)
+  };
+}
+function indentedJoin(xs, indent) {
+  if (xs.length === 0) {
+    return '';
+  }
+  var lineJoiner = '\n' + indent.prev + indent.base;
+  return lineJoiner + $join.call(xs, ',' + lineJoiner) + '\n' + indent.prev;
+}
+function arrObjKeys(obj, inspect) {
+  var isArr = isArray(obj);
+  var xs = [];
+  if (isArr) {
+    xs.length = obj.length;
+    for (var i = 0; i < obj.length; i++) {
+      xs[i] = has(obj, i) ? inspect(obj[i], obj) : '';
+    }
+  }
+  var syms = typeof gOPS === 'function' ? gOPS(obj) : [];
+  var symMap;
+  if (hasShammedSymbols) {
+    symMap = {};
+    for (var k = 0; k < syms.length; k++) {
+      symMap['$' + syms[k]] = syms[k];
+    }
+  }
+  for (var key in obj) {
+    // eslint-disable-line no-restricted-syntax
+    if (!has(obj, key)) {
+      continue;
+    } // eslint-disable-line no-restricted-syntax, no-continue
+    if (isArr && String(Number(key)) === key && key < obj.length) {
+      continue;
+    } // eslint-disable-line no-restricted-syntax, no-continue
+    if (hasShammedSymbols && symMap['$' + key] instanceof Symbol) {
+      // this is to prevent shammed Symbols, which are stored as strings, from being included in the string key section
+      continue; // eslint-disable-line no-restricted-syntax, no-continue
+    } else if ($test.call(/[^\w$]/, key)) {
+      xs.push(inspect(key, obj) + ': ' + inspect(obj[key], obj));
+    } else {
+      xs.push(key + ': ' + inspect(obj[key], obj));
+    }
+  }
+  if (typeof gOPS === 'function') {
+    for (var j = 0; j < syms.length; j++) {
+      if (isEnumerable.call(obj, syms[j])) {
+        xs.push('[' + inspect(syms[j]) + ']: ' + inspect(obj[syms[j]], obj));
+      }
+    }
+  }
+  return xs;
+}
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./node_modules/object-keys/implementation.js":
+/*!****************************************************!*\
+  !*** ./node_modules/object-keys/implementation.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var keysShim;
+if (!Object.keys) {
+  // modified from https://github.com/es-shims/es5-shim
+  var has = Object.prototype.hasOwnProperty;
+  var toStr = Object.prototype.toString;
+  var isArgs = __webpack_require__(/*! ./isArguments */ "./node_modules/object-keys/isArguments.js"); // eslint-disable-line global-require
+  var isEnumerable = Object.prototype.propertyIsEnumerable;
+  var hasDontEnumBug = !isEnumerable.call({
+    toString: null
+  }, 'toString');
+  var hasProtoEnumBug = isEnumerable.call(function () {}, 'prototype');
+  var dontEnums = ['toString', 'toLocaleString', 'valueOf', 'hasOwnProperty', 'isPrototypeOf', 'propertyIsEnumerable', 'constructor'];
+  var equalsConstructorPrototype = function equalsConstructorPrototype(o) {
+    var ctor = o.constructor;
+    return ctor && ctor.prototype === o;
+  };
+  var excludedKeys = {
+    $applicationCache: true,
+    $console: true,
+    $external: true,
+    $frame: true,
+    $frameElement: true,
+    $frames: true,
+    $innerHeight: true,
+    $innerWidth: true,
+    $onmozfullscreenchange: true,
+    $onmozfullscreenerror: true,
+    $outerHeight: true,
+    $outerWidth: true,
+    $pageXOffset: true,
+    $pageYOffset: true,
+    $parent: true,
+    $scrollLeft: true,
+    $scrollTop: true,
+    $scrollX: true,
+    $scrollY: true,
+    $self: true,
+    $webkitIndexedDB: true,
+    $webkitStorageInfo: true,
+    $window: true
+  };
+  var hasAutomationEqualityBug = function () {
+    /* global window */
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    for (var k in window) {
+      try {
+        if (!excludedKeys['$' + k] && has.call(window, k) && window[k] !== null && _typeof(window[k]) === 'object') {
+          try {
+            equalsConstructorPrototype(window[k]);
+          } catch (e) {
+            return true;
+          }
+        }
+      } catch (e) {
+        return true;
+      }
+    }
+    return false;
+  }();
+  var equalsConstructorPrototypeIfNotBuggy = function equalsConstructorPrototypeIfNotBuggy(o) {
+    /* global window */
+    if (typeof window === 'undefined' || !hasAutomationEqualityBug) {
+      return equalsConstructorPrototype(o);
+    }
+    try {
+      return equalsConstructorPrototype(o);
+    } catch (e) {
+      return false;
+    }
+  };
+  keysShim = function keys(object) {
+    var isObject = object !== null && _typeof(object) === 'object';
+    var isFunction = toStr.call(object) === '[object Function]';
+    var isArguments = isArgs(object);
+    var isString = isObject && toStr.call(object) === '[object String]';
+    var theKeys = [];
+    if (!isObject && !isFunction && !isArguments) {
+      throw new TypeError('Object.keys called on a non-object');
+    }
+    var skipProto = hasProtoEnumBug && isFunction;
+    if (isString && object.length > 0 && !has.call(object, 0)) {
+      for (var i = 0; i < object.length; ++i) {
+        theKeys.push(String(i));
+      }
+    }
+    if (isArguments && object.length > 0) {
+      for (var j = 0; j < object.length; ++j) {
+        theKeys.push(String(j));
+      }
+    } else {
+      for (var name in object) {
+        if (!(skipProto && name === 'prototype') && has.call(object, name)) {
+          theKeys.push(String(name));
+        }
+      }
+    }
+    if (hasDontEnumBug) {
+      var skipConstructor = equalsConstructorPrototypeIfNotBuggy(object);
+      for (var k = 0; k < dontEnums.length; ++k) {
+        if (!(skipConstructor && dontEnums[k] === 'constructor') && has.call(object, dontEnums[k])) {
+          theKeys.push(dontEnums[k]);
+        }
+      }
+    }
+    return theKeys;
+  };
+}
+module.exports = keysShim;
+
+/***/ }),
+
+/***/ "./node_modules/object-keys/index.js":
+/*!*******************************************!*\
+  !*** ./node_modules/object-keys/index.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var slice = Array.prototype.slice;
+var isArgs = __webpack_require__(/*! ./isArguments */ "./node_modules/object-keys/isArguments.js");
+var origKeys = Object.keys;
+var keysShim = origKeys ? function keys(o) {
+  return origKeys(o);
+} : __webpack_require__(/*! ./implementation */ "./node_modules/object-keys/implementation.js");
+var originalKeys = Object.keys;
+keysShim.shim = function shimObjectKeys() {
+  if (Object.keys) {
+    var keysWorksWithArguments = function () {
+      // Safari 5.0 bug
+      var args = Object.keys(arguments);
+      return args && args.length === arguments.length;
+    }(1, 2);
+    if (!keysWorksWithArguments) {
+      Object.keys = function keys(object) {
+        // eslint-disable-line func-name-matching
+        if (isArgs(object)) {
+          return originalKeys(slice.call(object));
+        }
+        return originalKeys(object);
+      };
+    }
+  } else {
+    Object.keys = keysShim;
+  }
+  return Object.keys || keysShim;
+};
+module.exports = keysShim;
+
+/***/ }),
+
+/***/ "./node_modules/object-keys/isArguments.js":
+/*!*************************************************!*\
+  !*** ./node_modules/object-keys/isArguments.js ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var toStr = Object.prototype.toString;
+module.exports = function isArguments(value) {
+  var str = toStr.call(value);
+  var isArgs = str === '[object Arguments]';
+  if (!isArgs) {
+    isArgs = str !== '[object Array]' && value !== null && _typeof(value) === 'object' && typeof value.length === 'number' && value.length >= 0 && toStr.call(value.callee) === '[object Function]';
+  }
+  return isArgs;
+};
+
+/***/ }),
+
+/***/ "./node_modules/object.hasown/auto.js":
+/*!********************************************!*\
+  !*** ./node_modules/object.hasown/auto.js ***!
+  \********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+__webpack_require__(/*! ./shim */ "./node_modules/object.hasown/shim.js")();
+
+/***/ }),
+
+/***/ "./node_modules/object.hasown/implementation.js":
+/*!******************************************************!*\
+  !*** ./node_modules/object.hasown/implementation.js ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var ToObject = __webpack_require__(/*! es-object-atoms/ToObject */ "./node_modules/es-object-atoms/ToObject.js");
+var ToPropertyKey = __webpack_require__(/*! es-abstract/2024/ToPropertyKey */ "./node_modules/es-abstract/2024/ToPropertyKey.js");
+var HasOwnProperty = __webpack_require__(/*! es-abstract/2024/HasOwnProperty */ "./node_modules/es-abstract/2024/HasOwnProperty.js");
+module.exports = function hasOwn(O, P) {
+  var obj = ToObject(O);
+  var key = ToPropertyKey(P);
+  return HasOwnProperty(obj, key);
+};
+
+/***/ }),
+
+/***/ "./node_modules/object.hasown/polyfill.js":
+/*!************************************************!*\
+  !*** ./node_modules/object.hasown/polyfill.js ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var implementation = __webpack_require__(/*! ./implementation */ "./node_modules/object.hasown/implementation.js");
+module.exports = function getPolyfill() {
+  return Object.hasOwn || implementation;
+};
+
+/***/ }),
+
+/***/ "./node_modules/object.hasown/shim.js":
+/*!********************************************!*\
+  !*** ./node_modules/object.hasown/shim.js ***!
+  \********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var getPolyfill = __webpack_require__(/*! ./polyfill */ "./node_modules/object.hasown/polyfill.js");
+var define = __webpack_require__(/*! define-properties */ "./node_modules/define-properties/index.js");
+module.exports = function shimObjectHasOwn() {
+  var polyfill = getPolyfill();
+  define(Object, {
+    hasOwn: polyfill
+  }, {
+    hasOwn: function hasOwn() {
+      return Object.hasOwn !== polyfill;
+    }
+  });
+  return polyfill;
+};
+
+/***/ }),
+
+/***/ "./node_modules/safe-regex-test/index.js":
+/*!***********************************************!*\
+  !*** ./node_modules/safe-regex-test/index.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var callBound = __webpack_require__(/*! call-bound */ "./node_modules/call-bound/index.js");
+var isRegex = __webpack_require__(/*! is-regex */ "./node_modules/is-regex/index.js");
+var $exec = callBound('RegExp.prototype.exec');
+var $TypeError = __webpack_require__(/*! es-errors/type */ "./node_modules/es-errors/type.js");
+
+/** @type {import('.')} */
+module.exports = function regexTester(regex) {
+  if (!isRegex(regex)) {
+    throw new $TypeError('`regex` must be a RegExp');
+  }
+  return function test(s) {
+    return $exec(regex, s) !== null;
+  };
+};
+
+/***/ }),
+
+/***/ "./node_modules/webpack/buildin/global.js":
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+var g;
+
+// This works in non-strict mode
+g = function () {
+  return this;
+}();
+try {
+  // This works if eval is allowed (see CSP)
+  g = g || new Function("return this")();
+} catch (e) {
+  // This works if the window reference is available
+  if ((typeof window === "undefined" ? "undefined" : _typeof(window)) === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+/***/ }),
+
 /***/ "./src/darkmode.js":
 /*!*************************!*\
   !*** ./src/darkmode.js ***!
@@ -10160,11 +13132,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mixColors", function() { return mixColors; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getColorPerceivedBrightness", function() { return getColorPerceivedBrightness; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "adjustBrightnessTo", function() { return adjustBrightnessTo; });
-/* harmony import */ var color__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! color */ "./node_modules/color/index.js");
-/* harmony import */ var color_name__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! color-name */ "./node_modules/color-name/index.js");
-/* harmony import */ var color_blend__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! color-blend */ "./node_modules/color-blend/dist/index.modern.js");
-/* harmony import */ var colorjs_io__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! colorjs.io */ "./node_modules/colorjs.io/dist/color.js");
-/* harmony import */ var _constant__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./constant */ "./src/modules/constant.js");
+/* harmony import */ var object_hasown_auto__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! object.hasown/auto */ "./node_modules/object.hasown/auto.js");
+/* harmony import */ var object_hasown_auto__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(object_hasown_auto__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var color__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! color */ "./node_modules/color/index.js");
+/* harmony import */ var color_name__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! color-name */ "./node_modules/color-name/index.js");
+/* harmony import */ var color_blend__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! color-blend */ "./node_modules/color-blend/dist/index.modern.js");
+/* harmony import */ var colorjs_io__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! colorjs.io */ "./node_modules/colorjs.io/dist/color.js");
+/* harmony import */ var _constant__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./constant */ "./src/modules/constant.js");
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
@@ -10205,9 +13179,10 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 
 
+
 // 常量
 
-var COLOR_NAME = _objectSpread(_objectSpread({}, color_name__WEBPACK_IMPORTED_MODULE_1__["default"]), {}, {
+var COLOR_NAME = _objectSpread(_objectSpread({}, color_name__WEBPACK_IMPORTED_MODULE_2__["default"]), {}, {
   windowtext: [0, 0, 0],
   // 补上这个colorName
   transparent: [255, 255, 255, 0] // 支持透明，暂定用白色透明度0来表示
@@ -10236,10 +13211,10 @@ var colorBlend2Color = function colorBlend2Color(colorBlend) {
 var ColorParser = function ColorParser(color) {
   var res = null;
   try {
-    res = color instanceof color__WEBPACK_IMPORTED_MODULE_0__["default"] ? color : Object(color__WEBPACK_IMPORTED_MODULE_0__["default"])(color);
+    res = color instanceof color__WEBPACK_IMPORTED_MODULE_1__["default"] ? color : Object(color__WEBPACK_IMPORTED_MODULE_1__["default"])(color);
   } catch (e) {
     try {
-      res = ColorParser(new colorjs_io__WEBPACK_IMPORTED_MODULE_3__["default"](color).to('srgb').toString()); // 对于lch、oklch、lab、oklab、color等色值尝试使用colorjs.io来解析，然后再转成Color对象
+      res = ColorParser(new colorjs_io__WEBPACK_IMPORTED_MODULE_4__["default"](color).to('srgb').toString()); // 对于lch、oklch、lab、oklab、color等色值尝试使用colorjs.io来解析，然后再转成Color对象
     } catch (e) {
       console.log("ignore the invalid color: `".concat(color, "`"));
     }
@@ -10249,7 +13224,7 @@ var ColorParser = function ColorParser(color) {
 
 // 处理颜色，包括清除!important和转换英文定义颜色
 var parseColorName = function parseColorName(color, supportTransparent) {
-  return color.replace(_constant__WEBPACK_IMPORTED_MODULE_4__["IMPORTANT_REGEXP"], '').replace(COLOR_NAME_REG, function (match) {
+  return color.replace(_constant__WEBPACK_IMPORTED_MODULE_5__["IMPORTANT_REGEXP"], '').replace(COLOR_NAME_REG, function (match) {
     if (!supportTransparent && match === 'transparent') return match; // 如果不支持转换transparent，直接返回transparent
 
     var color = COLOR_NAME[match.toLowerCase()];
@@ -10260,7 +13235,7 @@ var parseColorName = function parseColorName(color, supportTransparent) {
 // 处理-webkit-fill-color和-webkit-text-stroke-color，返回处理后的色值，无则返回空字符串
 var parseWebkitFillColorAndStrokeColor = function parseWebkitFillColorAndStrokeColor(color) {
   var newValue = parseColorName(color);
-  return _constant__WEBPACK_IMPORTED_MODULE_4__["COLOR_REGEXP"].test(newValue) ? newValue : '';
+  return _constant__WEBPACK_IMPORTED_MODULE_5__["COLOR_REGEXP"].test(newValue) ? newValue : '';
 };
 
 // 计算混合颜色
@@ -10280,7 +13255,7 @@ var mixColors = function mixColors(colors) {
       color1 = ColorParser(colors.shift());
     } else if (color1 && color2) {
       // 如果两个色值都合法，执行mix
-      color1 = type === 'mix' ? color1.mix(color2, color2.alpha()) : colorBlend2Color(color_blend__WEBPACK_IMPORTED_MODULE_2__[type](color2ColorBlend(color1), color2ColorBlend(color2)));
+      color1 = type === 'mix' ? color1.mix(color2, color2.alpha()) : colorBlend2Color(color_blend__WEBPACK_IMPORTED_MODULE_3__[type](color2ColorBlend(color1), color2ColorBlend(color2)));
     } // 如果当前色值合法，混入色值非法，无需处理
 
     if (colors.length === 0) break;
@@ -10307,7 +13282,7 @@ var adjustBrightnessTo = function adjustBrightnessTo(target, rgb) {
   } else if (newTextB === 0 || newTextG === 255) {
     newTextB = (target * 1000 - newTextR * 299 - newTextG * 587) / 114;
   }
-  return color__WEBPACK_IMPORTED_MODULE_0__["default"].rgb(newTextR, newTextG, newTextB);
+  return color__WEBPACK_IMPORTED_MODULE_1__["default"].rgb(newTextR, newTextG, newTextB);
 };
 
 /***/ }),
@@ -11966,6 +14941,17 @@ var TextNodeQueue = /*#__PURE__*/function () {
 }();
 
 ;
+
+/***/ }),
+
+/***/ 0:
+/*!********************************!*\
+  !*** ./util.inspect (ignored) ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/* (ignored) */
 
 /***/ })
 
