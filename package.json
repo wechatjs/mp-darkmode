@@ -1,6 +1,6 @@
 {
   "name": "mp-darkmode",
-  "version": "1.2.3-alpha.0",
+  "version": "1.2.3-alpha.1",
   "engines": {
     "node": ">=23.11.0"
   },
@@ -29,7 +29,6 @@
     "webpack-merge": "^6.0.1"
   },
   "scripts": {
-    "preinstall": "npx check-fe-env",
     "predev": "npx check-fe-env",
     "dev": "webpack --config build/dev.config.js --watch",
     "prebuild": "npx check-fe-env",

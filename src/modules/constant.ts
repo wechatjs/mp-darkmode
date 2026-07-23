@@ -121,5 +121,4 @@ export enum PLUGIN_PAGE_STYLE_ATTR { // 插件页面样式属性
 export enum VALIDATE_IGNORE_RULES { // 校验忽略规则
   LOW_CONTRAST = 'low-contrast', // 忽略低对比度
   TEXT_BG_GRADIENT = 'text-bg-gradient', // 忽略文字背景渐变
-  WHITELIST = 'whitelist', // 忽略白名单属性
 };

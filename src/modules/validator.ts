@@ -67,7 +67,7 @@ export function validate(container: HTMLElement, opt: ValidateOption, filter?: V
         });
       }
 
-      if (!ignoreRules.includes(VALIDATE_IGNORE_RULES.WHITELIST) && config.whitelist.attribute.some(attribute => currentNode.hasAttribute(attribute))) {
+      if (config.whitelist.attribute.some(attribute => currentNode.hasAttribute(attribute))) {
         cases.push({
           dom: currentNode,
           key: 'darkmode-whitelist',

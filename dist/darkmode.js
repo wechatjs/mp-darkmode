@@ -2841,9 +2841,7 @@ let VALIDATE_IGNORE_RULES = /*#__PURE__*/function (VALIDATE_IGNORE_RULES) {
   // 校验忽略规则
   VALIDATE_IGNORE_RULES["LOW_CONTRAST"] = "low-contrast";
   // 忽略低对比度
-  VALIDATE_IGNORE_RULES["TEXT_BG_GRADIENT"] = "text-bg-gradient";
-  // 忽略文字背景渐变
-  VALIDATE_IGNORE_RULES["WHITELIST"] = "whitelist"; // 忽略白名单属性
+  VALIDATE_IGNORE_RULES["TEXT_BG_GRADIENT"] = "text-bg-gradient"; // 忽略文字背景渐变
   return VALIDATE_IGNORE_RULES;
 }({});
 ;
@@ -4284,7 +4282,7 @@ function validate(container, opt, filter) {
           violateRules: '文字背景尽量不要使用渐变（参考文档#1.2如非必要，文字背景尽量不要使用渐变）'
         });
       }
-      if (!ignoreRules.includes(_constant__WEBPACK_IMPORTED_MODULE_0__.VALIDATE_IGNORE_RULES.WHITELIST) && _config__WEBPACK_IMPORTED_MODULE_1__["default"].whitelist.attribute.some(attribute => currentNode.hasAttribute(attribute))) {
+      if (_config__WEBPACK_IMPORTED_MODULE_1__["default"].whitelist.attribute.some(attribute => currentNode.hasAttribute(attribute))) {
         cases.push({
           dom: currentNode,
           key: 'darkmode-whitelist',
