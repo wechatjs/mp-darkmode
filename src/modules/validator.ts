@@ -21,7 +21,9 @@ import {
   BGCOLORATTR,
   BGGRADIENT_MIXCOLORATTR,
 
-  URL_REGEXP
+  URL_REGEXP,
+
+  VALIDATE_IGNORE_RULES
 } from './constant';
 
 // Darkmode配置
@@ -44,7 +46,9 @@ export function validate(container: HTMLElement, opt: ValidateOption, filter?: V
   while (treeWalker.nextNode()) {
     const currentNode = treeWalker.currentNode;
     if (currentNode instanceof HTMLElement) {
-      if (Array.prototype.some.call(currentNode.childNodes, child => child.nodeType === 3 && child.nodeValue.replace(/\s/g, '').length)) { // 有文本内容，校验对比度
+      const ignoreRules = (currentNode.dataset.ignoreDm || '').split(/\s+/);
+
+      if (!ignoreRules.includes(VALIDATE_IGNORE_RULES.LOW_CONTRAST) && Array.prototype.some.call(currentNode.childNodes, child => child.nodeType === 3 && child.nodeValue.replace(/\s/g, '').length)) { // 有文本内容，校验对比度
         const contrast = sdk.getContrast((currentNode as any)[COLORATTR] || config.defaultDarkTextColor, (currentNode as any)[BGCOLORATTR] || config.defaultDarkBgColor);
         if (contrast < (opt.minContrast || 1.5)) {
           cases.push({
@@ -55,7 +59,7 @@ export function validate(container: HTMLElement, opt: ValidateOption, filter?: V
         }
       }
 
-      if ((currentNode as any)[BGGRADIENT_MIXCOLORATTR]) {
+      if (!ignoreRules.includes(VALIDATE_IGNORE_RULES.TEXT_BG_GRADIENT) && (currentNode as any)[BGGRADIENT_MIXCOLORATTR]) {
         cases.push({
           dom: currentNode,
           key: 'darkmode-no-gradient',
@@ -63,7 +67,7 @@ export function validate(container: HTMLElement, opt: ValidateOption, filter?: V
         });
       }
 
-      if (config.whitelist.attribute.some(attribute => currentNode.hasAttribute(attribute))) {
+      if (!ignoreRules.includes(VALIDATE_IGNORE_RULES.WHITELIST) && config.whitelist.attribute.some(attribute => currentNode.hasAttribute(attribute))) {
         cases.push({
           dom: currentNode,
           key: 'darkmode-whitelist',

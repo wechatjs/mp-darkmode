@@ -116,4 +116,10 @@ export enum PLUGIN_PAGE_STYLE_ATTR { // 插件页面样式属性
   OTHER_PAGE_STYLE = 'otherPageStyle', // 非首屏样式
   FIRST_PAGE_STYLE_NO_MQ = 'firstPageStyleNoMQ', // 首屏样式（不需要加媒体查询）
   OTHER_PAGE_STYLE_NO_MQ = 'otherPageStyleNoMQ', // 非首屏样式（不需要加媒体查询）
-}
+};
+
+export enum VALIDATE_IGNORE_RULES { // 校验忽略规则
+  LOW_CONTRAST = 'low-contrast', // 忽略低对比度
+  TEXT_BG_GRADIENT = 'text-bg-gradient', // 忽略文字背景渐变
+  WHITELIST = 'whitelist', // 忽略白名单属性
+};

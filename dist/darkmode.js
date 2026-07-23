@@ -2755,6 +2755,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   STYLE_ID: () => (/* binding */ STYLE_ID),
 /* harmony export */   TABLE_NAME: () => (/* binding */ TABLE_NAME),
 /* harmony export */   URL_REGEXP: () => (/* binding */ URL_REGEXP),
+/* harmony export */   VALIDATE_IGNORE_RULES: () => (/* binding */ VALIDATE_IGNORE_RULES),
 /* harmony export */   WHITE_LIKE_COLOR_BRIGHTNESS: () => (/* binding */ WHITE_LIKE_COLOR_BRIGHTNESS)
 /* harmony export */ });
 /**
@@ -2835,6 +2836,17 @@ let PLUGIN_PAGE_STYLE_ATTR = /*#__PURE__*/function (PLUGIN_PAGE_STYLE_ATTR) {
   PLUGIN_PAGE_STYLE_ATTR["OTHER_PAGE_STYLE_NO_MQ"] = "otherPageStyleNoMQ"; // 非首屏样式（不需要加媒体查询）
   return PLUGIN_PAGE_STYLE_ATTR;
 }({});
+;
+let VALIDATE_IGNORE_RULES = /*#__PURE__*/function (VALIDATE_IGNORE_RULES) {
+  // 校验忽略规则
+  VALIDATE_IGNORE_RULES["LOW_CONTRAST"] = "low-contrast";
+  // 忽略低对比度
+  VALIDATE_IGNORE_RULES["TEXT_BG_GRADIENT"] = "text-bg-gradient";
+  // 忽略文字背景渐变
+  VALIDATE_IGNORE_RULES["WHITELIST"] = "whitelist"; // 忽略白名单属性
+  return VALIDATE_IGNORE_RULES;
+}({});
+;
 
 /***/ },
 
@@ -4253,7 +4265,8 @@ function validate(container, opt, filter) {
   while (treeWalker.nextNode()) {
     const currentNode = treeWalker.currentNode;
     if (currentNode instanceof HTMLElement) {
-      if (Array.prototype.some.call(currentNode.childNodes, child => child.nodeType === 3 && child.nodeValue.replace(/\s/g, '').length)) {
+      const ignoreRules = (currentNode.dataset.ignoreDm || '').split(/\s+/);
+      if (!ignoreRules.includes(_constant__WEBPACK_IMPORTED_MODULE_0__.VALIDATE_IGNORE_RULES.LOW_CONTRAST) && Array.prototype.some.call(currentNode.childNodes, child => child.nodeType === 3 && child.nodeValue.replace(/\s/g, '').length)) {
         // 有文本内容，校验对比度
         const contrast = _global__WEBPACK_IMPORTED_MODULE_2__.sdk.getContrast(currentNode[_constant__WEBPACK_IMPORTED_MODULE_0__.COLORATTR] || _config__WEBPACK_IMPORTED_MODULE_1__["default"].defaultDarkTextColor, currentNode[_constant__WEBPACK_IMPORTED_MODULE_0__.BGCOLORATTR] || _config__WEBPACK_IMPORTED_MODULE_1__["default"].defaultDarkBgColor);
         if (contrast < (opt.minContrast || 1.5)) {
@@ -4264,14 +4277,14 @@ function validate(container, opt, filter) {
           });
         }
       }
-      if (currentNode[_constant__WEBPACK_IMPORTED_MODULE_0__.BGGRADIENT_MIXCOLORATTR]) {
+      if (!ignoreRules.includes(_constant__WEBPACK_IMPORTED_MODULE_0__.VALIDATE_IGNORE_RULES.TEXT_BG_GRADIENT) && currentNode[_constant__WEBPACK_IMPORTED_MODULE_0__.BGGRADIENT_MIXCOLORATTR]) {
         cases.push({
           dom: currentNode,
           key: 'darkmode-no-gradient',
           violateRules: '文字背景尽量不要使用渐变（参考文档#1.2如非必要，文字背景尽量不要使用渐变）'
         });
       }
-      if (_config__WEBPACK_IMPORTED_MODULE_1__["default"].whitelist.attribute.some(attribute => currentNode.hasAttribute(attribute))) {
+      if (!ignoreRules.includes(_constant__WEBPACK_IMPORTED_MODULE_0__.VALIDATE_IGNORE_RULES.WHITELIST) && _config__WEBPACK_IMPORTED_MODULE_1__["default"].whitelist.attribute.some(attribute => currentNode.hasAttribute(attribute))) {
         cases.push({
           dom: currentNode,
           key: 'darkmode-whitelist',
