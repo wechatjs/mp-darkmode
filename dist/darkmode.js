@@ -4250,7 +4250,7 @@ __webpack_require__.r(__webpack_exports__);
 // Darkmode配置
 
 
-function validate(container, opt, filter) {
+function validate(container, opt = {}, filter) {
   const treeWalker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, node => {
     if (!(node instanceof HTMLElement)) return NodeFilter.FILTER_REJECT; // 忽略非元素节点
     if (node.style.display === 'none') return NodeFilter.FILTER_REJECT; // 忽略不可见节点以及其所有子节点
@@ -4271,7 +4271,7 @@ function validate(container, opt, filter) {
           cases.push({
             dom: currentNode,
             key: 'darkmode-low-contrast',
-            violateRules: '文字与背景色对比度太低（参考文档#1.1使用对比度适中的颜色）'
+            violateRules: '文字与背景色对比度太低（参考文档#4.1.1使用对比度适中的颜色）'
           });
         }
       }
@@ -4279,14 +4279,14 @@ function validate(container, opt, filter) {
         cases.push({
           dom: currentNode,
           key: 'darkmode-no-gradient',
-          violateRules: '文字背景尽量不要使用渐变（参考文档#1.2如非必要，文字背景尽量不要使用渐变）'
+          violateRules: '文字背景尽量不要使用渐变（参考文档#4.1.2如非必要，文字背景尽量不要使用渐变）'
         });
       }
       if (_config__WEBPACK_IMPORTED_MODULE_1__["default"].whitelist.attribute.some(attribute => currentNode.hasAttribute(attribute))) {
         cases.push({
           dom: currentNode,
           key: 'darkmode-whitelist',
-          violateRules: '注意，此处包含白名单属性，会跳过darkmode算法转换（参考文档#5.1 指定节点跳过算法转换）'
+          violateRules: '注意，此处包含白名单属性，会跳过darkmode算法转换（参考文档#4.5.1 指定节点跳过算法转换）'
         });
       }
     }
