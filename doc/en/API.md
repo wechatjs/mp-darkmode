@@ -18,7 +18,7 @@ API
     - `options.whitelist.attribute` &lt;string Array&gt; The whitelist for attributes.
   - `options.needJudgeFirstPage` &lt;boolean&gt; Whether to judge the first screen. Default `true`.
   - `options.delayBgJudge` &lt;boolean&gt; Whether to delay background judgment. Default `false`.
-  - `options.noEmit` &lt;boolean&gt; Whether to generate &lt;style&gt;. Default `false`.
+  - `options.noEmit` &lt;boolean&gt; Whether to don't generate &lt;style&gt;. Default `false`.
   - `options.container` &lt;HTMLElement&gt; The container to use when delaying running js. Default `null`.
   - `options.cssSelectorsPrefix` &lt;string&gt; Css selector prefix. Default `''`.
   - `opt.defaultLightWebviewColor` &lt;string&gt; Webview color in Light Mode. Default `#fff`.
