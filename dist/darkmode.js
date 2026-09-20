@@ -2268,6 +2268,9 @@ let PLUGIN_HOOK = /*#__PURE__*/function (PLUGIN_HOOK) {
   PLUGIN_HOOK["BEFORE_CONVERT_NODE_BY_UPDATE_STYLE"] = "beforeConvertNodeByUpdateStyle";
   PLUGIN_HOOK["AFTER_CONVERT_TEXT_COLOR_BY_UPDATE_STYLE"] = "afterConvertTextColorByUpdateStyle";
   PLUGIN_HOOK["AFTER_CONVERT_NODE_BY_UPDATE_STYLE"] = "afterConvertNodeByUpdateStyle";
+  PLUGIN_HOOK["BEFORE_CONVERT_NODE_BY_RESET"] = "beforeConvertNodeByReset";
+  PLUGIN_HOOK["AFTER_CONVERT_TEXT_COLOR_BY_RESET"] = "afterConvertTextColorByReset";
+  PLUGIN_HOOK["AFTER_CONVERT_NODE_BY_RESET"] = "afterConvertNodeByReset";
   return PLUGIN_HOOK;
 }({});
 class PluginAbstract extends PluginBaseAbstract {}

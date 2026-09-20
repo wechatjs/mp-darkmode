@@ -41,6 +41,9 @@ export enum PLUGIN_HOOK { // 插件钩子
   BEFORE_CONVERT_NODE_BY_UPDATE_STYLE = 'beforeConvertNodeByUpdateStyle',
   AFTER_CONVERT_TEXT_COLOR_BY_UPDATE_STYLE = 'afterConvertTextColorByUpdateStyle',
   AFTER_CONVERT_NODE_BY_UPDATE_STYLE = 'afterConvertNodeByUpdateStyle',
+  BEFORE_CONVERT_NODE_BY_RESET = 'beforeConvertNodeByReset',
+  AFTER_CONVERT_TEXT_COLOR_BY_RESET = 'afterConvertTextColorByReset',
+  AFTER_CONVERT_NODE_BY_RESET = 'afterConvertNodeByReset',
 }
 
 export abstract class PluginAbstract extends PluginBaseAbstract {
