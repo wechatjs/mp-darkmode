@@ -9,9 +9,11 @@
   "main": "dist/darkmode.min.js",
   "types": "dist/darkmode.d.ts",
   "dependencies": {
-    "color": "^3.2.1",
+    "color": "^5.0.3",
     "color-blend": "^4.0.0",
-    "color-name": "^1.1.4"
+    "color-name": "^2.1.0",
+    "colorjs.io": "^0.6.1",
+    "object.hasown": "^1.1.4"
   },
   "devDependencies": {
     "@babel/core": "^7.28.5",

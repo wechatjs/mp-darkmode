@@ -22,9 +22,6 @@
  * @param {HTMLElement[]} els 要更新的节点对象列表
  * @return void
  *
- * @method clear 清空堆栈
- * @return void
-*
  * @method reset 重置
  * @return void
  *
@@ -36,6 +33,7 @@ import config from './config';
 type Callback = (item: StackItem) => void;
 
 interface StackItem {
+  elOld: HTMLElement;
   el: HTMLElement;
   className: string;
   cssKV: string;
@@ -61,6 +59,7 @@ export default class BgNodeStack {
     const className = `${this._prefix}${this._idx++}`;
     el.classList.add(className);
     this._stack.unshift({
+      elOld: el,
       el,
       className,
       cssKV,
@@ -93,12 +92,7 @@ export default class BgNodeStack {
     while (idxStack.length) {
       const idx = idxStack.shift();
       if (idx === undefined) continue;
-      let item = null;
-      if (config.delayBgJudge) { // 延迟背景判断时，先保留背景节点
-        item = this._stack[idx];
-      } else {
-        item = this._stack.splice(idx, 1)[0];
-      }
+      const item = this._stack.splice(idx, 1)[0];
       callback(item);
     }
   }
@@ -119,14 +113,9 @@ export default class BgNodeStack {
     });
   }
 
-  // 清空堆栈
-  clear() {
-    this._stack = [];
-  }
-
   // 重置
   reset() {
-    this.clear();
+    this._stack = [];
     this._idx = 0;
   }
 };

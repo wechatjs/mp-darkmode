@@ -40,6 +40,10 @@
  *
  */
 
+// Object.hasOwn polyfill：color-string / colorjs.io 等依赖在模块初始化时即调用 Object.hasOwn，
+// 而该 API 在 iOS 15.4 以下不支持，因此必须作为最顶部、最先执行的 import
+import 'object.hasown/auto';
+
 import type {
   ConfigOption,
   ValidateOption,
@@ -145,28 +149,31 @@ const switchToDarkmode = (mqlObj: MediaQueryList | null, opt: SwitchToDarkmodeOp
         cssUtils.addCss(cssUtils.genCss(bg.className, bg.cssKV)); // 写入非首屏样式
         typeof bg.cb === 'function' && bg.cb(bg);
 
-        // 还得处理该背景下的所有节点
-        const { el } = bg;
-        const inheritAttrs = [
-          [COLORATTR, (el as any)[COLORATTR] ?? null],
-          [BGCOLORATTR, (el as any)[BGCOLORATTR] ?? null],
-          [ORIGINAL_COLORATTR, (el as any)[ORIGINAL_COLORATTR] ?? null],
-          [ORIGINAL_BGCOLORATTR, (el as any)[ORIGINAL_BGCOLORATTR] ?? null],
-          [BGIMAGEATTR, (el as any)[BGIMAGEATTR] ?? null],
-          [COMPLEMENTARY_BGIMAGECOLORATTR, (el as any)[COMPLEMENTARY_BGIMAGECOLORATTR] ?? null],
-        ];
-        const children = getChildrenAndIt(el, true);
-        children.forEach(child => { // 重置继承属性
-          inheritAttrs.forEach(([attr, value]) => {
-            if (value === null) {
-              delete (child as any)[attr];
-            } else {
-              (child as any)[attr] = value;
-            }
+        // 还得处理该背景下的所有新老节点
+        const els = [bg.elOld];
+        bg.elOld !== bg.el && els.push(bg.el);
+        els.forEach(el => {
+          const inheritAttrs = [
+            [COLORATTR, (el as any)[COLORATTR] ?? null],
+            [BGCOLORATTR, (el as any)[BGCOLORATTR] ?? null],
+            [ORIGINAL_COLORATTR, (el as any)[ORIGINAL_COLORATTR] ?? null],
+            [ORIGINAL_BGCOLORATTR, (el as any)[ORIGINAL_BGCOLORATTR] ?? null],
+            [BGIMAGEATTR, (el as any)[BGIMAGEATTR] ?? null],
+            [COMPLEMENTARY_BGIMAGECOLORATTR, (el as any)[COMPLEMENTARY_BGIMAGECOLORATTR] ?? null],
+          ];
+          const children = getChildrenAndIt(el, true);
+          children.forEach(child => { // 重置继承属性
+            inheritAttrs.forEach(([attr, value]) => {
+              if (value === null) {
+                delete (child as any)[attr];
+              } else {
+                (child as any)[attr] = value;
+              }
+            });
           });
-        });
-        children.forEach(child => { // 重新运行Dark Mode处理逻辑
-          cssUtils.addCss(sdk.convert(child, undefined, false, true));
+          children.forEach(child => { // 重新运行Dark Mode处理逻辑
+            cssUtils.addCss(sdk.convert(child, undefined, false, true));
+          });
         });
       }));
     }
@@ -266,9 +273,6 @@ export function convertBg(nodes: HTMLElement[]) {
     force: true,
     type: 'bg'
   });
-
-  // 如果延迟背景判断且文字队列为空，则清空背景堆栈
-  config.delayBgJudge && tnQueue.length === 0 && bgStack.clear();
 };
 
 // 更新节点Dark Mode样式

@@ -27,9 +27,10 @@
 import { PLUGIN_HOOK } from '../darkmode.d';
 
 // 颜色操作相关API
-import * as Color from 'color';
+import Color from 'color';
 import {
   type RGBAArray,
+  type ColorInstance,
   type ColorParam,
   ColorParser,
   parseColorName,
@@ -99,11 +100,11 @@ interface ConvertOptions {
   isTextColor?: boolean;
   isBorderColor?: boolean;
   hasInlineColor?: boolean;
-  parentElementBgColor?: Color | null;
+  parentElementBgColor?: ColorInstance | null;
 }
 
 interface AdjustBrightnessRet {
-  newColor: Color | null;
+  newColor: ColorInstance | null;
   extStyle: string;
 }
 
@@ -131,7 +132,7 @@ export default class SDK {
   constructor() {}
 
   // 调整明度
-  _adjustBrightness(color: Color, el: HTMLElement, options: ConvertOptions, isUpdate: boolean = false, needReset: boolean = false): AdjustBrightnessRet {
+  _adjustBrightness(color: ColorInstance, el: HTMLElement, options: ConvertOptions, isUpdate: boolean = false, needReset: boolean = false): AdjustBrightnessRet {
     // 背景：
     // 处理原则：白背景改黑，其他高感知亮度背景调暗，低亮度适当提高亮度（感知亮度：https://www.w3.org/TR/AERT/#color-contrast）
     // 处理方法：
@@ -146,7 +147,7 @@ export default class SDK {
     // 字体阴影
     // 处理方法：按照背景的处理方法来处理
 
-    let newColor: Color | null = null;
+    let newColor: ColorInstance | null = null;
     let extStyle = '';
 
     if (options.isBgColor) { // 背景色
@@ -192,11 +193,7 @@ export default class SDK {
             hasInlineColor: true,
             parentElementBgColor,
           }, isUpdate, needReset);
-          if (ret.newColor) {
-            extStyle += cssUtils.genCssKV('color', ret.newColor.toString());
-          } else {
-            extStyle += cssUtils.genCssKV('color', parentTextColor.toString());
-          }
+          extStyle += cssUtils.genCssKV('color', (ret.newColor || parentTextColor).toString());
 
           // 对文字颜色做继承传递，用于文字亮度计算
           getChildrenAndIt(el).forEach(dom => {
@@ -240,7 +237,7 @@ export default class SDK {
   }
 
   // 调整文本明度
-  _adjustTextBrightness(textColor: Color, bgColor: Color, opt?: AdjustTextBrightnessOptions): Color | null {
+  _adjustTextBrightness(textColor: ColorInstance, bgColor: ColorInstance, opt?: AdjustTextBrightnessOptions): ColorInstance | null {
     const textColorAlpha = opt?.alpha || textColor.alpha();
     const textColorMix = opt ? textColor : mixColors([bgColor, textColor]);
     if (textColorMix === null) return null;
@@ -295,7 +292,7 @@ export default class SDK {
   }
 
   // 调整背景明度
-  _adjustBackgroundBrightness(bgColor: Color, bgColorMix: Color): Color | null {
+  _adjustBackgroundBrightness(bgColor: ColorInstance, bgColorMix: ColorInstance): ColorInstance | null {
     const mixColor = mixColors([bgColorMix, bgColor]);
     if (mixColor === null) return null;
 
@@ -319,7 +316,7 @@ export default class SDK {
   }
 
   // 叠加渐变色到背景色中，并更新背景色相关属性值以及文本颜色
-  _updateBgWithGradient(gradientColor: Color, el: HTMLElement, className: string, cssKVList: CssKV[], isUpdate: boolean = false, needReset: boolean = false) {
+  _updateBgWithGradient(gradientColor: ColorInstance, el: HTMLElement, className: string, cssKVList: CssKV[], isUpdate: boolean = false, needReset: boolean = false) {
     const newBgColor = mixColors([(el as any)[BGCOLORATTR] || config.defaultDarkBgColor, gradientColor]);
     const newOriginalBgColor = mixColors([(el as any)[ORIGINAL_BGCOLORATTR] || config.defaultLightBgColor, gradientColor]);
     getChildrenAndIt(el).forEach(dom => {
@@ -558,7 +555,7 @@ export default class SDK {
         const isGradient = /gradient/.test(value);
         const gradientColors = [];
         let extStyle = '';
-        let gradientMixColor: Color | null = null;
+        let gradientMixColor: ColorInstance | null = null;
 
         // 将英文定义颜色转换为rgb格式
         value = parseColorName(value, isGradient); // 渐变需要处理透明
@@ -577,7 +574,7 @@ export default class SDK {
           }
           let replaceIndex = 0;
           value = value.replace(COLOR_REGEXP_GLOBAL, match => {
-            let matchColor: Color | null = null;
+            let matchColor: ColorInstance | null = null;
 
             // 渐变色统一改成mix纯色
             if (isGradient) {
@@ -664,9 +661,13 @@ export default class SDK {
                       (dom as any)[COMPLEMENTARY_BGIMAGECOLORATTR] = imgBgColor;
                     });
                   } else { // 否则背景图入栈
-                    bgStack.push(el, tmpCssKvStr, () => {
-                      getChildrenAndIt(el).forEach(dom => {
-                        (dom as any)[COMPLEMENTARY_BGIMAGECOLORATTR] = imgBgColor;
+                    bgStack.push(el, tmpCssKvStr, bgStackItem => {
+                      const els = [bgStackItem.elOld];
+                      bgStackItem.el !== bgStackItem.elOld && els.push(bgStackItem.el);
+                      els.forEach(bgEl => { // 新老节点都要处理
+                        getChildrenAndIt(bgEl).forEach(dom => {
+                          (dom as any)[COMPLEMENTARY_BGIMAGECOLORATTR] = imgBgColor;
+                        });
                       });
                     });
                   }

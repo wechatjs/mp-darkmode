@@ -15,7 +15,7 @@ module.exports = {
   module: {
     rules: [{
       test: /\.ts$/,
-      exclude: /node_modules/,
+      exclude: file => /node_modules/.test(file) && !/node_modules\/color[^/]*\//.test(file),
       use: {
         loader: 'babel-loader',
         options: {
