@@ -164,7 +164,7 @@ export const setStyle: SetStyle = (node, styles) => {
 }
 
 const filterClass = (node: HTMLElement, className: string) => {
-  return node.className.split(/\s+/).filter(cls => cls !== className).join(' ');
+  return node.className.split(/\s+/).filter(cls => cls !== className);
 }
 
 export const setClass: SetClass = (node, className) => {
@@ -179,7 +179,9 @@ export const addClass: SetClass = (node, className) => {
   if (config.setClass === null) {
     node.classList.add(className);
   } else {
-    config.setClass(node, `${filterClass(node, className)} ${className}`);
+    const clsArr = filterClass(node, className);
+    clsArr.push(className);
+    config.setClass(node, clsArr.join(' '));
   }
 }
 
@@ -187,7 +189,7 @@ export const removeClass: SetClass = (node, className) => {
   if (config.setClass === null) {
     node.classList.remove(className);
   } else {
-    config.setClass(node, filterClass(node, className));
+    config.setClass(node, filterClass(node, className).join(' '));
   }
 }
 

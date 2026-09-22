@@ -13785,7 +13785,7 @@ const setStyle = (node, styles) => {
   }
 };
 const filterClass = (node, className) => {
-  return node.className.split(/\s+/).filter(cls => cls !== className).join(' ');
+  return node.className.split(/\s+/).filter(cls => cls !== className);
 };
 const setClass = (node, className) => {
   if (config.setClass === null) {
@@ -13798,14 +13798,16 @@ const addClass = (node, className) => {
   if (config.setClass === null) {
     node.classList.add(className);
   } else {
-    config.setClass(node, `${filterClass(node, className)} ${className}`);
+    const clsArr = filterClass(node, className);
+    clsArr.push(className);
+    config.setClass(node, clsArr.join(' '));
   }
 };
 const removeClass = (node, className) => {
   if (config.setClass === null) {
     node.classList.remove(className);
   } else {
-    config.setClass(node, filterClass(node, className));
+    config.setClass(node, filterClass(node, className).join(' '));
   }
 };
 const setAttr = (node, attr, value) => {
