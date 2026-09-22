@@ -27,7 +27,7 @@ import {
 } from './constant';
 
 // Darkmode配置
-import config from './config';
+import config, { getAttr } from './config';
 
 import {
   sdk
@@ -49,7 +49,7 @@ export function validate(container: HTMLElement, opt: ValidateOption = {}, filte
       const ignoreRules = (currentNode.dataset.ignoreDm || '').split(/\s+/);
 
       if (!ignoreRules.includes(VALIDATE_IGNORE_RULES.LOW_CONTRAST) && Array.prototype.some.call(currentNode.childNodes, child => child.nodeType === 3 && child.nodeValue.replace(/\s/g, '').length)) { // 有文本内容，校验对比度
-        const contrast = sdk.getContrast((currentNode as any)[COLORATTR] || config.defaultDarkTextColor, (currentNode as any)[BGCOLORATTR] || config.defaultDarkBgColor);
+        const contrast = sdk.getContrast(getAttr(currentNode, COLORATTR) || config.defaultDarkTextColor, getAttr(currentNode, BGCOLORATTR) || config.defaultDarkBgColor);
         if (contrast < (opt.minContrast || 1.5)) {
           cases.push({
             dom: currentNode,
@@ -59,7 +59,7 @@ export function validate(container: HTMLElement, opt: ValidateOption = {}, filte
         }
       }
 
-      if (!ignoreRules.includes(VALIDATE_IGNORE_RULES.TEXT_BG_GRADIENT) && (currentNode as any)[BGGRADIENT_MIXCOLORATTR]) {
+      if (!ignoreRules.includes(VALIDATE_IGNORE_RULES.TEXT_BG_GRADIENT) && getAttr(currentNode, BGGRADIENT_MIXCOLORATTR)) {
         cases.push({
           dom: currentNode,
           key: 'darkmode-no-gradient',

@@ -26,7 +26,7 @@
  */
 
 // Darkmode配置
-import config from './config';
+import config, { addClass } from './config';
 
 type Callback = (el: HTMLElement) => void;
 
@@ -53,7 +53,7 @@ export default class TextNodeQueue {
   // 文本节点入队
   push(el: HTMLElement) {
     const className = `${this._prefix}${this._idx++}`;
-    el.classList.add(className);
+    addClass(el, className);
     this._queue.push({
       el,
       className,

@@ -17,7 +17,7 @@
  */
 
 // Darkmode配置
-import config from './config';
+import config, { setStyle } from './config';
 
 import {
   sdk
@@ -43,7 +43,7 @@ export function hasTextNode(el: HTMLElement): boolean {
 // table的内部样式类对应的lm背景色
 const tableClassObj = {
   'ue-table-interlace-color-single': '#fcfcfc',
-  'ue-table-interlace-color-double': '#f7faff'
+  'ue-table-interlace-color-double': '#f7faff',
 };
 // 判断table相关元素有没有指定class
 export function hasTableClass(el: HTMLElement): string | null {
@@ -153,7 +153,12 @@ export class DomUtils {
 
   // 显示所有首屏节点
   showFirstPageNodes() {
-    this._firstPageEls.forEach(el => !el.style.visibility && (el.style.visibility = 'visible')); // 显示首屏节点
+    this._firstPageEls.forEach(el => {
+      // 显示首屏节点
+      !el.style.visibility && setStyle(el, {
+        visibility: 'visible',
+      });
+    });
     this.showFirstPage = true; // 记录为已显示首屏
   }
 

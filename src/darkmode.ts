@@ -71,7 +71,7 @@ import {
 const classReg = new RegExp(`${CLASS_PREFIX}[^ ]+`, 'g');
 
 // Darkmode配置
-import config from './modules/config';
+import config, { setClass, removeAttr, getAttr } from './modules/config';
 
 import {
   plugins, // 插件系统
@@ -114,7 +114,7 @@ const switchToDarkmode = (mqlObj: MediaQueryList | null, opt: SwitchToDarkmodeOp
 
       Array.prototype.forEach.call(domUtils.get(), node => {
         if (sdk.isDarkmode && node.className && typeof node.className === 'string') {
-          node.className = node.className.replace(classReg, ''); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
+          setClass(node, node.className.replace(classReg, '')); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
         }
 
         if (sdk.isDarkmode || plugins.length) {
@@ -154,12 +154,12 @@ const switchToDarkmode = (mqlObj: MediaQueryList | null, opt: SwitchToDarkmodeOp
         bg.elOld !== bg.el && els.push(bg.el);
         els.forEach(el => {
           const inheritAttrs = [
-            [COLORATTR, (el as any)[COLORATTR] ?? null],
-            [BGCOLORATTR, (el as any)[BGCOLORATTR] ?? null],
-            [ORIGINAL_COLORATTR, (el as any)[ORIGINAL_COLORATTR] ?? null],
-            [ORIGINAL_BGCOLORATTR, (el as any)[ORIGINAL_BGCOLORATTR] ?? null],
-            [BGIMAGEATTR, (el as any)[BGIMAGEATTR] ?? null],
-            [COMPLEMENTARY_BGIMAGECOLORATTR, (el as any)[COMPLEMENTARY_BGIMAGECOLORATTR] ?? null],
+            [COLORATTR, getAttr(el, COLORATTR) ?? null],
+            [BGCOLORATTR, getAttr(el, BGCOLORATTR) ?? null],
+            [ORIGINAL_COLORATTR, getAttr(el, ORIGINAL_COLORATTR) ?? null],
+            [ORIGINAL_BGCOLORATTR, getAttr(el, ORIGINAL_BGCOLORATTR) ?? null],
+            [BGIMAGEATTR, getAttr(el, BGIMAGEATTR) ?? null],
+            [COMPLEMENTARY_BGIMAGECOLORATTR, getAttr(el, COMPLEMENTARY_BGIMAGECOLORATTR) ?? null],
           ];
           const children = getChildrenAndIt(el, true);
           children.forEach(child => { // 重置继承属性
@@ -250,6 +250,10 @@ export function init(opt: ConfigOption = {}) {
   config.set('dom', opt, 'container');
   config.set('string', opt, 'cssSelectorsPrefix');
   config.setDefaultColor(opt);
+  config.set('function', opt, 'setStyle');
+  config.set('function', opt, 'setClass');
+  config.set('function', opt, 'setAttr');
+  config.set('function', opt, 'getAttr');
 
   sdk.init();
 
@@ -310,13 +314,13 @@ export function reset(nodes: HTMLElement[]) {
   }
 
   nodes?.forEach(node => {
-    delete (node as any)[COLORATTR];
-    delete (node as any)[BGCOLORATTR];
-    delete (node as any)[ORIGINAL_COLORATTR];
-    delete (node as any)[ORIGINAL_BGCOLORATTR];
-    delete (node as any)[BGIMAGEATTR];
-    delete (node as any)[BGGRADIENT_MIXCOLORATTR];
-    delete (node as any)[COMPLEMENTARY_BGIMAGECOLORATTR];
+    removeAttr(node, COLORATTR);
+    removeAttr(node, BGCOLORATTR);
+    removeAttr(node, ORIGINAL_COLORATTR);
+    removeAttr(node, ORIGINAL_BGCOLORATTR);
+    removeAttr(node, BGIMAGEATTR);
+    removeAttr(node, BGGRADIENT_MIXCOLORATTR);
+    removeAttr(node, COMPLEMENTARY_BGIMAGECOLORATTR);
   });
 };
 

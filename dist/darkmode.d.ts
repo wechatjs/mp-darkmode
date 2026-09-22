@@ -1,3 +1,8 @@
+export type SetStyle = (node: HTMLElement, styles: Record<string, string>) => void;
+export type SetClass = (node: HTMLElement, className: string) => void;
+export type SetAttr = (node: HTMLElement, attr: string, value: any) => void;
+export type GetAttr = (node: HTMLElement, attr: string) => any;
+
 export interface ConfigOption {
   begin?: ((isSwitch: boolean) => void) | null;
   showFirstPage?: (() => void) | null;
@@ -18,6 +23,10 @@ export interface ConfigOption {
   defaultDarkWebviewColor?: string;
   defaultDarkBgColor?: string;
   defaultDarkTextColor?: string;
+  setStyle?: SetStyle | null;
+  setClass?: SetClass | null;
+  setAttr?: SetAttr | null;
+  getAttr?: GetAttr | null;
 }
 
 export type KvList = {
@@ -55,6 +64,9 @@ export abstract class PluginAbstract extends PluginBaseAbstract {
   [PLUGIN_HOOK.BEFORE_CONVERT_NODE_BY_UPDATE_STYLE](...args: any[]): void;
   [PLUGIN_HOOK.AFTER_CONVERT_TEXT_COLOR_BY_UPDATE_STYLE](...args: any[]): void;
   [PLUGIN_HOOK.AFTER_CONVERT_NODE_BY_UPDATE_STYLE](...args: any[]): void;
+  [PLUGIN_HOOK.BEFORE_CONVERT_NODE_BY_RESET](...args: any[]): void;
+  [PLUGIN_HOOK.AFTER_CONVERT_TEXT_COLOR_BY_RESET](...args: any[]): void;
+  [PLUGIN_HOOK.AFTER_CONVERT_NODE_BY_RESET](...args: any[]): void;
 }
 
 export type PluginConstructor = (plugin: typeof PluginBaseAbstract) => new () => PluginAbstract;

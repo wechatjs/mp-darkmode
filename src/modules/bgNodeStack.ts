@@ -28,7 +28,7 @@
  */
 
 // Darkmode配置
-import config from './config';
+import config, { addClass } from './config';
 
 type Callback = (item: StackItem) => void;
 
@@ -57,7 +57,7 @@ export default class BgNodeStack {
   // 背景节点入栈
   push(el: HTMLElement, cssKV: string, cb?: Callback) {
     const className = `${this._prefix}${this._idx++}`;
-    el.classList.add(className);
+    addClass(el, className);
     this._stack.unshift({
       elOld: el,
       el,

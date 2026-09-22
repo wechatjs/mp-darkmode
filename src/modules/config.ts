@@ -20,6 +20,10 @@
  * @attr {string}       defaultDarkWebviewColor  Dark Mode下webview颜色
  * @attr {string}       defaultDarkBgColor       Dark Mode下背景颜色
  * @attr {string}       defaultDarkTextColor     Dark Mode下字体颜色
+ * @attr {Function}     setStyle                 使用自定义的设置样式的方法
+ * @attr {Function}     setClass                 使用自定义的设置类的方法
+ * @attr {Function}     setAttr                  使用自定义的设置属性的方法
+ * @attr {Function}     getAttr                  使用自定义的获取属性的方法
  *
  * @method set 设置配置
  * @param {ConfigType}   type 配置类型，'boolean' | 'string' | 'function' | 'dom'
@@ -36,7 +40,13 @@
  *
  */
 
-import type { ConfigOption } from '../darkmode.d';
+import type {
+  SetStyle,
+  SetClass,
+  SetAttr,
+  GetAttr,
+  ConfigOption,
+} from '../darkmode.d';
 
 // 常量
 import {
@@ -89,6 +99,10 @@ const defaultConfig: DefaultConfig = {
   defaultDarkWebviewColor: DEFAULT_DARK_WEBVIEWCOLOR, // Dark Mode下webview颜色
   defaultDarkBgColor: DEFAULT_DARK_BGCOLOR, // Dark Mode下背景颜色
   defaultDarkTextColor: DEFAULT_DARK_TEXTCOLOR, // Dark Mode下字体颜色
+  setStyle: null, // 使用自定义的设置样式的方法
+  setClass: null, // 使用自定义的设置类的方法
+  setAttr: null, // 使用自定义的设置属性的方法
+  getAttr: null, // 使用自定义的获取属性的方法
 };
 
 const config: Config = {
@@ -140,5 +154,61 @@ const config: Config = {
     Object.assign(this, defaultConfig);
   }
 };
+
+export const setStyle: SetStyle = (node, styles) => {
+  if (config.setStyle === null) {
+    Object.assign(node.style, styles);
+  } else {
+    config.setStyle(node, styles);
+  }
+}
+
+const filterClass = (node: HTMLElement, className: string) => {
+  return node.className.split(/\s+/).filter(cls => cls !== className).join(' ');
+}
+
+export const setClass: SetClass = (node, className) => {
+  if (config.setClass === null) {
+    node.className = className;
+  } else {
+    config.setClass(node, className);
+  }
+}
+
+export const addClass: SetClass = (node, className) => {
+  if (config.setClass === null) {
+    node.classList.add(className);
+  } else {
+    config.setClass(node, `${filterClass(node, className)} ${className}`);
+  }
+}
+
+export const removeClass: SetClass = (node, className) => {
+  if (config.setClass === null) {
+    node.classList.remove(className);
+  } else {
+    config.setClass(node, filterClass(node, className));
+  }
+}
+
+export const setAttr: SetAttr = (node, attr, value) => {
+  if (config.setAttr === null) {
+    (node as any)[attr] = value;
+  } else {
+    config.setAttr(node, attr, value);
+  }
+}
+
+export const removeAttr = (node: HTMLElement, attr: string) => {
+  if (config.setAttr === null) {
+    delete (node as any)[attr];
+  } else {
+    config.setAttr(node, attr, null);
+  }
+}
+
+export const getAttr: GetAttr = (node, attr) => {
+  return config.getAttr === null ? (node as any)[attr] : config.getAttr(node, attr);
+}
 
 export default config;
