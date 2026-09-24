@@ -199,22 +199,7 @@
     var defaultDarkBgColor = '#191919';
 
     // H5本地版本
-    // Darkmode.run(container.querySelectorAll('*'), { // 运行Dark Mode转换算法
-    //   mode: 'dark',
-    //   cssSelectorsPrefix: '#dark',
-    //   defaultDarkTextColor: defaultDarkTextColor,
-    //   defaultDarkBgColor: defaultDarkBgColor,
-    //   whitelist: {
-    //     attribute: ['data-no-dark']
-    //   },
-    //   showFirstPage: function() {
-    //     fp = new Date() - begin;
-    //   }
-    // });
-    // document.getElementById('dark_title').innerText += ' (cost: ' + (new Date() - begin) + 'ms, first page: ' + fp + 'ms)';
-
-    // 秒开本地版本
-    Darkmode.init({ // 初始化Dark Mode配置
+    Darkmode.run(container.querySelectorAll('*'), { // 运行Dark Mode转换算法
       mode: 'dark',
       cssSelectorsPrefix: '#dark',
       defaultDarkTextColor: defaultDarkTextColor,
@@ -225,15 +210,42 @@
       showFirstPage: function() {
         fp = new Date() - begin;
       },
-      needJudgeFirstPage: false, // 不需要判断首屏
-      delayBgJudge: true, // 延迟背景判断
-      container: container, // 延迟运行js时的容器
+      // setStyle: function(node, styles) {
+      //   Object.assign(node.style, styles);
+      // },
+      // setClass: function(node, className) {
+      //   node.setAttribute('class', className);
+      // },
+      // setAttr: function(node, attr, value) {
+      //   node.setAttribute(attr, value);
+      // },
+      // getAttr: function(node, attr) {
+      //   return node.getAttribute(attr);
+      // },
     });
-    Darkmode.run(container.querySelectorAll('*')); // 运行Dark Mode转换算法
     document.getElementById('dark_title').innerText += ' (cost: ' + (new Date() - begin) + 'ms, first page: ' + fp + 'ms)';
-    Array.prototype.forEach.call(container.getElementsByClassName('mp_artical_style_section'), function(el) {
-      Darkmode.convertBg(el.querySelectorAll('*'));
-    }); // 模拟秒开分批渲染
+
+    // 秒开本地版本
+    // Darkmode.init({ // 初始化Dark Mode配置
+    //   mode: 'dark',
+    //   cssSelectorsPrefix: '#dark',
+    //   defaultDarkTextColor: defaultDarkTextColor,
+    //   defaultDarkBgColor: defaultDarkBgColor,
+    //   whitelist: {
+    //     attribute: ['data-no-dark']
+    //   },
+    //   showFirstPage: function() {
+    //     fp = new Date() - begin;
+    //   },
+    //   needJudgeFirstPage: false, // 不需要判断首屏
+    //   delayBgJudge: true, // 延迟背景判断
+    //   container: container, // 延迟运行js时的容器
+    // });
+    // Darkmode.run(container.querySelectorAll('*')); // 运行Dark Mode转换算法
+    // document.getElementById('dark_title').innerText += ' (cost: ' + (new Date() - begin) + 'ms, first page: ' + fp + 'ms)';
+    // Array.prototype.forEach.call(container.getElementsByClassName('mp_artical_style_section'), function(el) {
+    //   Darkmode.convertBg(el.querySelectorAll('*'));
+    // }); // 模拟秒开分批渲染
 
     // 校验
     var validateOpt = {

@@ -78,7 +78,7 @@ import {
 } from './constant';
 
 // Darkmode配置
-import config, { setStyle, addClass, setAttr, removeAttr, getAttr } from './config';
+import config, { trim, setStyle, addClass, setAttr, removeAttr, getAttr } from './config';
 
 import {
   plugins, // 插件系统
@@ -114,8 +114,6 @@ interface AdjustTextBrightnessOptions {
 }
 
 type CssKV = [string, string];
-
-const trim = (str: string) => str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
 
 export default class SDK {
   _idx = 0; // 索引值
@@ -523,15 +521,15 @@ export default class SDK {
 
       let dmClassName = '';
       let dmBgClassName = '';
-      if ((isUpdate || needReset) && el.className && typeof el.className === 'string') {
+      if ((isUpdate || needReset) && el.classList?.length) {
         // 先提取dm className
-        let matches = el.className.match(DM_CLASSNAME_REGEXP);
+        let matches = el.classList.toString().match(DM_CLASSNAME_REGEXP);
         if (matches) {
           dmClassName = matches[0];
         }
 
         // 再提取dm bg className
-        matches = el.className.match(bgStack.classNameReg);
+        matches = el.classList.toString().match(bgStack.classNameReg);
         if (matches) {
           dmBgClassName = matches[0];
         }

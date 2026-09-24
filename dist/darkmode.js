@@ -13637,7 +13637,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   removeClass: () => (/* binding */ removeClass),
 /* harmony export */   setAttr: () => (/* binding */ setAttr),
 /* harmony export */   setClass: () => (/* binding */ setClass),
-/* harmony export */   setStyle: () => (/* binding */ setStyle)
+/* harmony export */   setStyle: () => (/* binding */ setStyle),
+/* harmony export */   trim: () => (/* binding */ trim)
 /* harmony export */ });
 /* harmony import */ var _constant__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./constant */ "./src/modules/constant.ts");
 /* harmony import */ var _color__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./color */ "./src/modules/color.ts");
@@ -13777,6 +13778,7 @@ const config = {
     Object.assign(this, defaultConfig);
   }
 };
+const trim = str => str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
 const setStyle = (node, styles) => {
   if (config.setStyle === null) {
     Object.assign(node.style, styles);
@@ -13785,22 +13787,20 @@ const setStyle = (node, styles) => {
   }
 };
 const filterClass = (node, className) => {
-  return node.className.split(/\s+/).filter(cls => cls !== className);
+  return Array.from(node.classList).filter(cls => cls && cls !== className);
 };
 const setClass = (node, className) => {
   if (config.setClass === null) {
-    node.className = className;
+    node.setAttribute('class', className);
   } else {
-    config.setClass(node, className);
+    config.setClass(node, trim(className));
   }
 };
 const addClass = (node, className) => {
   if (config.setClass === null) {
     node.classList.add(className);
   } else {
-    const clsArr = filterClass(node, className);
-    clsArr.push(className);
-    config.setClass(node, clsArr.join(' '));
+    config.setClass(node, [...filterClass(node, className), className].join(' '));
   }
 };
 const removeClass = (node, className) => {
@@ -14642,7 +14642,6 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
 
 // 节点相关操作工具API
 
-const trim = str => str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
 class SDK {
   // 当前是否需要运行Darkmode处理
 
@@ -14920,7 +14919,7 @@ class SDK {
         cssKVList = (styles.cssText && styles.cssText.replace(/("[^;]*);([^;]*")|('[^;]*);([^;]*')/g, `$1$3${_constant__WEBPACK_IMPORTED_MODULE_3__.SEMICOLON_PLACEHOLDER}$2$4`).split(';') || []).map(cssStr => {
           // 将cssStr转换为[key, value]，并清除各个元素的前后空白字符
           const splitIdx = cssStr.indexOf(':');
-          return [trim(cssStr.slice(0, splitIdx).toLowerCase() || ''), trim(cssStr.slice(splitIdx + 1).replace(_constant__WEBPACK_IMPORTED_MODULE_3__.SEMICOLON_PLACEHOLDER_REGEXP, ';') || '')];
+          return [(0,_config__WEBPACK_IMPORTED_MODULE_4__.trim)(cssStr.slice(0, splitIdx).toLowerCase() || ''), (0,_config__WEBPACK_IMPORTED_MODULE_4__.trim)(cssStr.slice(splitIdx + 1).replace(_constant__WEBPACK_IMPORTED_MODULE_3__.SEMICOLON_PLACEHOLDER_REGEXP, ';') || '')];
         });
       }
       let hasInlineColor = false; // 是否有自定义字体颜色
@@ -15033,15 +15032,15 @@ class SDK {
       }
       let dmClassName = '';
       let dmBgClassName = '';
-      if ((isUpdate || needReset) && el.className && typeof el.className === 'string') {
+      if ((isUpdate || needReset) && el.classList?.length) {
         // 先提取dm className
-        let matches = el.className.match(_constant__WEBPACK_IMPORTED_MODULE_3__.DM_CLASSNAME_REGEXP);
+        let matches = el.classList.toString().match(_constant__WEBPACK_IMPORTED_MODULE_3__.DM_CLASSNAME_REGEXP);
         if (matches) {
           dmClassName = matches[0];
         }
 
         // 再提取dm bg className
-        matches = el.className.match(_global__WEBPACK_IMPORTED_MODULE_5__.bgStack.classNameReg);
+        matches = el.classList.toString().match(_global__WEBPACK_IMPORTED_MODULE_5__.bgStack.classNameReg);
         if (matches) {
           dmBgClassName = matches[0];
         }
@@ -15685,8 +15684,8 @@ const switchToDarkmode = (mqlObj, opt = {
       // 处理节点
       _modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.isDarkmode && _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].begin?.(_modules_global__WEBPACK_IMPORTED_MODULE_3__.domUtils.hasDelay());
       Array.prototype.forEach.call(_modules_global__WEBPACK_IMPORTED_MODULE_3__.domUtils.get(), node => {
-        if (_modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.isDarkmode && node.className && typeof node.className === 'string') {
-          (0,_modules_config__WEBPACK_IMPORTED_MODULE_2__.setClass)(node, node.className.replace(classReg, '')); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
+        if (_modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.isDarkmode && node.classList?.length) {
+          (0,_modules_config__WEBPACK_IMPORTED_MODULE_2__.setClass)(node, node.classList.toString().replace(classReg, '')); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
         }
         if (_modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.isDarkmode || _modules_global__WEBPACK_IMPORTED_MODULE_3__.plugins.length) {
           if (!_modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].needJudgeFirstPage) {

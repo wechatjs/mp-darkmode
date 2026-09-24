@@ -155,6 +155,8 @@ const config: Config = {
   }
 };
 
+export const trim = (str: string) => str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+
 export const setStyle: SetStyle = (node, styles) => {
   if (config.setStyle === null) {
     Object.assign(node.style, styles);
@@ -164,14 +166,14 @@ export const setStyle: SetStyle = (node, styles) => {
 }
 
 const filterClass = (node: HTMLElement, className: string) => {
-  return node.className.split(/\s+/).filter(cls => cls !== className);
+  return Array.from(node.classList).filter(cls => cls && cls !== className);
 }
 
 export const setClass: SetClass = (node, className) => {
   if (config.setClass === null) {
-    node.className = className;
+    node.setAttribute('class', className);
   } else {
-    config.setClass(node, className);
+    config.setClass(node, trim(className));
   }
 }
 
@@ -179,9 +181,7 @@ export const addClass: SetClass = (node, className) => {
   if (config.setClass === null) {
     node.classList.add(className);
   } else {
-    const clsArr = filterClass(node, className);
-    clsArr.push(className);
-    config.setClass(node, clsArr.join(' '));
+    config.setClass(node, [...filterClass(node, className), className].join(' '));
   }
 }
 

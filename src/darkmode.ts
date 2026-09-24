@@ -113,8 +113,8 @@ const switchToDarkmode = (mqlObj: MediaQueryList | null, opt: SwitchToDarkmodeOp
       sdk.isDarkmode && config.begin?.(domUtils.hasDelay());
 
       Array.prototype.forEach.call(domUtils.get(), node => {
-        if (sdk.isDarkmode && node.className && typeof node.className === 'string') {
-          setClass(node, node.className.replace(classReg, '')); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
+        if (sdk.isDarkmode && node.classList?.length) {
+          setClass(node, node.classList.toString().replace(classReg, '')); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
         }
 
         if (sdk.isDarkmode || plugins.length) {
