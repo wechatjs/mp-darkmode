@@ -24,6 +24,16 @@
  * @param {string} color2 要计算颜色对比度的颜色2，支持css颜色格式
  * @return {number} 颜色对比度，取值范围为`[1, 21]`
  *
+ * @function getDmBgColor 根据 Light Mode 背景色转换生成 Dark Mode 背景色
+ * @param {string} lmBgColor 要转换的背景颜色，支持css颜色格式
+ * @param {string} [dmBgColorExist=config.defaultDarkBgColor] 已有的背景颜色，支持css颜色格式，不传则用默认底色
+ * @return {string | null} Dark Mode背景颜色，传入值非法则返回null
+ *
+ * @function getDmFontColor 根据 Light Mode 前景色转换生成 Dark Mode 前景色
+ * @param {string} lmFontColor 要转换的字体颜色，支持css颜色格式
+ * @param {string} [dmBgColor=config.defaultDarkFontColor] 背景颜色，支持css颜色格式，不传则用默认底色
+ * @return {string | null} Dark Mode字体颜色，传入值非法则返回null
+ *
  * @function extend 挂载插件
  * @param {Array} pluginList 插件列表
  * @return void
@@ -86,6 +96,10 @@ import {
 import {
   getChildrenAndIt
 } from './modules/domUtils';
+
+import {
+  ColorParser
+} from './modules/color';
 
 interface SwitchToDarkmodeOptions {
   force?: boolean;
@@ -289,6 +303,28 @@ export function updateStyle(node: HTMLElement, styles: Record<string, string>) {
 // 获取两个颜色的对比度
 export function getContrast(color1: string, color2: string): number {
   return sdk.getContrast(color1, color2);
+};
+
+// 根据 Light Mode 背景色转换生成 Dark Mode 背景色
+export function getDmBgColor(lmBgColor: string, dmBgColorExist: string = config.defaultDarkBgColor): string | null {
+  const lmBgColorInstance = ColorParser(lmBgColor);
+  const dmBgColorExistInstance = ColorParser(dmBgColorExist);
+  if (lmBgColorInstance && dmBgColorExistInstance) {
+    const res = sdk.adjustBackgroundBrightness(lmBgColorInstance, dmBgColorExistInstance);
+    if (res) return res.toString();
+  }
+  return null;
+};
+
+// 根据 Light Mode 前景色转换生成 Dark Mode 前景色
+export function getDmFontColor(lmFontColor: string, dmBgColor: string = config.defaultDarkBgColor): string | null {
+  const lmFontColorInstance = ColorParser(lmFontColor);
+  const dmBgColorInstance = ColorParser(dmBgColor);
+  if (lmFontColorInstance && dmBgColorInstance) {
+    const res = sdk.adjustTextBrightness(lmFontColorInstance, dmBgColorInstance);
+    if (res) return res.toString();
+  }
+  return null;
 };
 
 // 挂载插件

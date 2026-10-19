@@ -247,6 +247,11 @@
     //   Darkmode.convertBg(el.querySelectorAll('*'));
     // }); // 模拟秒开分批渲染
 
+    console.log('getDmBgColor: rgb(254, 233, 94) →', Darkmode.getDmBgColor('rgb(254, 233, 94)'));
+    console.log('getDmFontColor: red →', Darkmode.getDmFontColor('red'));
+    console.log('getDmBgColor: #2B77BF →', Darkmode.getDmBgColor('#2B77BF'));
+    console.log('getDmFontColor: #48A6E2 →', Darkmode.getDmFontColor('#48A6E2'));
+
     // 校验
     var validateOpt = {
       minContrast: 1.5

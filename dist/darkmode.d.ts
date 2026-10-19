@@ -87,6 +87,8 @@ export interface DarkMode {
   convertBg: (nodes: HTMLElement[]) => void;
   updateStyle: (node: HTMLElement, styles: Record<string, string>) => void;
   getContrast: (color1: string, color2: string) => number;
+  getDmBgColor: (lmBgColor: string, dmBgColorExist?: string) => string | null;
+  getDmFontColor: (lmFontColor: string, dmBgColor?: string) => string | null;
   extend: (pluginList: PluginConstructor[]) => void;
   reset: (nodes: HTMLElement[]) => void;
   validate: (container: HTMLElement, opt: ValidateOption, filter?: ValidateFilter) => ValidateResult[];

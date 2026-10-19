@@ -89,6 +89,15 @@
             <div id="original_wrp" class="rich_media_wrp">
               <div class="rich_media_content" id="light">
                 <!-- 自定义样式 -->
+<div class="mp_artical_style_section_title validate_ignore">测试新接口</div>
+<div class="mp_artical_style_section validate_ignore">
+  <span style="background-color: rgb(254, 233, 94); color: #fff;">黄色背景色</span>
+  <span style="color: red;">红色前景色</span>
+  <span style="background-color: #2B77BF; color: #fff;">蓝色背景色</span>
+  <span style="color: #48A6E2;">蓝色前景色</span>
+</div>
+
+<!-- 自定义样式 -->
 <div class="mp_artical_style_section_title validate_ignore">图片阴影bad case</div>
 <div class="mp_artical_style_section validate_ignore">
   <section style="width: 100%;padding: 10px 0px 0px;visibility: visible;background-color: rgb(254, 233, 94);">
@@ -1006,6 +1015,15 @@
             <div class="rich_media_wrp article_dark">
               <div class="rich_media_content" id="dark_online">
                 <!-- 自定义样式 -->
+<div class="mp_artical_style_section_title validate_ignore">测试新接口</div>
+<div class="mp_artical_style_section validate_ignore">
+  <span style="background-color: rgb(254, 233, 94); color: #fff;">黄色背景色</span>
+  <span style="color: red;">红色前景色</span>
+  <span style="background-color: #2B77BF; color: #fff;">蓝色背景色</span>
+  <span style="color: #48A6E2;">蓝色前景色</span>
+</div>
+
+<!-- 自定义样式 -->
 <div class="mp_artical_style_section_title validate_ignore">图片阴影bad case</div>
 <div class="mp_artical_style_section validate_ignore">
   <section style="width: 100%;padding: 10px 0px 0px;visibility: visible;background-color: rgb(254, 233, 94);">
@@ -1947,6 +1965,15 @@
             <div class="rich_media_wrp article_dark">
               <div class="rich_media_content" id="dark">
                 <!-- 自定义样式 -->
+<div class="mp_artical_style_section_title validate_ignore">测试新接口</div>
+<div class="mp_artical_style_section validate_ignore">
+  <span style="background-color: rgb(254, 233, 94); color: #fff;">黄色背景色</span>
+  <span style="color: red;">红色前景色</span>
+  <span style="background-color: #2B77BF; color: #fff;">蓝色背景色</span>
+  <span style="color: #48A6E2;">蓝色前景色</span>
+</div>
+
+<!-- 自定义样式 -->
 <div class="mp_artical_style_section_title validate_ignore">图片阴影bad case</div>
 <div class="mp_artical_style_section validate_ignore">
   <section style="width: 100%;padding: 10px 0px 0px;visibility: visible;background-color: rgb(254, 233, 94);">
@@ -2958,6 +2985,11 @@
     // Array.prototype.forEach.call(container.getElementsByClassName('mp_artical_style_section'), function(el) {
     //   Darkmode.convertBg(el.querySelectorAll('*'));
     // }); // 模拟秒开分批渲染
+
+    console.log('getDmBgColor: rgb(254, 233, 94) →', Darkmode.getDmBgColor('rgb(254, 233, 94)'));
+    console.log('getDmFontColor: red →', Darkmode.getDmFontColor('red'));
+    console.log('getDmBgColor: #2B77BF →', Darkmode.getDmBgColor('#2B77BF'));
+    console.log('getDmFontColor: #48A6E2 →', Darkmode.getDmFontColor('#48A6E2'));
 
     // 校验
     var validateOpt = {

@@ -14704,7 +14704,7 @@ class SDK {
         });
       }
       const bgColor = (0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.BGCOLORATTR) || _config__WEBPACK_IMPORTED_MODULE_4__["default"].defaultDarkBgColor;
-      newColor = this._adjustBackgroundBrightness(color, bgColor);
+      newColor = this.adjustBackgroundBrightness(color, bgColor);
 
       // 如果内联样式没有color，使用继承的原字体颜色和当前背景色算出合适的字体颜色
       if (!options.hasInlineColor) {
@@ -14734,7 +14734,7 @@ class SDK {
 
       // 无背景图片
       if (parentElementBgColor && !(0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.BGIMAGEATTR)) {
-        newColor = this._adjustTextBrightness(color, parentElementBgColor);
+        newColor = this.adjustTextBrightness(color, parentElementBgColor);
         let afterConvertTextColorHookName = _darkmode_d__WEBPACK_IMPORTED_MODULE_0__.PLUGIN_HOOK.AFTER_CONVERT_TEXT_COLOR;
         if (isUpdate) {
           afterConvertTextColorHookName = _darkmode_d__WEBPACK_IMPORTED_MODULE_0__.PLUGIN_HOOK.AFTER_CONVERT_TEXT_COLOR_BY_UPDATE_STYLE;
@@ -14750,79 +14750,13 @@ class SDK {
       // 字体阴影，当背景色处理
       // 无背景图片
       if (!(0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.BGIMAGEATTR)) {
-        newColor = this._adjustBackgroundBrightness(color, (0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.BGCOLORATTR) || _config__WEBPACK_IMPORTED_MODULE_4__["default"].defaultDarkBgColor);
+        newColor = this.adjustBackgroundBrightness(color, (0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.BGCOLORATTR) || _config__WEBPACK_IMPORTED_MODULE_4__["default"].defaultDarkBgColor);
       }
     }
     return {
       newColor: newColor && color.toString() !== newColor.toString() ? newColor.rgb() : null,
       extStyle
     };
-  }
-
-  // 调整文本明度
-  _adjustTextBrightness(textColor, bgColor, opt) {
-    const textColorAlpha = opt?.alpha || textColor.alpha();
-    const textColorMix = opt ? textColor : (0,_color__WEBPACK_IMPORTED_MODULE_2__.mixColors)([bgColor, textColor]);
-    if (textColorMix === null) return null;
-    const textColorMixRgb = textColorMix.rgb().array();
-    const textColorMixHsl = textColorMix.hsl().array();
-    const textPerceivedBrightness = (0,_color__WEBPACK_IMPORTED_MODULE_2__.getColorPerceivedBrightness)(textColorMixRgb);
-    const bgColorPerceivedBrightness = opt?.bgColorPerceivedBrightness || (0,_color__WEBPACK_IMPORTED_MODULE_2__.getColorPerceivedBrightness)(bgColor.rgb().array());
-    const offsetPerceivedBrightness = Math.abs(bgColorPerceivedBrightness - textPerceivedBrightness);
-
-    // 用户设置为高亮字体颜色（接近白色亮度），不处理，保持高亮
-    if (textPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_3__.WHITE_LIKE_COLOR_BRIGHTNESS) return opt ? (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)(textColor, bgColor, textColorAlpha) : textColor;
-    if (offsetPerceivedBrightness > this._maxLimitOffsetBrightness && bgColorPerceivedBrightness <= this._defaultDarkBgColorBrightness + 2) {
-      return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)((0,_color__WEBPACK_IMPORTED_MODULE_2__.adjustBrightnessTo)(this._maxLimitOffsetBrightness + bgColorPerceivedBrightness, textColorMixRgb), bgColor, textColorAlpha);
-    }
-
-    // 如果感知亮度差大于阈值，无需调整
-    if (offsetPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_3__.MIN_LIMIT_OFFSET_BRIGHTNESS) return opt ? (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)(textColor, bgColor, textColorAlpha) : textColor;
-    if (bgColorPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_3__.HIGH_BGCOLOR_BRIGHTNESS) {
-      // 亮背景，调暗字体
-      if (textColorMixHsl[2] > 90 - _constant__WEBPACK_IMPORTED_MODULE_3__.HIGH_BLACKWHITE_HSL_BRIGHTNESS) {
-        // 优先调字体的亮度已带到降低感知亮度的目的
-        textColorMixHsl[2] = 90 - textColorMixHsl[2];
-        return this._adjustTextBrightness(color__WEBPACK_IMPORTED_MODULE_1__["default"].hsl(...textColorMixHsl), bgColor, {
-          alpha: textColorAlpha,
-          bgColorPerceivedBrightness
-        });
-      }
-      return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)((0,_color__WEBPACK_IMPORTED_MODULE_2__.adjustBrightnessTo)(Math.min(this._maxLimitOffsetBrightness, bgColorPerceivedBrightness - _constant__WEBPACK_IMPORTED_MODULE_3__.MIN_LIMIT_OFFSET_BRIGHTNESS), textColorMixRgb), bgColor, textColorAlpha);
-    } else {
-      // 暗背景，调亮字体
-      if (textColorMixHsl[2] <= _constant__WEBPACK_IMPORTED_MODULE_3__.HIGH_BLACKWHITE_HSL_BRIGHTNESS) {
-        // 优先调字体的亮度已带到提高感知亮度的目的
-        textColorMixHsl[2] = 90 - textColorMixHsl[2];
-        return this._adjustTextBrightness(color__WEBPACK_IMPORTED_MODULE_1__["default"].hsl(...textColorMixHsl), bgColor, {
-          alpha: textColorAlpha,
-          bgColorPerceivedBrightness
-        });
-      }
-      return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)((0,_color__WEBPACK_IMPORTED_MODULE_2__.adjustBrightnessTo)(Math.min(this._maxLimitOffsetBrightness, bgColorPerceivedBrightness + _constant__WEBPACK_IMPORTED_MODULE_3__.MIN_LIMIT_OFFSET_BRIGHTNESS), textColorMixRgb), bgColor, textColorAlpha);
-    }
-  }
-
-  // 调整背景明度
-  _adjustBackgroundBrightness(bgColor, bgColorMix) {
-    const mixColor = (0,_color__WEBPACK_IMPORTED_MODULE_2__.mixColors)([bgColorMix, bgColor]);
-    if (mixColor === null) return null;
-    const mixColorRgb = mixColor.rgb().array();
-    const mixColorHsl = mixColor.hsl().array();
-    const mixColorPerceivedBrightness = (0,_color__WEBPACK_IMPORTED_MODULE_2__.getColorPerceivedBrightness)(mixColorRgb);
-    let newColor = mixColor;
-    if (mixColorHsl[1] === 0 && mixColorHsl[2] > _constant__WEBPACK_IMPORTED_MODULE_3__.HIGH_BLACKWHITE_HSL_BRIGHTNESS || mixColorPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_3__.WHITE_LIKE_COLOR_BRIGHTNESS) {
-      // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
-      newColor = color__WEBPACK_IMPORTED_MODULE_1__["default"].hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - mixColorHsl[2]), mixColorHsl[3] || 1);
-    } else if (mixColorPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_3__.MAX_LIMIT_BGCOLOR_BRIGHTNESS) {
-      // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
-      newColor = (0,_color__WEBPACK_IMPORTED_MODULE_2__.adjustBrightnessTo)(_constant__WEBPACK_IMPORTED_MODULE_3__.MAX_LIMIT_BGCOLOR_BRIGHTNESS, mixColorRgb);
-    } else if (mixColorHsl[2] < _constant__WEBPACK_IMPORTED_MODULE_3__.LOW_BLACKWHITE_HSL_BRIGHTNESS) {
-      // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
-      mixColorHsl[2] = _constant__WEBPACK_IMPORTED_MODULE_3__.LOW_BLACKWHITE_HSL_BRIGHTNESS;
-      newColor = color__WEBPACK_IMPORTED_MODULE_1__["default"].hsl(...mixColorHsl);
-    }
-    return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)(newColor, bgColorMix, bgColor.alpha());
   }
 
   // 叠加渐变色到背景色中，并更新背景色相关属性值以及文本颜色
@@ -15275,6 +15209,72 @@ class SDK {
     return css;
   }
 
+  // 调整背景明度
+  adjustBackgroundBrightness(bgColor, bgColorExist) {
+    const mixColor = (0,_color__WEBPACK_IMPORTED_MODULE_2__.mixColors)([bgColorExist, bgColor]);
+    if (mixColor === null) return null;
+    const mixColorRgb = mixColor.rgb().array();
+    const mixColorHsl = mixColor.hsl().array();
+    const mixColorPerceivedBrightness = (0,_color__WEBPACK_IMPORTED_MODULE_2__.getColorPerceivedBrightness)(mixColorRgb);
+    let newColor = mixColor;
+    if (mixColorHsl[1] === 0 && mixColorHsl[2] > _constant__WEBPACK_IMPORTED_MODULE_3__.HIGH_BLACKWHITE_HSL_BRIGHTNESS || mixColorPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_3__.WHITE_LIKE_COLOR_BRIGHTNESS) {
+      // 饱和度为0（黑白灰色），亮度大于HIGH_BLACKWHITE_HSL_BRIGHTNESS或感知亮度大于WHITE_LIKE_COLOR_BRIGHTNESS（白色）时，做亮度取反处理
+      newColor = color__WEBPACK_IMPORTED_MODULE_1__["default"].hsl(0, 0, Math.min(100, 100 + this._defaultDarkBgColorHslBrightness - mixColorHsl[2]), mixColorHsl[3] || 1);
+    } else if (mixColorPerceivedBrightness > _constant__WEBPACK_IMPORTED_MODULE_3__.MAX_LIMIT_BGCOLOR_BRIGHTNESS) {
+      // 感知亮度大于MAX_LIMIT_BGCOLOR_BRIGHTNESS，将感知亮度设为MAX_LIMIT_BGCOLOR_BRIGHTNESS
+      newColor = (0,_color__WEBPACK_IMPORTED_MODULE_2__.adjustBrightnessTo)(_constant__WEBPACK_IMPORTED_MODULE_3__.MAX_LIMIT_BGCOLOR_BRIGHTNESS, mixColorRgb);
+    } else if (mixColorHsl[2] < _constant__WEBPACK_IMPORTED_MODULE_3__.LOW_BLACKWHITE_HSL_BRIGHTNESS) {
+      // 亮度小于LOW_BLACKWHITE_HSL_BRIGHTNESS，将亮度设为LOW_BLACKWHITE_HSL_BRIGHTNESS，适当提高亮度
+      mixColorHsl[2] = _constant__WEBPACK_IMPORTED_MODULE_3__.LOW_BLACKWHITE_HSL_BRIGHTNESS;
+      newColor = color__WEBPACK_IMPORTED_MODULE_1__["default"].hsl(...mixColorHsl);
+    }
+    return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)(newColor, bgColorExist, bgColor.alpha());
+  }
+
+  // 调整文本明度
+  adjustTextBrightness(textColor, bgColor, opt) {
+    const textColorAlpha = opt?.alpha || textColor.alpha();
+    const textColorMix = opt ? textColor : (0,_color__WEBPACK_IMPORTED_MODULE_2__.mixColors)([bgColor, textColor]);
+    if (textColorMix === null) return null;
+    const textColorMixRgb = textColorMix.rgb().array();
+    const textColorMixHsl = textColorMix.hsl().array();
+    const textPerceivedBrightness = (0,_color__WEBPACK_IMPORTED_MODULE_2__.getColorPerceivedBrightness)(textColorMixRgb);
+    const bgColorPerceivedBrightness = opt?.bgColorPerceivedBrightness || (0,_color__WEBPACK_IMPORTED_MODULE_2__.getColorPerceivedBrightness)(bgColor.rgb().array());
+    const offsetPerceivedBrightness = Math.abs(bgColorPerceivedBrightness - textPerceivedBrightness);
+
+    // 用户设置为高亮字体颜色（接近白色亮度），不处理，保持高亮
+    if (textPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_3__.WHITE_LIKE_COLOR_BRIGHTNESS) return opt ? (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)(textColor, bgColor, textColorAlpha) : textColor;
+    if (offsetPerceivedBrightness > this._maxLimitOffsetBrightness && bgColorPerceivedBrightness <= this._defaultDarkBgColorBrightness + 2) {
+      return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)((0,_color__WEBPACK_IMPORTED_MODULE_2__.adjustBrightnessTo)(this._maxLimitOffsetBrightness + bgColorPerceivedBrightness, textColorMixRgb), bgColor, textColorAlpha);
+    }
+
+    // 如果感知亮度差大于阈值，无需调整
+    if (offsetPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_3__.MIN_LIMIT_OFFSET_BRIGHTNESS) return opt ? (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)(textColor, bgColor, textColorAlpha) : textColor;
+    if (bgColorPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_3__.HIGH_BGCOLOR_BRIGHTNESS) {
+      // 亮背景，调暗字体
+      if (textColorMixHsl[2] > 90 - _constant__WEBPACK_IMPORTED_MODULE_3__.HIGH_BLACKWHITE_HSL_BRIGHTNESS) {
+        // 优先调字体的亮度已带到降低感知亮度的目的
+        textColorMixHsl[2] = 90 - textColorMixHsl[2];
+        return this.adjustTextBrightness(color__WEBPACK_IMPORTED_MODULE_1__["default"].hsl(...textColorMixHsl), bgColor, {
+          alpha: textColorAlpha,
+          bgColorPerceivedBrightness
+        });
+      }
+      return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)((0,_color__WEBPACK_IMPORTED_MODULE_2__.adjustBrightnessTo)(Math.min(this._maxLimitOffsetBrightness, bgColorPerceivedBrightness - _constant__WEBPACK_IMPORTED_MODULE_3__.MIN_LIMIT_OFFSET_BRIGHTNESS), textColorMixRgb), bgColor, textColorAlpha);
+    } else {
+      // 暗背景，调亮字体
+      if (textColorMixHsl[2] <= _constant__WEBPACK_IMPORTED_MODULE_3__.HIGH_BLACKWHITE_HSL_BRIGHTNESS) {
+        // 优先调字体的亮度已带到提高感知亮度的目的
+        textColorMixHsl[2] = 90 - textColorMixHsl[2];
+        return this.adjustTextBrightness(color__WEBPACK_IMPORTED_MODULE_1__["default"].hsl(...textColorMixHsl), bgColor, {
+          alpha: textColorAlpha,
+          bgColorPerceivedBrightness
+        });
+      }
+      return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)((0,_color__WEBPACK_IMPORTED_MODULE_2__.adjustBrightnessTo)(Math.min(this._maxLimitOffsetBrightness, bgColorPerceivedBrightness + _constant__WEBPACK_IMPORTED_MODULE_3__.MIN_LIMIT_OFFSET_BRIGHTNESS), textColorMixRgb), bgColor, textColorAlpha);
+    }
+  }
+
   // 获取两个颜色的对比度
   getContrast(colorStr1, colorStr2) {
     const color1 = (0,_color__WEBPACK_IMPORTED_MODULE_2__.ColorParser)(colorStr1);
@@ -15599,6 +15599,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   convertBg: () => (/* binding */ convertBg),
 /* harmony export */   extend: () => (/* binding */ extend),
 /* harmony export */   getContrast: () => (/* binding */ getContrast),
+/* harmony export */   getDmBgColor: () => (/* binding */ getDmBgColor),
+/* harmony export */   getDmFontColor: () => (/* binding */ getDmFontColor),
 /* harmony export */   init: () => (/* binding */ init),
 /* harmony export */   reset: () => (/* binding */ reset),
 /* harmony export */   run: () => (/* binding */ run),
@@ -15611,6 +15613,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/config */ "./src/modules/config.ts");
 /* harmony import */ var _modules_global__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/global */ "./src/modules/global.ts");
 /* harmony import */ var _modules_domUtils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/domUtils */ "./src/modules/domUtils.ts");
+/* harmony import */ var _modules_color__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/color */ "./src/modules/color.ts");
 /**
  * @name Darkmode主入口
  *
@@ -15637,6 +15640,16 @@ __webpack_require__.r(__webpack_exports__);
  * @param {string} color2 要计算颜色对比度的颜色2，支持css颜色格式
  * @return {number} 颜色对比度，取值范围为`[1, 21]`
  *
+ * @function getDmBgColor 根据 Light Mode 背景色转换生成 Dark Mode 背景色
+ * @param {string} lmBgColor 要转换的背景颜色，支持css颜色格式
+ * @param {string} [dmBgColorExist=config.defaultDarkBgColor] 已有的背景颜色，支持css颜色格式，不传则用默认底色
+ * @return {string | null} Dark Mode背景颜色，传入值非法则返回null
+ *
+ * @function getDmFontColor 根据 Light Mode 前景色转换生成 Dark Mode 前景色
+ * @param {string} lmFontColor 要转换的字体颜色，支持css颜色格式
+ * @param {string} [dmBgColor=config.defaultDarkFontColor] 背景颜色，支持css颜色格式，不传则用默认底色
+ * @return {string | null} Dark Mode字体颜色，传入值非法则返回null
+ *
  * @function extend 挂载插件
  * @param {Array} pluginList 插件列表
  * @return void
@@ -15661,6 +15674,7 @@ __webpack_require__.r(__webpack_exports__);
 const classReg = new RegExp(`${_modules_constant__WEBPACK_IMPORTED_MODULE_1__.CLASS_PREFIX}[^ ]+`, 'g');
 
 // Darkmode配置
+
 
 
 
@@ -15855,6 +15869,30 @@ function updateStyle(node, styles) {
 // 获取两个颜色的对比度
 function getContrast(color1, color2) {
   return _modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.getContrast(color1, color2);
+}
+;
+
+// 根据 Light Mode 背景色转换生成 Dark Mode 背景色
+function getDmBgColor(lmBgColor, dmBgColorExist = _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].defaultDarkBgColor) {
+  const lmBgColorInstance = (0,_modules_color__WEBPACK_IMPORTED_MODULE_5__.ColorParser)(lmBgColor);
+  const dmBgColorExistInstance = (0,_modules_color__WEBPACK_IMPORTED_MODULE_5__.ColorParser)(dmBgColorExist);
+  if (lmBgColorInstance && dmBgColorExistInstance) {
+    const res = _modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.adjustBackgroundBrightness(lmBgColorInstance, dmBgColorExistInstance);
+    if (res) return res.toString();
+  }
+  return null;
+}
+;
+
+// 根据 Light Mode 前景色转换生成 Dark Mode 前景色
+function getDmFontColor(lmFontColor, dmBgColor = _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].defaultDarkBgColor) {
+  const lmFontColorInstance = (0,_modules_color__WEBPACK_IMPORTED_MODULE_5__.ColorParser)(lmFontColor);
+  const dmBgColorInstance = (0,_modules_color__WEBPACK_IMPORTED_MODULE_5__.ColorParser)(dmBgColor);
+  if (lmFontColorInstance && dmBgColorInstance) {
+    const res = _modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.adjustTextBrightness(lmFontColorInstance, dmBgColorInstance);
+    if (res) return res.toString();
+  }
+  return null;
 }
 ;
 

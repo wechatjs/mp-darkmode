@@ -1,4 +1,13 @@
 <!-- 自定义样式 -->
+<div class="mp_artical_style_section_title validate_ignore">测试新接口</div>
+<div class="mp_artical_style_section validate_ignore">
+  <span style="background-color: rgb(254, 233, 94); color: #fff;">黄色背景色</span>
+  <span style="color: red;">红色前景色</span>
+  <span style="background-color: #2B77BF; color: #fff;">蓝色背景色</span>
+  <span style="color: #48A6E2;">蓝色前景色</span>
+</div>
+
+<!-- 自定义样式 -->
 <div class="mp_artical_style_section_title validate_ignore">图片阴影bad case</div>
 <div class="mp_artical_style_section validate_ignore">
   <section style="width: 100%;padding: 10px 0px 0px;visibility: visible;background-color: rgb(254, 233, 94);">
