@@ -45,7 +45,6 @@
 import type {
   GetStyle,
   SetStyle,
-  GetClass,
   SetClass,
   GetAttr,
   SetAttr,
@@ -175,8 +174,12 @@ export const setStyle: SetStyle = (node, styles) => {
   }
 }
 
-export const getClass: GetClass = (node) => {
-  return config.getClass === null ? (node.classList?.toString() || '') : config.getClass(node);
+// 获取节点 class。toArray 为 true 时返回按空白分割的数组，否则返回原始字符串
+export function getClass(node: HTMLElement, toArray: true): string[];
+export function getClass(node: HTMLElement, toArray?: false): string;
+export function getClass(node: HTMLElement, toArray = false): string | string[] {
+  const className = config.getClass === null ? (node.classList?.toString() || '') : config.getClass(node);
+  return toArray ? className.split(/\s+/) : className;
 }
 
 export const setClass: SetClass = (node, className) => {
@@ -188,7 +191,7 @@ export const setClass: SetClass = (node, className) => {
 }
 
 const filterClass = (node: HTMLElement, className: string) => {
-  return getClass(node).split(/\s+/).filter(cls => cls && cls !== className);
+  return getClass(node, true).filter(cls => cls && cls !== className);
 }
 
 export const addClass: SetClass = (node, className) => {

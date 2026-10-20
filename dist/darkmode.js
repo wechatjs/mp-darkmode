@@ -13302,6 +13302,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   PluginAbstract: () => (/* binding */ PluginAbstract),
 /* harmony export */   PluginBaseAbstract: () => (/* binding */ PluginBaseAbstract)
 /* harmony export */ });
+// getStyle 的 prop 取值：
+// - 'cssText'：读取整串内联样式（算法从内联样式提取 cssKVList 时使用）
+// - 单个样式属性，统一为【驼峰】写法，如 'color' / 'visibility' / 'display' / 'backgroundImage' / 'webkitBorderImage' / 'borderImage'
+// 自定义 getStyle 时必须同时支持 'cssText' 整串与上述驼峰单属性，否则会导致样式提取失败、转换静默失效
+
 class PluginBaseAbstract {}
 let PLUGIN_HOOK = /*#__PURE__*/function (PLUGIN_HOOK) {
   // 插件钩子
@@ -13420,7 +13425,7 @@ class BgNodeStack {
     this._stack.forEach(item => {
       if (!item.updated) {
         Array.prototype.some.call(els, el => {
-          if (el.nodeType === 1 && (0,_config__WEBPACK_IMPORTED_MODULE_0__.getClass)(el).split(/\s+/).indexOf(item.className) > -1) {
+          if (el.nodeType === 1 && (0,_config__WEBPACK_IMPORTED_MODULE_0__.getClass)(el, true).indexOf(item.className) > -1) {
             item.el = el;
             item.updated = true;
             return true;
@@ -13605,6 +13610,7 @@ const getColorPerceivedBrightness = rgba => (rgba[0] * 299 + rgba[1] * 587 + rgb
 
 // 调整为指定感知亮度
 const adjustBrightnessTo = (target, rgba) => {
+  target = Math.max(target, 0); // 防御：target 为负会反算出非法颜色（感知亮度最小为0）
   const relativeBrightnessRatio = target / (getColorPerceivedBrightness(rgba) || 1);
   let newTextR = Math.min(255, rgba[0] * relativeBrightnessRatio);
   let newTextG = Math.min(255, rgba[1] * relativeBrightnessRatio);
@@ -13797,9 +13803,13 @@ const setStyle = (node, styles) => {
     config.setStyle(node, styles);
   }
 };
-const getClass = node => {
-  return config.getClass === null ? node.classList?.toString() || '' : config.getClass(node);
-};
+
+// 获取节点 class。toArray 为 true 时返回按空白分割的数组，否则返回原始字符串
+
+function getClass(node, toArray = false) {
+  const className = config.getClass === null ? node.classList?.toString() || '' : config.getClass(node);
+  return toArray ? className.split(/\s+/) : className;
+}
 const setClass = (node, className) => {
   if (config.setClass === null) {
     node.setAttribute('class', className);
@@ -13808,7 +13818,7 @@ const setClass = (node, className) => {
   }
 };
 const filterClass = (node, className) => {
-  return getClass(node).split(/\s+/).filter(cls => cls && cls !== className);
+  return getClass(node, true).filter(cls => cls && cls !== className);
 };
 const addClass = (node, className) => {
   if (config.setClass === null) {
@@ -14221,7 +14231,7 @@ function hasTextNode(el) {
   //   }
   // });
   // return cnt.length > 0;
-  return el.textContent.replace(/\s/g, '').length > 0;
+  return (el.textContent || '').replace(/\s/g, '').length > 0;
 }
 ;
 
@@ -14233,7 +14243,7 @@ const tableClassObj = {
 // 判断table相关元素有没有指定class
 function hasTableClass(el) {
   let color = null;
-  (0,_config__WEBPACK_IMPORTED_MODULE_0__.getClass)(el).split(/\s+/).some(className => {
+  (0,_config__WEBPACK_IMPORTED_MODULE_0__.getClass)(el, true).some(className => {
     if (tableClassObj.hasOwnProperty(className)) {
       color = tableClassObj[className];
       return true;
@@ -14626,10 +14636,22 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
  * @return void
  *
  * @method convert 处理节点
- * @param {HTMLElement} el               要处理的节点
- * @param {CssKV[]}     [cssKVList=[]]   要处理的css属性列表
- * @param {boolean}     [isUpdate=false] 是否更新
+ * @param {HTMLElement} el                要处理的节点
+ * @param {CssKV[]}     [cssKVList=[]]    要处理的css属性列表
+ * @param {boolean}     [isUpdate=false]  是否更新
+ * @param {boolean}     [needReset=false] 是否重置
  * @return {string} 处理后的css，包含css选择器
+ *
+ * @method adjustBackgroundBrightness 调整背景明度
+ * @param {ColorParam} bgColor      要调整的背景颜色
+ * @param {ColorParam} bgColorExist 已有的背景颜色
+ * @return {ColorInstance | null} 调整后的背景颜色
+ *
+ * @method adjustTextBrightness 调整文本明度
+ * @param {ColorParam}                  textColor 要调整的字体颜色
+ * @param {ColorParam}                  bgColor   背景颜色
+ * @param {AdjustTextBrightnessOptions} [opt]     调整选项
+ * @return {ColorInstance | null} 调整后的字体颜色
  *
  * @method getContrast 获取两个颜色的对比度
  * @param {ColorParam} colorStr1 颜色1
@@ -14782,6 +14804,7 @@ class SDK {
       (0,_config__WEBPACK_IMPORTED_MODULE_4__.setAttr)(dom, _constant__WEBPACK_IMPORTED_MODULE_3__.ORIGINAL_BGCOLORATTR, newOriginalBgColor);
     });
     const lastKV = cssKVList.slice(-1)[0];
+    if (!lastKV) return ''; // 防御：cssKVList 为空时 lastKV 为 undefined，避免后续取 lastKV[0] 报错
     let color = null;
     let hasInlineColor = _constant__WEBPACK_IMPORTED_MODULE_3__.CSS_PROP_SERIES.TEXT_COLOR.indexOf(lastKV[0]) >= 5;
     if (hasInlineColor) {
@@ -15226,7 +15249,9 @@ class SDK {
 
   // 调整背景明度
   adjustBackgroundBrightness(bgColor, bgColorExist) {
-    const mixColor = (0,_color__WEBPACK_IMPORTED_MODULE_2__.mixColors)([bgColorExist, bgColor]);
+    const bgColorInstance = (0,_color__WEBPACK_IMPORTED_MODULE_2__.ColorParser)(bgColor);
+    if (bgColorInstance === null) return null;
+    const mixColor = (0,_color__WEBPACK_IMPORTED_MODULE_2__.mixColors)([bgColorExist, bgColorInstance]);
     if (mixColor === null) return null;
     const mixColorRgb = mixColor.rgb().array();
     const mixColorHsl = mixColor.hsl().array();
@@ -15243,50 +15268,53 @@ class SDK {
       mixColorHsl[2] = _constant__WEBPACK_IMPORTED_MODULE_3__.LOW_BLACKWHITE_HSL_BRIGHTNESS;
       newColor = color__WEBPACK_IMPORTED_MODULE_1__["default"].hsl(...mixColorHsl);
     }
-    return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)(newColor, bgColorExist, bgColor.alpha());
+    return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)(newColor, bgColorExist, bgColorInstance.alpha());
   }
 
   // 调整文本明度
   adjustTextBrightness(textColor, bgColor, opt) {
-    const textColorAlpha = opt?.alpha || textColor.alpha();
-    const textColorMix = opt ? textColor : (0,_color__WEBPACK_IMPORTED_MODULE_2__.mixColors)([bgColor, textColor]);
+    const textColorInstance = (0,_color__WEBPACK_IMPORTED_MODULE_2__.ColorParser)(textColor);
+    const bgColorInstance = (0,_color__WEBPACK_IMPORTED_MODULE_2__.ColorParser)(bgColor);
+    if (textColorInstance === null || bgColorInstance === null) return null;
+    const textColorAlpha = opt?.alpha || textColorInstance.alpha();
+    const textColorMix = opt ? textColorInstance : (0,_color__WEBPACK_IMPORTED_MODULE_2__.mixColors)([bgColorInstance, textColorInstance]);
     if (textColorMix === null) return null;
     const textColorMixRgb = textColorMix.rgb().array();
     const textColorMixHsl = textColorMix.hsl().array();
     const textPerceivedBrightness = (0,_color__WEBPACK_IMPORTED_MODULE_2__.getColorPerceivedBrightness)(textColorMixRgb);
-    const bgColorPerceivedBrightness = opt?.bgColorPerceivedBrightness || (0,_color__WEBPACK_IMPORTED_MODULE_2__.getColorPerceivedBrightness)(bgColor.rgb().array());
+    const bgColorPerceivedBrightness = opt?.bgColorPerceivedBrightness || (0,_color__WEBPACK_IMPORTED_MODULE_2__.getColorPerceivedBrightness)(bgColorInstance.rgb().array());
     const offsetPerceivedBrightness = Math.abs(bgColorPerceivedBrightness - textPerceivedBrightness);
 
     // 用户设置为高亮字体颜色（接近白色亮度），不处理，保持高亮
-    if (textPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_3__.WHITE_LIKE_COLOR_BRIGHTNESS) return opt ? (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)(textColor, bgColor, textColorAlpha) : textColor;
+    if (textPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_3__.WHITE_LIKE_COLOR_BRIGHTNESS) return opt ? (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)(textColorInstance, bgColorInstance, textColorAlpha) : textColorInstance;
     if (offsetPerceivedBrightness > this._maxLimitOffsetBrightness && bgColorPerceivedBrightness <= this._defaultDarkBgColorBrightness + 2) {
-      return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)((0,_color__WEBPACK_IMPORTED_MODULE_2__.adjustBrightnessTo)(this._maxLimitOffsetBrightness + bgColorPerceivedBrightness, textColorMixRgb), bgColor, textColorAlpha);
+      return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)((0,_color__WEBPACK_IMPORTED_MODULE_2__.adjustBrightnessTo)(this._maxLimitOffsetBrightness + bgColorPerceivedBrightness, textColorMixRgb), bgColorInstance, textColorAlpha);
     }
 
     // 如果感知亮度差大于阈值，无需调整
-    if (offsetPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_3__.MIN_LIMIT_OFFSET_BRIGHTNESS) return opt ? (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)(textColor, bgColor, textColorAlpha) : textColor;
+    if (offsetPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_3__.MIN_LIMIT_OFFSET_BRIGHTNESS) return opt ? (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)(textColorInstance, bgColorInstance, textColorAlpha) : textColorInstance;
     if (bgColorPerceivedBrightness >= _constant__WEBPACK_IMPORTED_MODULE_3__.HIGH_BGCOLOR_BRIGHTNESS) {
       // 亮背景，调暗字体
       if (textColorMixHsl[2] > 90 - _constant__WEBPACK_IMPORTED_MODULE_3__.HIGH_BLACKWHITE_HSL_BRIGHTNESS) {
         // 优先调字体的亮度已带到降低感知亮度的目的
         textColorMixHsl[2] = 90 - textColorMixHsl[2];
-        return this.adjustTextBrightness(color__WEBPACK_IMPORTED_MODULE_1__["default"].hsl(...textColorMixHsl), bgColor, {
+        return this.adjustTextBrightness(color__WEBPACK_IMPORTED_MODULE_1__["default"].hsl(...textColorMixHsl), bgColorInstance, {
           alpha: textColorAlpha,
           bgColorPerceivedBrightness
         });
       }
-      return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)((0,_color__WEBPACK_IMPORTED_MODULE_2__.adjustBrightnessTo)(Math.min(this._maxLimitOffsetBrightness, bgColorPerceivedBrightness - _constant__WEBPACK_IMPORTED_MODULE_3__.MIN_LIMIT_OFFSET_BRIGHTNESS), textColorMixRgb), bgColor, textColorAlpha);
+      return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)((0,_color__WEBPACK_IMPORTED_MODULE_2__.adjustBrightnessTo)(Math.min(this._maxLimitOffsetBrightness, bgColorPerceivedBrightness - _constant__WEBPACK_IMPORTED_MODULE_3__.MIN_LIMIT_OFFSET_BRIGHTNESS), textColorMixRgb), bgColorInstance, textColorAlpha);
     } else {
       // 暗背景，调亮字体
       if (textColorMixHsl[2] <= _constant__WEBPACK_IMPORTED_MODULE_3__.HIGH_BLACKWHITE_HSL_BRIGHTNESS) {
         // 优先调字体的亮度已带到提高感知亮度的目的
         textColorMixHsl[2] = 90 - textColorMixHsl[2];
-        return this.adjustTextBrightness(color__WEBPACK_IMPORTED_MODULE_1__["default"].hsl(...textColorMixHsl), bgColor, {
+        return this.adjustTextBrightness(color__WEBPACK_IMPORTED_MODULE_1__["default"].hsl(...textColorMixHsl), bgColorInstance, {
           alpha: textColorAlpha,
           bgColorPerceivedBrightness
         });
       }
-      return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)((0,_color__WEBPACK_IMPORTED_MODULE_2__.adjustBrightnessTo)(Math.min(this._maxLimitOffsetBrightness, bgColorPerceivedBrightness + _constant__WEBPACK_IMPORTED_MODULE_3__.MIN_LIMIT_OFFSET_BRIGHTNESS), textColorMixRgb), bgColor, textColorAlpha);
+      return (0,_color__WEBPACK_IMPORTED_MODULE_2__.getFrontColor)((0,_color__WEBPACK_IMPORTED_MODULE_2__.adjustBrightnessTo)(Math.min(this._maxLimitOffsetBrightness, bgColorPerceivedBrightness + _constant__WEBPACK_IMPORTED_MODULE_3__.MIN_LIMIT_OFFSET_BRIGHTNESS), textColorMixRgb), bgColorInstance, textColorAlpha);
     }
   }
 
@@ -15407,7 +15435,7 @@ class TextNodeQueue {
     this._queue.forEach(item => {
       if (!item.updated) {
         Array.prototype.some.call(els, el => {
-          if (el.nodeType === 1 && (0,_config__WEBPACK_IMPORTED_MODULE_0__.getClass)(el).split(/\s+/).indexOf(item.className) > -1) {
+          if (el.nodeType === 1 && (0,_config__WEBPACK_IMPORTED_MODULE_0__.getClass)(el, true).indexOf(item.className) > -1) {
             item.el = el;
             item.updated = true;
             return true;
@@ -15628,7 +15656,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./modules/config */ "./src/modules/config.ts");
 /* harmony import */ var _modules_global__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modules/global */ "./src/modules/global.ts");
 /* harmony import */ var _modules_domUtils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/domUtils */ "./src/modules/domUtils.ts");
-/* harmony import */ var _modules_color__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/color */ "./src/modules/color.ts");
 /**
  * @name Darkmode主入口
  *
@@ -15689,7 +15716,6 @@ __webpack_require__.r(__webpack_exports__);
 const classReg = new RegExp(`${_modules_constant__WEBPACK_IMPORTED_MODULE_1__.CLASS_PREFIX}[^ ]+`, 'g');
 
 // Darkmode配置
-
 
 
 
@@ -15899,13 +15925,7 @@ function getDmBgColor(lmBgColor, dmBgColorExist = _modules_config__WEBPACK_IMPOR
     console.warn('Dark Mode should be initialized by calling `init()` or `run()` before using `getDmBgColor()`');
     return null;
   }
-  const lmBgColorInstance = (0,_modules_color__WEBPACK_IMPORTED_MODULE_5__.ColorParser)(lmBgColor);
-  const dmBgColorExistInstance = (0,_modules_color__WEBPACK_IMPORTED_MODULE_5__.ColorParser)(dmBgColorExist);
-  if (lmBgColorInstance && dmBgColorExistInstance) {
-    const res = _modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.adjustBackgroundBrightness(lmBgColorInstance, dmBgColorExistInstance);
-    if (res) return res.toString();
-  }
-  return null;
+  return _modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.adjustBackgroundBrightness(lmBgColor, dmBgColorExist)?.toString() ?? null;
 }
 ;
 
@@ -15916,13 +15936,7 @@ function getDmFontColor(lmFontColor, dmBgColor = _modules_config__WEBPACK_IMPORT
     console.warn('Dark Mode should be initialized by calling `init()` or `run()` before using `getDmFontColor()`');
     return null;
   }
-  const lmFontColorInstance = (0,_modules_color__WEBPACK_IMPORTED_MODULE_5__.ColorParser)(lmFontColor);
-  const dmBgColorInstance = (0,_modules_color__WEBPACK_IMPORTED_MODULE_5__.ColorParser)(dmBgColor);
-  if (lmFontColorInstance && dmBgColorInstance) {
-    const res = _modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.adjustTextBrightness(lmFontColorInstance, dmBgColorInstance);
-    if (res) return res.toString();
-  }
-  return null;
+  return _modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.adjustTextBrightness(lmFontColor, dmBgColor)?.toString() ?? null;
 }
 ;
 

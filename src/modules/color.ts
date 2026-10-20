@@ -164,6 +164,7 @@ export const getColorPerceivedBrightness = (rgba: RGBAArray): number => (rgba[0]
 
 // 调整为指定感知亮度
 export const adjustBrightnessTo = (target: number, rgba: RGBAArray): ColorInstance => {
+  target = Math.max(target, 0); // 防御：target 为负会反算出非法颜色（感知亮度最小为0）
   const relativeBrightnessRatio = target / (getColorPerceivedBrightness(rgba) || 1);
   let newTextR = Math.min(255, rgba[0] * relativeBrightnessRatio);
   let newTextG = Math.min(255, rgba[1] * relativeBrightnessRatio);

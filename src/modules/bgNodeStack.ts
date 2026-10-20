@@ -105,7 +105,7 @@ export default class BgNodeStack {
     this._stack.forEach(item => {
       if (!item.updated) {
         Array.prototype.some.call(els, (el: HTMLElement) => {
-          if (el.nodeType === 1 && getClass(el).split(/\s+/).indexOf(item.className) > -1) {
+          if (el.nodeType === 1 && getClass(el, true).indexOf(item.className) > -1) {
             item.el = el;
             item.updated = true;
             return true;

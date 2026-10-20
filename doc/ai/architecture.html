@@ -602,6 +602,14 @@
         <strong>读 / 写配对（重要）</strong>：算法内部对节点的<strong>所有</strong>读写都已收敛到这 9 个工具函数——内联样式读写走 <code>getStyle</code> / <code>setStyle</code>，class 读写走 <code>getClass</code> / <code>setClass</code> / <code>addClass</code> / <code>removeClass</code>，expando 读写删走 <code>getAttr</code> / <code>setAttr</code> / <code>removeAttr</code>。配置自定义钩子时务必<strong>读写成对</strong>提供（如自定义了 <code>setAttr</code> 把中间态存到自管结构，就必须同时自定义 <code>getAttr</code> 从同一结构读），否则会出现「从 A 读、往 B 写」的不一致。</div>
 
       <div class="note">
+        <strong>自定义钩子契约（必读，否则静默失效）</strong>：
+        <ul class="tight" style="margin:8px 0 0;">
+          <li><strong><code>getStyle(node, prop)</code> 的 <code>prop</code> 取值已在类型 <code>GetStyleProp</code> 约束</strong>：既会传特殊值 <code>'cssText'</code>（读整串内联样式，<code>convert</code> 提取 cssKVList 时用），也会传<strong>驼峰</strong>单属性 <code>'color'</code> / <code>'visibility'</code> / <code>'display'</code> / <code>'backgroundImage'</code> / <code>'webkitBorderImage'</code> / <code>'borderImage'</code>。自定义实现必须同时支持 <code>'cssText'</code> 整串与驼峰单属性，若只按连字符 CSS 属性名处理、或漏了 <code>'cssText'</code>，会导致样式提取不到 → 整段转换静默失效。</li>
+          <li><strong><code>setAttr</code> / <code>getAttr</code> 存取的 value 是对象，不可序列化</strong>：存进去的可能是 <code>Color</code> 实例（带方法）或 <code>true</code> 等，自定义实现必须<strong>按引用原样存取</strong>，不能 JSON 序列化/反序列化，否则对象方法丢失、后续 <code>getContrast</code> / <code>mixColors</code> 出错。</li>
+        </ul>
+      </div>
+
+      <div class="note">
         <strong>对「颜色继承 expando」的影响</strong>：<a href="#algorithm">§三</a> 提到的 <code>COLORATTR</code> / <code>BGCOLORATTR</code> / <code>ORIGINAL_*</code> / <code>BGIMAGEATTR</code> / <code>BGGRADIENT_MIXCOLORATTR</code> / <code>COMPLEMENTARY_BGIMAGECOLORATTR</code> 的读写删，<strong>现在全部经由 <code>getAttr</code> / <code>setAttr</code> / <code>removeAttr</code></strong>。默认实现仍是把值挂在节点对象上（expando），行为与之前一致；但配置了 <code>setAttr</code> / <code>getAttr</code> 后，这些中间态可被存到使用方自管的结构里（不污染真实节点）。
       </div>
 
@@ -610,6 +618,7 @@
         <li><strong><code>&lt;html&gt;</code> 根元素刻意不走钩子</strong>：强制模式下给 <code>&lt;html&gt;</code> 加/删 <code>data_color_scheme_dark</code>（<code>darkmode.ts</code> 的 <code>init</code> 与 <code>reset</code>）直接用 <code>document.getElementsByTagName('html')[0].classList.add/remove</code>，<strong>不经过 <code>setClass</code> / <code>removeClass</code></strong>。因为根节点恒为真实 document 元素，无需被自定义渲染环境接管，<strong>属有意为之</strong>。</li>
         <li><strong>真实 HTML 属性读取不走 <code>getAttr</code></strong>：<code>el.getAttribute('color'/'bgcolor')</code>、<code>el.hasAttribute(...)</code>、<code>dataset.ignoreDm</code> 读的是真实 HTML attribute，与读 expando 的 <code>getAttr</code> 语义不同，<strong>刻意不混用</strong>。</li>
         <li><strong>样式表注入不属节点级钩子</strong>：<code>cssUtils.ts</code> 的 <code>document.head.insertAdjacentHTML</code>（注入 <code>&lt;style&gt;</code>）、<code>getElementById</code> / <code>removeChild</code> 操作的是 <code>&lt;head&gt;</code> 的样式表节点，不在这套节点读写钩子的职责内。</li>
+        <li><strong>节点遍历 / 几何 / 文本等读操作暂不提供钩子</strong>（<span class="badge">明确不支持</span>）：<code>getChildrenAndIt</code> 的 <code>querySelectorAll</code>、<code>getBoundingClientRect</code>（首屏判断、背景矩形相交）、<code>textContent</code>（<code>hasTextNode</code>）、<code>createTreeWalker</code>（校验遍历）等读操作<strong>目前有意不抽象为钩子</strong>。因此本库要求运行环境对传入节点至少支持这些标准 DOM 读 API；纯「类 DOM」对象若缺少这些能力，需自行适配，库层暂不覆盖。</li>
         <li><strong>判空与取值已同源（<span class="badge">2026-10-20 修复</span>）</strong>：早期「是否有 class」的判空用原生 <code>node.classList?.length</code>、取值却用 <code>getClass</code>，二者数据源不一致——自定义 <code>getClass</code> 把 class 存自管结构时会被误判为无 class 而整段跳过。现已统一改为基于 <code>getClass(node)</code> 判空（<code>darkmode.ts</code> 清理旧 class 处、<code>sdk.ts</code> 提取 dmClassName 处），<code>getClass</code> 默认实现加 <code>node.classList?.toString() || ''</code> 防护以兼容无 <code>classList</code> 的节点。</li>
       </ul>
 
@@ -664,6 +673,12 @@
             <td>2026-10-20</td>
             <td>CR 隐患修复批次：①<code>getDmBgColor</code>/<code>getDmFontColor</code> 增加初始化前置校验——未 <code>init</code> 时 <code>console.warn</code> 并返回 <code>null</code>（不自动兜底，强制业务方先 <code>init</code>/<code>run</code>），复用 <code>config.hasInit</code> 判断；②钩子一致性：<code>hasTableClass</code> 改走 <code>getClass</code>，<code>darkmode.ts</code>/<code>sdk.ts</code> 判空由原生 <code>classList?.length</code> 改为与取值同源的 <code>getClass</code>，<code>getClass</code> 默认实现加 <code>classList?.</code> 防护；③修复 <code>config</code> 浅拷贝污染：默认配置改为工厂函数 <code>getDefaultConfig()</code>，初始化与 <code>reset</code> 均取全新对象，杜绝 <code>whitelist</code> 被 <code>init</code> 的 <code>push</code> 污染并跨 <code>run/reset</code> 累积</td>
             <td>§二、§十四</td>
+          </tr>
+          <tr>
+            <td><span class="badge">工作区</span></td>
+            <td>2026-10-20</td>
+            <td>CR 隐患修复批次二：①<strong>契约</strong>：新增 <code>GetStyleProp</code> 类型约束 <code>getStyle</code> 的 <code>prop</code>（<code>'cssText'</code> 整串 + 驼峰单属性），文档补「自定义钩子契约」note（<code>getStyle</code> prop 取值 + <code>setAttr</code>/<code>getAttr</code> 存对象不可序列化）；②<strong>健壮性</strong>：<code>adjustBrightnessTo</code> 入口加 <code>target = Math.max(target, 0)</code> 防御，避免负 target 反算出非法颜色；③<strong>类型</strong>：<code>adjustBackgroundBrightness</code> 与 <code>adjustTextBrightness</code> 两个公有方法的入参均由 <code>ColorInstance</code> 改为更诚实的 <code>ColorParam</code>，内部统一用 <code>ColorParser</code> 解析（解析失败返回 <code>null</code>）后再安全取 <code>alpha()</code> 等实例方法；④<strong>边界</strong>：文档明确「节点遍历/几何/文本等读操作暂不提供钩子」</td>
+            <td>§十一、§十四</td>
           </tr>
         </tbody>
       </table>

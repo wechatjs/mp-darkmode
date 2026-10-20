@@ -87,7 +87,7 @@ export default class TextNodeQueue {
     this._queue.forEach(item => {
       if (!item.updated) {
         Array.prototype.some.call(els, el => {
-          if (el.nodeType === 1 && getClass(el).split(/\s+/).indexOf(item.className) > -1) {
+          if (el.nodeType === 1 && getClass(el, true).indexOf(item.className) > -1) {
             item.el = el;
             item.updated = true;
             return true;

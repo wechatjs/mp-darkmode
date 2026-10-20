@@ -1,4 +1,9 @@
-export type GetStyle = (node: HTMLElement, prop: string) => string;
+// getStyle 的 prop 取值：
+// - 'cssText'：读取整串内联样式（算法从内联样式提取 cssKVList 时使用）
+// - 单个样式属性，统一为【驼峰】写法，如 'color' / 'visibility' / 'display' / 'backgroundImage' / 'webkitBorderImage' / 'borderImage'
+// 自定义 getStyle 时必须同时支持 'cssText' 整串与上述驼峰单属性，否则会导致样式提取失败、转换静默失效
+export type GetStyleProp = 'cssText' | (string & {});
+export type GetStyle = (node: HTMLElement, prop: GetStyleProp) => string;
 export type SetStyle = (node: HTMLElement, styles: Record<string, string>) => void;
 export type GetClass = (node: HTMLElement) => string;
 export type SetClass = (node: HTMLElement, className: string) => void;

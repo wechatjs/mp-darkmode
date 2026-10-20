@@ -41,7 +41,7 @@ export function hasTextNode(el: HTMLElement): boolean {
   //   }
   // });
   // return cnt.length > 0;
-  return el.textContent.replace(/\s/g, '').length > 0;
+  return (el.textContent || '').replace(/\s/g, '').length > 0;
 };
 
 // table的内部样式类对应的lm背景色
@@ -53,7 +53,7 @@ const tableClassObj = {
 export function hasTableClass(el: HTMLElement): string | null {
   let color = null;
 
-  getClass(el).split(/\s+/).some(className => {
+  getClass(el, true).some(className => {
     if (tableClassObj.hasOwnProperty(className)) {
       color = tableClassObj[className as keyof typeof tableClassObj];
       return true;

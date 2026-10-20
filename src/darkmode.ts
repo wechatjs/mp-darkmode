@@ -103,10 +103,6 @@ import {
   getChildrenAndIt
 } from './modules/domUtils';
 
-import {
-  ColorParser
-} from './modules/color';
-
 interface SwitchToDarkmodeOptions {
   force?: boolean;
   type: 'dom' | 'bg';
@@ -322,13 +318,7 @@ export function getDmBgColor(lmBgColor: string, dmBgColorExist: string = config.
     console.warn('Dark Mode should be initialized by calling `init()` or `run()` before using `getDmBgColor()`');
     return null;
   }
-  const lmBgColorInstance = ColorParser(lmBgColor);
-  const dmBgColorExistInstance = ColorParser(dmBgColorExist);
-  if (lmBgColorInstance && dmBgColorExistInstance) {
-    const res = sdk.adjustBackgroundBrightness(lmBgColorInstance, dmBgColorExistInstance);
-    if (res) return res.toString();
-  }
-  return null;
+  return sdk.adjustBackgroundBrightness(lmBgColor, dmBgColorExist)?.toString() ?? null;
 };
 
 // 根据 Light Mode 前景色转换生成 Dark Mode 前景色
@@ -337,13 +327,7 @@ export function getDmFontColor(lmFontColor: string, dmBgColor: string = config.d
     console.warn('Dark Mode should be initialized by calling `init()` or `run()` before using `getDmFontColor()`');
     return null;
   }
-  const lmFontColorInstance = ColorParser(lmFontColor);
-  const dmBgColorInstance = ColorParser(dmBgColor);
-  if (lmFontColorInstance && dmBgColorInstance) {
-    const res = sdk.adjustTextBrightness(lmFontColorInstance, dmBgColorInstance);
-    if (res) return res.toString();
-  }
-  return null;
+  return sdk.adjustTextBrightness(lmFontColor, dmBgColor)?.toString() ?? null;
 };
 
 // 挂载插件
