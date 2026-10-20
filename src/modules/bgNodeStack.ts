@@ -28,7 +28,10 @@
  */
 
 // Darkmode配置
-import config, { addClass } from './config';
+import config, {
+  getClass,
+  addClass,
+} from './config';
 
 type Callback = (item: StackItem) => void;
 
@@ -102,7 +105,7 @@ export default class BgNodeStack {
     this._stack.forEach(item => {
       if (!item.updated) {
         Array.prototype.some.call(els, (el: HTMLElement) => {
-          if (el.nodeType === 1 && el.classList.contains(item.className)) {
+          if (el.nodeType === 1 && getClass(el).split(/\s+/).indexOf(item.className) > -1) {
             item.el = el;
             item.updated = true;
             return true;

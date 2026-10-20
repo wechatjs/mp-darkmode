@@ -78,7 +78,16 @@ import {
 } from './constant';
 
 // Darkmode配置
-import config, { trim, setStyle, addClass, setAttr, removeAttr, getAttr } from './config';
+import config, {
+  trim,
+  getStyle,
+  setStyle,
+  getClass,
+  addClass,
+  getAttr,
+  setAttr,
+  removeAttr,
+} from './config';
 
 import {
   plugins, // 插件系统
@@ -326,11 +335,10 @@ export default class SDK {
       if (config.whitelist.tagName.indexOf(nodeName) > -1) return '';
       if (config.whitelist.attribute.some(attribute => el.hasAttribute(attribute))) return '';
 
-      const styles = el.style;
-
       if (cssKVList.length === 0) { // 没有传入cssKVList就从内联样式中提取
-        // styles.cssText 读出来的颜色统一是rgba格式，除了用英文定义颜色（如：black、white）
-        cssKVList = ((styles.cssText && styles.cssText.replace(/("[^;]*);([^;]*")|('[^;]*);([^;]*')/g, `$1$3${SEMICOLON_PLACEHOLDER}$2$4`).split(';')) || []).map(cssStr => { // 将cssStr转换为[key, value]，并清除各个元素的前后空白字符
+        // cssText 读出来的颜色统一是rgba格式，除了用英文定义颜色（如：black、white）
+        const cssText = getStyle(el, 'cssText');
+        cssKVList = ((cssText && cssText.replace(/("[^;]*);([^;]*")|('[^;]*);([^;]*')/g, `$1$3${SEMICOLON_PLACEHOLDER}$2$4`).split(';')) || []).map(cssStr => { // 将cssStr转换为[key, value]，并清除各个元素的前后空白字符
           const splitIdx = cssStr.indexOf(':');
           return [
             trim(cssStr.slice(0, splitIdx).toLowerCase() || ''),
@@ -444,13 +452,13 @@ export default class SDK {
       let dmBgClassName = '';
       if ((isUpdate || needReset) && el.classList?.length) {
         // 先提取dm className
-        let matches = el.classList.toString().match(DM_CLASSNAME_REGEXP);
+        let matches = getClass(el).match(DM_CLASSNAME_REGEXP);
         if (matches) {
           dmClassName = matches[0];
         }
 
         // 再提取dm bg className
-        matches = el.classList.toString().match(bgStack.classNameReg);
+        matches = getClass(el).match(bgStack.classNameReg);
         if (matches) {
           dmBgClassName = matches[0];
         }
@@ -638,13 +646,13 @@ export default class SDK {
               noColor = false;
               cssUtils.unwatch('color');
             }
-            cssKV += cssUtils.genCssKV(key, (!cssChange && needReset) ? (el.style as any)[key] : value);
+            cssKV += cssUtils.genCssKV(key, (!cssChange && needReset) ? getStyle(el, key) : value);
           }
         }
       }));
 
       if (noColor) {
-        cssKV += cssUtils.genCssKV('color', el.style.color || getAttr(el, COLORATTR) || config.defaultDarkTextColor);
+        cssKV += cssUtils.genCssKV('color', getStyle(el, 'color') || getAttr(el, COLORATTR) || config.defaultDarkTextColor);
         cssUtils.unwatch('color');
       }
 

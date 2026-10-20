@@ -13420,7 +13420,7 @@ class BgNodeStack {
     this._stack.forEach(item => {
       if (!item.updated) {
         Array.prototype.some.call(els, el => {
-          if (el.nodeType === 1 && el.classList.contains(item.className)) {
+          if (el.nodeType === 1 && (0,_config__WEBPACK_IMPORTED_MODULE_0__.getClass)(el).split(/\s+/).indexOf(item.className) > -1) {
             item.el = el;
             item.updated = true;
             return true;
@@ -13633,6 +13633,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   addClass: () => (/* binding */ addClass),
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   getAttr: () => (/* binding */ getAttr),
+/* harmony export */   getClass: () => (/* binding */ getClass),
+/* harmony export */   getStyle: () => (/* binding */ getStyle),
 /* harmony export */   removeAttr: () => (/* binding */ removeAttr),
 /* harmony export */   removeClass: () => (/* binding */ removeClass),
 /* harmony export */   setAttr: () => (/* binding */ setAttr),
@@ -13664,10 +13666,12 @@ __webpack_require__.r(__webpack_exports__);
  * @attr {string}       defaultDarkWebviewColor  Dark Mode下webview颜色
  * @attr {string}       defaultDarkBgColor       Dark Mode下背景颜色
  * @attr {string}       defaultDarkTextColor     Dark Mode下字体颜色
+ * @attr {Function}     getStyle                 使用自定义的获取样式的方法
  * @attr {Function}     setStyle                 使用自定义的设置样式的方法
+ * @attr {Function}     getClass                 使用自定义的获取类的方法
  * @attr {Function}     setClass                 使用自定义的设置类的方法
- * @attr {Function}     setAttr                  使用自定义的设置属性的方法
  * @attr {Function}     getAttr                  使用自定义的获取属性的方法
+ * @attr {Function}     setAttr                  使用自定义的设置属性的方法
  *
  * @method set 设置配置
  * @param {ConfigType}   type 配置类型，'boolean' | 'string' | 'function' | 'dom'
@@ -13727,13 +13731,17 @@ const defaultConfig = {
   // Dark Mode下背景颜色
   defaultDarkTextColor: _constant__WEBPACK_IMPORTED_MODULE_0__.DEFAULT_DARK_TEXTCOLOR,
   // Dark Mode下字体颜色
+  getStyle: null,
+  // 使用自定义的获取样式的方法
   setStyle: null,
   // 使用自定义的设置样式的方法
+  getClass: null,
+  // 使用自定义的获取类的方法
   setClass: null,
   // 使用自定义的设置类的方法
-  setAttr: null,
-  // 使用自定义的设置属性的方法
-  getAttr: null // 使用自定义的获取属性的方法
+  getAttr: null,
+  // 使用自定义的获取属性的方法
+  setAttr: null // 使用自定义的设置属性的方法
 };
 const config = {
   hasInit: false,
@@ -13779,6 +13787,9 @@ const config = {
   }
 };
 const trim = str => str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+const getStyle = (node, prop) => {
+  return config.getStyle === null ? node.style[prop] : config.getStyle(node, prop);
+};
 const setStyle = (node, styles) => {
   if (config.setStyle === null) {
     Object.assign(node.style, styles);
@@ -13786,8 +13797,8 @@ const setStyle = (node, styles) => {
     config.setStyle(node, styles);
   }
 };
-const filterClass = (node, className) => {
-  return Array.from(node.classList).filter(cls => cls && cls !== className);
+const getClass = node => {
+  return config.getClass === null ? node.classList.toString() : config.getClass(node);
 };
 const setClass = (node, className) => {
   if (config.setClass === null) {
@@ -13795,6 +13806,9 @@ const setClass = (node, className) => {
   } else {
     config.setClass(node, trim(className));
   }
+};
+const filterClass = (node, className) => {
+  return getClass(node).split(/\s+/).filter(cls => cls && cls !== className);
 };
 const addClass = (node, className) => {
   if (config.setClass === null) {
@@ -13810,6 +13824,9 @@ const removeClass = (node, className) => {
     config.setClass(node, filterClass(node, className).join(' '));
   }
 };
+const getAttr = (node, attr) => {
+  return config.getAttr === null ? node[attr] : config.getAttr(node, attr);
+};
 const setAttr = (node, attr, value) => {
   if (config.setAttr === null) {
     node[attr] = value;
@@ -13823,9 +13840,6 @@ const removeAttr = (node, attr) => {
   } else {
     config.setAttr(node, attr, null);
   }
-};
-const getAttr = (node, attr) => {
-  return config.getAttr === null ? node[attr] : config.getAttr(node, attr);
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (config);
 
@@ -14331,7 +14345,7 @@ class DomUtils {
   showFirstPageNodes() {
     this._firstPageEls.forEach(el => {
       // 显示首屏节点
-      !el.style.visibility && (0,_config__WEBPACK_IMPORTED_MODULE_0__.setStyle)(el, {
+      !(0,_config__WEBPACK_IMPORTED_MODULE_0__.getStyle)(el, 'visibility') && (0,_config__WEBPACK_IMPORTED_MODULE_0__.setStyle)(el, {
         visibility: 'visible'
       });
     });
@@ -14846,11 +14860,11 @@ class SDK {
       const nodeName = el.nodeName;
       if (_config__WEBPACK_IMPORTED_MODULE_4__["default"].whitelist.tagName.indexOf(nodeName) > -1) return '';
       if (_config__WEBPACK_IMPORTED_MODULE_4__["default"].whitelist.attribute.some(attribute => el.hasAttribute(attribute))) return '';
-      const styles = el.style;
       if (cssKVList.length === 0) {
         // 没有传入cssKVList就从内联样式中提取
-        // styles.cssText 读出来的颜色统一是rgba格式，除了用英文定义颜色（如：black、white）
-        cssKVList = (styles.cssText && styles.cssText.replace(/("[^;]*);([^;]*")|('[^;]*);([^;]*')/g, `$1$3${_constant__WEBPACK_IMPORTED_MODULE_3__.SEMICOLON_PLACEHOLDER}$2$4`).split(';') || []).map(cssStr => {
+        // cssText 读出来的颜色统一是rgba格式，除了用英文定义颜色（如：black、white）
+        const cssText = (0,_config__WEBPACK_IMPORTED_MODULE_4__.getStyle)(el, 'cssText');
+        cssKVList = (cssText && cssText.replace(/("[^;]*);([^;]*")|('[^;]*);([^;]*')/g, `$1$3${_constant__WEBPACK_IMPORTED_MODULE_3__.SEMICOLON_PLACEHOLDER}$2$4`).split(';') || []).map(cssStr => {
           // 将cssStr转换为[key, value]，并清除各个元素的前后空白字符
           const splitIdx = cssStr.indexOf(':');
           return [(0,_config__WEBPACK_IMPORTED_MODULE_4__.trim)(cssStr.slice(0, splitIdx).toLowerCase() || ''), (0,_config__WEBPACK_IMPORTED_MODULE_4__.trim)(cssStr.slice(splitIdx + 1).replace(_constant__WEBPACK_IMPORTED_MODULE_3__.SEMICOLON_PLACEHOLDER_REGEXP, ';') || '')];
@@ -14968,13 +14982,13 @@ class SDK {
       let dmBgClassName = '';
       if ((isUpdate || needReset) && el.classList?.length) {
         // 先提取dm className
-        let matches = el.classList.toString().match(_constant__WEBPACK_IMPORTED_MODULE_3__.DM_CLASSNAME_REGEXP);
+        let matches = (0,_config__WEBPACK_IMPORTED_MODULE_4__.getClass)(el).match(_constant__WEBPACK_IMPORTED_MODULE_3__.DM_CLASSNAME_REGEXP);
         if (matches) {
           dmClassName = matches[0];
         }
 
         // 再提取dm bg className
-        matches = el.classList.toString().match(_global__WEBPACK_IMPORTED_MODULE_5__.bgStack.classNameReg);
+        matches = (0,_config__WEBPACK_IMPORTED_MODULE_4__.getClass)(el).match(_global__WEBPACK_IMPORTED_MODULE_5__.bgStack.classNameReg);
         if (matches) {
           dmBgClassName = matches[0];
         }
@@ -15168,12 +15182,12 @@ class SDK {
               noColor = false;
               _global__WEBPACK_IMPORTED_MODULE_5__.cssUtils.unwatch('color');
             }
-            cssKV += _global__WEBPACK_IMPORTED_MODULE_5__.cssUtils.genCssKV(key, !cssChange && needReset ? el.style[key] : value);
+            cssKV += _global__WEBPACK_IMPORTED_MODULE_5__.cssUtils.genCssKV(key, !cssChange && needReset ? (0,_config__WEBPACK_IMPORTED_MODULE_4__.getStyle)(el, key) : value);
           }
         }
       }));
       if (noColor) {
-        cssKV += _global__WEBPACK_IMPORTED_MODULE_5__.cssUtils.genCssKV('color', el.style.color || (0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.COLORATTR) || _config__WEBPACK_IMPORTED_MODULE_4__["default"].defaultDarkTextColor);
+        cssKV += _global__WEBPACK_IMPORTED_MODULE_5__.cssUtils.genCssKV('color', (0,_config__WEBPACK_IMPORTED_MODULE_4__.getStyle)(el, 'color') || (0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.COLORATTR) || _config__WEBPACK_IMPORTED_MODULE_4__["default"].defaultDarkTextColor);
         _global__WEBPACK_IMPORTED_MODULE_5__.cssUtils.unwatch('color');
       }
       if (cssKV) {
@@ -15392,7 +15406,7 @@ class TextNodeQueue {
     this._queue.forEach(item => {
       if (!item.updated) {
         Array.prototype.some.call(els, el => {
-          if (el.nodeType === 1 && el.classList.contains(item.className)) {
+          if (el.nodeType === 1 && (0,_config__WEBPACK_IMPORTED_MODULE_0__.getClass)(el).split(/\s+/).indexOf(item.className) > -1) {
             item.el = el;
             item.updated = true;
             return true;
@@ -15447,8 +15461,8 @@ __webpack_require__.r(__webpack_exports__);
 function validate(container, opt = {}, filter) {
   const treeWalker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, node => {
     if (!(node instanceof HTMLElement)) return NodeFilter.FILTER_REJECT; // 忽略非元素节点
-    if (node.style.display === 'none') return NodeFilter.FILTER_REJECT; // 忽略不可见节点以及其所有子节点
-    if (_constant__WEBPACK_IMPORTED_MODULE_0__.URL_REGEXP.test(node.style.backgroundImage || '') || _constant__WEBPACK_IMPORTED_MODULE_0__.URL_REGEXP.test(node.style.webkitBorderImage || node.style.borderImage || '')) return NodeFilter.FILTER_REJECT; // 忽略有背景图片的节点以及其所有子节点
+    if ((0,_config__WEBPACK_IMPORTED_MODULE_1__.getStyle)(node, 'display') === 'none') return NodeFilter.FILTER_REJECT; // 忽略不可见节点以及其所有子节点
+    if (_constant__WEBPACK_IMPORTED_MODULE_0__.URL_REGEXP.test((0,_config__WEBPACK_IMPORTED_MODULE_1__.getStyle)(node, 'backgroundImage') || '') || _constant__WEBPACK_IMPORTED_MODULE_0__.URL_REGEXP.test((0,_config__WEBPACK_IMPORTED_MODULE_1__.getStyle)(node, 'webkitBorderImage') || (0,_config__WEBPACK_IMPORTED_MODULE_1__.getStyle)(node, 'borderImage') || '')) return NodeFilter.FILTER_REJECT; // 忽略有背景图片的节点以及其所有子节点
     if (node instanceof SVGElement) return NodeFilter.FILTER_REJECT; // 忽略SVG节点以及其所有子节点
     if (filter?.(node)) return NodeFilter.FILTER_SKIP; // 忽略filter(node)返回true的节点
     return NodeFilter.FILTER_ACCEPT;
@@ -15699,7 +15713,7 @@ const switchToDarkmode = (mqlObj, opt = {
       _modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.isDarkmode && _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].begin?.(_modules_global__WEBPACK_IMPORTED_MODULE_3__.domUtils.hasDelay());
       Array.prototype.forEach.call(_modules_global__WEBPACK_IMPORTED_MODULE_3__.domUtils.get(), node => {
         if (_modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.isDarkmode && node.classList?.length) {
-          (0,_modules_config__WEBPACK_IMPORTED_MODULE_2__.setClass)(node, node.classList.toString().replace(classReg, '')); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
+          (0,_modules_config__WEBPACK_IMPORTED_MODULE_2__.setClass)(node, (0,_modules_config__WEBPACK_IMPORTED_MODULE_2__.getClass)(node).replace(classReg, '')); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
         }
         if (_modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.isDarkmode || _modules_global__WEBPACK_IMPORTED_MODULE_3__.plugins.length) {
           if (!_modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].needJudgeFirstPage) {
@@ -15748,9 +15762,9 @@ const switchToDarkmode = (mqlObj, opt = {
             // 重置继承属性
             inheritAttrs.forEach(([attr, value]) => {
               if (value === null) {
-                delete child[attr];
+                (0,_modules_config__WEBPACK_IMPORTED_MODULE_2__.removeAttr)(child, attr);
               } else {
-                child[attr] = value;
+                (0,_modules_config__WEBPACK_IMPORTED_MODULE_2__.setAttr)(child, attr, value);
               }
             });
           });
@@ -15831,10 +15845,12 @@ function init(opt = {}) {
   _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].set('dom', opt, 'container');
   _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].set('string', opt, 'cssSelectorsPrefix');
   _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].setDefaultColor(opt);
+  _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].set('function', opt, 'getStyle');
   _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].set('function', opt, 'setStyle');
+  _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].set('function', opt, 'getClass');
   _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].set('function', opt, 'setClass');
-  _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].set('function', opt, 'setAttr');
   _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].set('function', opt, 'getAttr');
+  _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].set('function', opt, 'setAttr');
   _modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.init();
   if (!_modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].mode && !mql && window.matchMedia) {
     // 匹配媒体查询

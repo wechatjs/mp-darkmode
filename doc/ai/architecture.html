@@ -109,9 +109,11 @@
     <h2 style="margin-top:20px;">深入专题</h2>
     <ol start="10">
       <li><a href="#diagrams">十、流程图与时序图</a></li>
-      <li><a href="#adjusttext">十一、_adjustTextBrightness 逐行拆解</a></li>
+      <li><a href="#adjusttext">十一、adjustTextBrightness 逐行拆解</a></li>
       <li><a href="#bgstack">十二、背景图位置判断时序</a></li>
       <li><a href="#firstpage">十三、首屏优化与闪烁规避</a></li>
+      <li><a href="#domhooks">十四、DOM 操作抽象层（钩子）</a></li>
+      <li><a href="#changelog">十五、近期变更记录</a></li>
     </ol>
   </nav>
 
@@ -141,6 +143,8 @@
           <tr><td><code>convertBg(nodes)</code></td><td>二次处理「背景图 / 渐变」下的文字节点（延迟背景判断场景）</td></tr>
           <tr><td><code>updateStyle(node, styles)</code></td><td>运行时更新单个节点的样式并重新转换</td></tr>
           <tr><td><code>getContrast(c1, c2)</code></td><td>计算两个颜色对比度 <code>[1, 21]</code></td></tr>
+          <tr><td><code>getDmBgColor(lmBgColor, dmBgColorExist?)</code></td><td><span class="badge">v1.2.3-alpha.4 新增</span> 由 Light 背景色 + 已有深色底算出 Dark 背景色（返回字符串或 null），底层复用 <code>sdk.adjustBackgroundBrightness</code></td></tr>
+          <tr><td><code>getDmFontColor(lmFontColor, dmBgColor?)</code></td><td><span class="badge">v1.2.3-alpha.4 新增</span> 由 Light 字体色 + 深色底算出 Dark 字体色（返回字符串或 null），底层复用 <code>sdk.adjustTextBrightness</code></td></tr>
           <tr><td><code>extend(pluginList)</code></td><td>挂载插件</td></tr>
           <tr><td><code>reset(nodes)</code></td><td>卸载所有状态、移除注入的样式表、清理节点上的私有属性</td></tr>
           <tr><td><code>validate(container, opt, filter)</code></td><td>校验深色模式效果（低对比度 / 文字背景渐变 / 白名单）</td></tr>
@@ -179,13 +183,13 @@
       </ol>
 
       <h3>三个调整函数（由 <code>_adjustBrightness</code> 分发）</h3>
-      <p><strong>1. <code>_adjustBackgroundBrightness</code>（背景 / 字体阴影）</strong></p>
+      <p><strong>1. <code>adjustBackgroundBrightness</code>（背景 / 字体阴影）</strong></p>
       <ul class="tight">
         <li>黑白灰(饱和度=0)且亮度 &gt; 40，或感知亮度 &gt; 250（白色）→ 做亮度<strong>取反</strong>（白底翻成默认深色底 <code>#191919</code>）。</li>
         <li>感知亮度 &gt; 190 → 压到 190。</li>
         <li>HSL 亮度 &lt; 22 → 抬到 22（纯黑背景适当提亮，避免死黑）。</li>
       </ul>
-      <p><strong>2. <code>_adjustTextBrightness</code>（字体 / 边框）</strong></p>
+      <p><strong>2. <code>adjustTextBrightness</code>（字体 / 边框）</strong></p>
       <ul class="tight">
         <li>接近白色（亮度 ≥ 250）→ 不动，保持高亮。</li>
         <li>与背景的感知亮度差 ≥ 65（<code>MIN_LIMIT_OFFSET_BRIGHTNESS</code>）→ 不动（对比足够）。</li>
@@ -205,6 +209,7 @@
         </tbody>
       </table>
       <p>处理某节点背景色后，会把「新背景色 / 原背景色 / 计算出的合适字体色」写到<strong>它自己和所有子节点</strong>上（<code>getChildrenAndIt</code>），这样子节点在计算自身文字对比度时能拿到真实的背景上下文。只有背景色没字体色的节点会<strong>追加</strong>一条计算出的字体色。</p>
+      <div class="note"><strong>v1.2.3-alpha.2 起</strong>：这些 expando 属性的读 / 写 / 删不再直接操作 <code>(el as any)[ATTR]</code>，而是统一经由 DOM 操作钩子 <code>getAttr</code> / <code>setAttr</code> / <code>removeAttr</code>（详见 <a href="#domhooks">§十四 DOM 操作抽象层</a>），以便在非标准浏览器环境中接管。</div>
     </section>
 
     <section id="bgimage">
@@ -335,11 +340,11 @@
    isBgColor          isTextColor            isTextShadow         (其它:忽略)
         │              /isBorderColor              │
         ▼                   │                      ▼
- _adjustBackground     有背景图? ──是──► 不处理    当背景色处理：
-  Brightness              │(BGIMAGEATTR)            _adjustBackground
+ adjustBackground      有背景图? ──是──► 不处理    当背景色处理：
+  Brightness              │(BGIMAGEATTR)            adjustBackground
    (白反黑/压190/          否                          Brightness
     提亮到22)              ▼                       （但不回算字体色）
-        │           _adjustTextBrightness
+        │           adjustTextBrightness
         │            (亮底调暗字/暗底调亮字，
         │             见 §11 决策树)
         ▼
@@ -365,8 +370,11 @@
     </section>
 
     <section id="adjusttext">
-      <h2>十一、<code>_adjustTextBrightness</code> 逐行拆解</h2>
+      <h2>十一、<code>adjustTextBrightness</code> 逐行拆解</h2>
       <p>这是字体/边框颜色的核心，目标：<strong>在深色背景上算出既不刺眼、又对比足够、且尽量保留原色相的字体色</strong>。它通过<strong>「HSL 明度翻转 → 递归再判断 → 感知亮度精调」</strong>的两段式策略实现。</p>
+      <div class="note">
+        <strong>v1.2.3-alpha.4 变更</strong>：该方法已从私有 <code>_adjustTextBrightness</code> <strong>公有化</strong>为 <code>adjustTextBrightness</code>（同时 <code>_adjustBackgroundBrightness</code> → <code>adjustBackgroundBrightness</code>），对外 API <code>getDmFontColor</code> / <code>getDmBgColor</code> 直接复用它们。注意分发入口方法 <code>_adjustBrightness</code> 仍为私有、未改名。
+      </div>
 
       <h3>关键前提</h3>
       <ul class="tight">
@@ -375,7 +383,7 @@
         <li><strong><code>opt</code> 参数是「是否处于递归调用」的开关</strong>，决定两处行为（见下表 L2 / L9 / L11）。</li>
       </ul>
 
-      <pre class="diagram"><code>_adjustTextBrightness(textColor, bgColor, opt?) {
+      <pre class="diagram"><code>adjustTextBrightness(textColor, bgColor, opt?) {
   const textColorAlpha = opt?.alpha || textColor.alpha();                         // L1
   const textColorMix = opt ? textColor : mixColors([bgColor, textColor]);         // L2
   if (textColorMix === null) return null;                                         // L3
@@ -401,7 +409,7 @@
   if (bgColorPerceivedBrightness >= HIGH_BGCOLOR_BRIGHTNESS) {                     // L12 分支D 亮底
     if (textColorMixHsl[2] > 90 - HIGH_BLACKWHITE_HSL_BRIGHTNESS) {                // L13 (L>50)
       textColorMixHsl[2] = 90 - textColorMixHsl[2];                               // L14 明度翻转↓
-      return _adjustTextBrightness(Color.hsl(...textColorMixHsl), bgColor, {...});// L15 递归
+      return adjustTextBrightness(Color.hsl(...textColorMixHsl), bgColor, {...});// L15 递归
     }
     return getFrontColor(                                                         // L16
       adjustBrightnessTo(min(_maxLimitOffsetBrightness, bgBrightness - 65), textColorMixRgb),
@@ -409,7 +417,7 @@
   } else {                                                                        // L17 分支E 暗底
     if (textColorMixHsl[2] <= HIGH_BLACKWHITE_HSL_BRIGHTNESS) {                    // L18 (L<=40)
       textColorMixHsl[2] = 90 - textColorMixHsl[2];                               // L19 明度翻转↑
-      return _adjustTextBrightness(Color.hsl(...textColorMixHsl), bgColor, {...});// L20 递归
+      return adjustTextBrightness(Color.hsl(...textColorMixHsl), bgColor, {...});// L20 递归
     }
     return getFrontColor(                                                         // L21
       adjustBrightnessTo(min(_maxLimitOffsetBrightness, bgBrightness + 65), textColorMixRgb),
@@ -553,6 +561,106 @@
       <div class="note">
         <strong>与延迟背景判断的配合</strong>：Light Mode 首次加载会把 <code>needJudgeFirstPage</code> / <code>delayBgJudge</code> 复位，并把节点转入延迟队列（<code>domUtils.delay()</code>）；待系统真正切到深色时再走完整的首屏优化 + 背景定位流程（§12）。
       </div>
+    </section>
+
+    <section id="domhooks">
+      <h2>十四、DOM 操作抽象层（钩子）<span class="muted"> · config.ts · v1.2.3-alpha.2+（getStyle/getClass 为后续新增）</span></h2>
+      <p>为让算法能运行在<strong>非标准浏览器环境</strong>（如自定义渲染器、虚拟 DOM、SSR、小程序等「类 DOM」对象）上，近期把库内<strong>所有</strong>对 DOM 的读写（内联样式 / class / 节点上挂载的 expando 属性）收敛到一层<strong>可配置钩子</strong>。默认走原生 DOM，使用方可通过配置项整体接管。</p>
+
+      <h3>六个配置钩子（<code>ConfigOption</code>）</h3>
+      <table>
+        <thead><tr><th>配置项</th><th>签名</th><th>作用</th></tr></thead>
+        <tbody>
+          <tr><td><code>setStyle</code></td><td><code>(node, styles: Record&lt;string,string&gt;) =&gt; void</code></td><td>自定义「设置内联样式」</td></tr>
+          <tr><td><code>setClass</code></td><td><code>(node, className: string) =&gt; void</code></td><td>自定义「设置整串 class」</td></tr>
+          <tr><td><code>setAttr</code></td><td><code>(node, attr: string, value: any) =&gt; void</code></td><td>自定义「写属性」（含删除：value 传 <code>null</code>）</td></tr>
+          <tr><td><code>getAttr</code></td><td><code>(node, attr: string) =&gt; any</code></td><td>自定义「读属性」（读 expando）</td></tr>
+          <tr><td><code>getStyle</code></td><td><code>(node, prop: string) =&gt; string</code></td><td><span class="badge">新增</span> 自定义「读内联样式」（含 <code>cssText</code> 整串及单属性）</td></tr>
+          <tr><td><code>getClass</code></td><td><code>(node) =&gt; string</code></td><td><span class="badge">新增</span> 自定义「读 class 整串」</td></tr>
+        </tbody>
+      </table>
+      <p class="muted">默认值均为 <code>null</code>；为 <code>null</code> 时使用下方的原生实现，否则调用使用方传入的函数。全部 6 个钩子在 <code>init()</code> 中通过 <code>config.set('function', opt, ...)</code> 注册。</p>
+
+      <h3><code>config.ts</code> 导出的工具函数（算法内部统一调用它们）</h3>
+      <table>
+        <thead><tr><th>函数</th><th>默认（钩子为 null）</th><th>自定义路径（配置了钩子）</th></tr></thead>
+        <tbody>
+          <tr><td><code>setStyle(node, styles)</code></td><td><code>Object.assign(node.style, styles)</code></td><td><code>config.setStyle(node, styles)</code></td></tr>
+          <tr><td><code>getStyle(node, prop)</code></td><td><code>(node.style as any)[prop]</code></td><td><code>config.getStyle(node, prop)</code></td></tr>
+          <tr><td><code>setClass(node, className)</code></td><td><code>node.setAttribute('class', className)</code></td><td><code>config.setClass(node, trim(className))</code></td></tr>
+          <tr><td><code>addClass(node, className)</code></td><td><code>node.classList.add(className)</code></td><td><code>config.setClass(node, [...filterClass(node,className), className].join(' '))</code></td></tr>
+          <tr><td><code>removeClass(node, className)</code></td><td><code>node.classList.remove(className)</code></td><td><code>config.setClass(node, filterClass(node,className).join(' '))</code></td></tr>
+          <tr><td><code>getClass(node)</code></td><td><code>node.classList.toString()</code></td><td><code>config.getClass(node)</code></td></tr>
+          <tr><td><code>setAttr(node, attr, value)</code></td><td><code>(node as any)[attr] = value</code>（expando 写）</td><td><code>config.setAttr(node, attr, value)</code></td></tr>
+          <tr><td><code>removeAttr(node, attr)</code></td><td><code>delete (node as any)[attr]</code></td><td><code>config.setAttr(node, attr, null)</code></td></tr>
+          <tr><td><code>getAttr(node, attr)</code></td><td><code>(node as any)[attr]</code>（expando 读）</td><td><code>config.getAttr(node, attr)</code></td></tr>
+        </tbody>
+      </table>
+      <p>辅助：<code>trim(str)</code>（去首尾空白，已从 <code>sdk.ts</code> 迁至 <code>config.ts</code> 并导出）、<code>filterClass(node, className)</code>（现经 <code>getClass(node).split(/\s+/)</code> 取现有 class，过滤掉<strong>空串</strong>与指定 class，用于自定义路径下重新拼 class，避免前导/重复空格）。</p>
+
+      <div class="note">
+        <strong>读 / 写配对（重要）</strong>：算法内部对节点的<strong>所有</strong>读写都已收敛到这 9 个工具函数——内联样式读写走 <code>getStyle</code> / <code>setStyle</code>，class 读写走 <code>getClass</code> / <code>setClass</code> / <code>addClass</code> / <code>removeClass</code>，expando 读写删走 <code>getAttr</code> / <code>setAttr</code> / <code>removeAttr</code>。配置自定义钩子时务必<strong>读写成对</strong>提供（如自定义了 <code>setAttr</code> 把中间态存到自管结构，就必须同时自定义 <code>getAttr</code> 从同一结构读），否则会出现「从 A 读、往 B 写」的不一致。</div>
+
+      <div class="note">
+        <strong>对「颜色继承 expando」的影响</strong>：<a href="#algorithm">§三</a> 提到的 <code>COLORATTR</code> / <code>BGCOLORATTR</code> / <code>ORIGINAL_*</code> / <code>BGIMAGEATTR</code> / <code>BGGRADIENT_MIXCOLORATTR</code> / <code>COMPLEMENTARY_BGIMAGECOLORATTR</code> 的读写删，<strong>现在全部经由 <code>getAttr</code> / <code>setAttr</code> / <code>removeAttr</code></strong>。默认实现仍是把值挂在节点对象上（expando），行为与之前一致；但配置了 <code>setAttr</code> / <code>getAttr</code> 后，这些中间态可被存到使用方自管的结构里（不污染真实节点）。
+      </div>
+
+      <h3>钩子未覆盖的已知边界</h3>
+      <ul class="tight">
+        <li><strong><code>&lt;html&gt;</code> 根元素刻意不走钩子</strong>：强制模式下给 <code>&lt;html&gt;</code> 加/删 <code>data_color_scheme_dark</code>（<code>darkmode.ts</code> 的 <code>init</code> 与 <code>reset</code>）直接用 <code>document.getElementsByTagName('html')[0].classList.add/remove</code>，<strong>不经过 <code>setClass</code> / <code>removeClass</code></strong>。因为根节点恒为真实 document 元素，无需被自定义渲染环境接管，<strong>属有意为之</strong>。</li>
+        <li><strong>真实 HTML 属性读取不走 <code>getAttr</code></strong>：<code>el.getAttribute('color'/'bgcolor')</code>、<code>el.hasAttribute(...)</code>、<code>dataset.ignoreDm</code> 读的是真实 HTML attribute，与读 expando 的 <code>getAttr</code> 语义不同，<strong>刻意不混用</strong>。</li>
+        <li><strong>样式表注入不属节点级钩子</strong>：<code>cssUtils.ts</code> 的 <code>document.head.insertAdjacentHTML</code>（注入 <code>&lt;style&gt;</code>）、<code>getElementById</code> / <code>removeChild</code> 操作的是 <code>&lt;head&gt;</code> 的样式表节点，不在这套节点读写钩子的职责内。</li>
+        <li><strong>判空仍用 <code>classList?.length</code></strong>：取 class 前的「是否元素节点 / 有无 class」防御判断保留 <code>node.classList?.length</code>（兼顾非元素节点、SVG），取值才走 <code>getClass</code>。</li>
+      </ul>
+
+      <h3>SVG className 兼容（<code>a3e09ee</code>）</h3>
+      <p>SVG 元素的 <code>className</code> 是 <code>SVGAnimatedString</code> 对象而非字符串，旧代码 <code>typeof node.className === 'string'</code> 会漏判且 <code>node.className.replace(...)</code> 会报错。修复后统一改为：</p>
+      <ul class="tight">
+        <li>判空：<code>node.classList?.length</code>（替代 <code>node.className &amp;&amp; typeof node.className === 'string'</code>）。</li>
+        <li>取值：<code>getClass(node)</code>（默认实现 <code>classList.toString()</code>，替代直接读 <code>node.className</code>），再做正则匹配 / 替换。</li>
+        <li>涉及 <code>darkmode.ts</code> 清理旧 dark class 处、<code>sdk.ts</code> 提取 <code>dmClassName</code> / <code>dmBgClassName</code> 处。</li>
+      </ul>
+      <p class="muted">设置 class 的默认实现也由 <code>node.className = ...</code> 改为 <code>node.setAttribute('class', ...)</code>，对 SVG 同样安全。</p>
+    </section>
+
+    <section id="changelog">
+      <h2>十五、近期变更记录</h2>
+      <p class="muted">以下为本知识库首次生成（<code>8723ecd</code>, 2026-09-21）之后的源码改动，已并入上文对应章节。</p>
+      <table>
+        <thead><tr><th>提交 / 版本</th><th>日期</th><th>改动摘要</th><th>影响章节</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>e43d7c2</code><br><span class="badge">alpha.2</span></td>
+            <td>2026-09-22</td>
+            <td>新增 DOM 操作钩子 <code>setStyle</code> / <code>setClass</code> / <code>setAttr</code> / <code>getAttr</code>，算法内所有样式 / class / expando 读写改走 <code>config.ts</code> 的 <code>setStyle</code> / <code>addClass</code> / <code>setClass</code> / <code>removeClass</code> / <code>setAttr</code> / <code>removeAttr</code> / <code>getAttr</code></td>
+            <td>§三、§十四</td>
+          </tr>
+          <tr>
+            <td><code>970e493</code></td>
+            <td>2026-09-22</td>
+            <td><code>filterClass</code> 过滤空串、重拼 class 去掉前导空格</td>
+            <td>§十四</td>
+          </tr>
+          <tr>
+            <td><code>a3e09ee</code><br><span class="badge">alpha.3</span></td>
+            <td>2026-09-24</td>
+            <td>修复 SVG <code>className</code> 为对象的问题：改用 <code>classList?.length</code> 判空、<code>classList.toString()</code> 取值；<code>setClass</code> 默认实现改用 <code>setAttribute('class', ...)</code>；<code>trim</code> 迁入 <code>config.ts</code></td>
+            <td>§十四</td>
+          </tr>
+          <tr>
+            <td><code>a40e10b</code><br><span class="badge">alpha.4</span></td>
+            <td>2026-10-19</td>
+            <td>新增对外 API <code>getDmBgColor</code> / <code>getDmFontColor</code>；将私有 <code>_adjustBackgroundBrightness</code> / <code>_adjustTextBrightness</code> 公有化为 <code>adjustBackgroundBrightness</code> / <code>adjustTextBrightness</code>（后者第二参数语义为「已有深色底」<code>bgColorExist</code>）供新 API 复用</td>
+            <td>§二、§三、§十一</td>
+          </tr>
+          <tr>
+            <td><span class="badge">工作区</span></td>
+            <td>2026-10-20</td>
+            <td>修复 <code>convertBg</code> 重置继承属性处 expando 读写不对称（<code>darkmode.ts</code> L182/L184 改走 <code>removeAttr</code> / <code>setAttr</code>）；新增 <code>getStyle</code> / <code>getClass</code> 两个读钩子，把库内所有读内联样式（<code>cssText</code> / 单属性）、读 class（<code>toString</code> / <code>contains</code> 判断）统一收敛走钩子，补齐读写配对；<code>filterClass</code> 改用 <code>getClass</code></td>
+            <td>§三、§十四</td>
+          </tr>
+        </tbody>
+      </table>
     </section>
 
     <footer>

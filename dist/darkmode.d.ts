@@ -1,7 +1,9 @@
+export type GetStyle = (node: HTMLElement, prop: string) => string;
 export type SetStyle = (node: HTMLElement, styles: Record<string, string>) => void;
+export type GetClass = (node: HTMLElement) => string;
 export type SetClass = (node: HTMLElement, className: string) => void;
-export type SetAttr = (node: HTMLElement, attr: string, value: any) => void;
 export type GetAttr = (node: HTMLElement, attr: string) => any;
+export type SetAttr = (node: HTMLElement, attr: string, value: any) => void;
 
 export interface ConfigOption {
   begin?: ((isSwitch: boolean) => void) | null;
@@ -23,10 +25,12 @@ export interface ConfigOption {
   defaultDarkWebviewColor?: string;
   defaultDarkBgColor?: string;
   defaultDarkTextColor?: string;
+  getStyle?: GetStyle | null;
   setStyle?: SetStyle | null;
+  getClass?: GetClass | null;
   setClass?: SetClass | null;
-  setAttr?: SetAttr | null;
   getAttr?: GetAttr | null;
+  setAttr?: SetAttr | null;
 }
 
 export type KvList = {

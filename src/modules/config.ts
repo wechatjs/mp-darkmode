@@ -20,10 +20,12 @@
  * @attr {string}       defaultDarkWebviewColor  Dark Mode下webview颜色
  * @attr {string}       defaultDarkBgColor       Dark Mode下背景颜色
  * @attr {string}       defaultDarkTextColor     Dark Mode下字体颜色
+ * @attr {Function}     getStyle                 使用自定义的获取样式的方法
  * @attr {Function}     setStyle                 使用自定义的设置样式的方法
+ * @attr {Function}     getClass                 使用自定义的获取类的方法
  * @attr {Function}     setClass                 使用自定义的设置类的方法
- * @attr {Function}     setAttr                  使用自定义的设置属性的方法
  * @attr {Function}     getAttr                  使用自定义的获取属性的方法
+ * @attr {Function}     setAttr                  使用自定义的设置属性的方法
  *
  * @method set 设置配置
  * @param {ConfigType}   type 配置类型，'boolean' | 'string' | 'function' | 'dom'
@@ -41,10 +43,12 @@
  */
 
 import type {
+  GetStyle,
   SetStyle,
+  GetClass,
   SetClass,
-  SetAttr,
   GetAttr,
+  SetAttr,
   ConfigOption,
 } from '../darkmode.d';
 
@@ -99,10 +103,12 @@ const defaultConfig: DefaultConfig = {
   defaultDarkWebviewColor: DEFAULT_DARK_WEBVIEWCOLOR, // Dark Mode下webview颜色
   defaultDarkBgColor: DEFAULT_DARK_BGCOLOR, // Dark Mode下背景颜色
   defaultDarkTextColor: DEFAULT_DARK_TEXTCOLOR, // Dark Mode下字体颜色
+  getStyle: null, // 使用自定义的获取样式的方法
   setStyle: null, // 使用自定义的设置样式的方法
+  getClass: null, // 使用自定义的获取类的方法
   setClass: null, // 使用自定义的设置类的方法
-  setAttr: null, // 使用自定义的设置属性的方法
   getAttr: null, // 使用自定义的获取属性的方法
+  setAttr: null, // 使用自定义的设置属性的方法
 };
 
 const config: Config = {
@@ -157,6 +163,10 @@ const config: Config = {
 
 export const trim = (str: string) => str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
 
+export const getStyle: GetStyle = (node, prop) => {
+  return config.getStyle === null ? (node.style as any)[prop] : config.getStyle(node, prop);
+}
+
 export const setStyle: SetStyle = (node, styles) => {
   if (config.setStyle === null) {
     Object.assign(node.style, styles);
@@ -165,8 +175,8 @@ export const setStyle: SetStyle = (node, styles) => {
   }
 }
 
-const filterClass = (node: HTMLElement, className: string) => {
-  return Array.from(node.classList).filter(cls => cls && cls !== className);
+export const getClass: GetClass = (node) => {
+  return config.getClass === null ? node.classList.toString() : config.getClass(node);
 }
 
 export const setClass: SetClass = (node, className) => {
@@ -175,6 +185,10 @@ export const setClass: SetClass = (node, className) => {
   } else {
     config.setClass(node, trim(className));
   }
+}
+
+const filterClass = (node: HTMLElement, className: string) => {
+  return getClass(node).split(/\s+/).filter(cls => cls && cls !== className);
 }
 
 export const addClass: SetClass = (node, className) => {
@@ -193,6 +207,10 @@ export const removeClass: SetClass = (node, className) => {
   }
 }
 
+export const getAttr: GetAttr = (node, attr) => {
+  return config.getAttr === null ? (node as any)[attr] : config.getAttr(node, attr);
+}
+
 export const setAttr: SetAttr = (node, attr, value) => {
   if (config.setAttr === null) {
     (node as any)[attr] = value;
@@ -207,10 +225,6 @@ export const removeAttr = (node: HTMLElement, attr: string) => {
   } else {
     config.setAttr(node, attr, null);
   }
-}
-
-export const getAttr: GetAttr = (node, attr) => {
-  return config.getAttr === null ? (node as any)[attr] : config.getAttr(node, attr);
 }
 
 export default config;

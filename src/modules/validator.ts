@@ -27,7 +27,10 @@ import {
 } from './constant';
 
 // Darkmode配置
-import config, { getAttr } from './config';
+import config, {
+  getStyle,
+  getAttr,
+} from './config';
 
 import {
   sdk
@@ -36,8 +39,8 @@ import {
 export function validate(container: HTMLElement, opt: ValidateOption = {}, filter?: ValidateFilter): ValidateResult[] {
   const treeWalker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT, node => {
     if (!(node instanceof HTMLElement)) return NodeFilter.FILTER_REJECT; // 忽略非元素节点
-    if (node.style.display === 'none') return NodeFilter.FILTER_REJECT; // 忽略不可见节点以及其所有子节点
-    if (URL_REGEXP.test(node.style.backgroundImage || '') || URL_REGEXP.test((node.style as any).webkitBorderImage || node.style.borderImage || '')) return NodeFilter.FILTER_REJECT; // 忽略有背景图片的节点以及其所有子节点
+    if (getStyle(node, 'display') === 'none') return NodeFilter.FILTER_REJECT; // 忽略不可见节点以及其所有子节点
+    if (URL_REGEXP.test(getStyle(node, 'backgroundImage') || '') || URL_REGEXP.test(getStyle(node, 'webkitBorderImage') || getStyle(node, 'borderImage') || '')) return NodeFilter.FILTER_REJECT; // 忽略有背景图片的节点以及其所有子节点
     if (node instanceof SVGElement) return NodeFilter.FILTER_REJECT; // 忽略SVG节点以及其所有子节点
     if (filter?.(node)) return NodeFilter.FILTER_SKIP; // 忽略filter(node)返回true的节点
     return NodeFilter.FILTER_ACCEPT;

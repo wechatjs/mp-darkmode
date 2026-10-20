@@ -17,7 +17,10 @@
  */
 
 // Darkmode配置
-import config, { setStyle } from './config';
+import config, {
+  getStyle,
+  setStyle,
+} from './config';
 
 import {
   sdk
@@ -155,7 +158,7 @@ export class DomUtils {
   showFirstPageNodes() {
     this._firstPageEls.forEach(el => {
       // 显示首屏节点
-      !el.style.visibility && setStyle(el, {
+      !getStyle(el, 'visibility') && setStyle(el, {
         visibility: 'visible',
       });
     });

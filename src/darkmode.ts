@@ -81,7 +81,13 @@ import {
 const classReg = new RegExp(`${CLASS_PREFIX}[^ ]+`, 'g');
 
 // Darkmode配置
-import config, { setClass, removeAttr, getAttr } from './modules/config';
+import config, {
+  getClass,
+  setClass,
+  getAttr,
+  setAttr,
+  removeAttr,
+} from './modules/config';
 
 import {
   plugins, // 插件系统
@@ -128,7 +134,7 @@ const switchToDarkmode = (mqlObj: MediaQueryList | null, opt: SwitchToDarkmodeOp
 
       Array.prototype.forEach.call(domUtils.get(), node => {
         if (sdk.isDarkmode && node.classList?.length) {
-          setClass(node, node.classList.toString().replace(classReg, '')); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
+          setClass(node, getClass(node).replace(classReg, '')); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
         }
 
         if (sdk.isDarkmode || plugins.length) {
@@ -179,9 +185,9 @@ const switchToDarkmode = (mqlObj: MediaQueryList | null, opt: SwitchToDarkmodeOp
           children.forEach(child => { // 重置继承属性
             inheritAttrs.forEach(([attr, value]) => {
               if (value === null) {
-                delete (child as any)[attr];
+                removeAttr(child, attr);
               } else {
-                (child as any)[attr] = value;
+                setAttr(child, attr, value);
               }
             });
           });
@@ -264,10 +270,12 @@ export function init(opt: ConfigOption = {}) {
   config.set('dom', opt, 'container');
   config.set('string', opt, 'cssSelectorsPrefix');
   config.setDefaultColor(opt);
+  config.set('function', opt, 'getStyle');
   config.set('function', opt, 'setStyle');
+  config.set('function', opt, 'getClass');
   config.set('function', opt, 'setClass');
-  config.set('function', opt, 'setAttr');
   config.set('function', opt, 'getAttr');
+  config.set('function', opt, 'setAttr');
 
   sdk.init();
 

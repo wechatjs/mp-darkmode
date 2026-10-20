@@ -26,7 +26,10 @@
  */
 
 // Darkmode配置
-import config, { addClass } from './config';
+import config, {
+  getClass,
+  addClass,
+} from './config';
 
 type Callback = (el: HTMLElement) => void;
 
@@ -84,7 +87,7 @@ export default class TextNodeQueue {
     this._queue.forEach(item => {
       if (!item.updated) {
         Array.prototype.some.call(els, el => {
-          if (el.nodeType === 1 && el.classList.contains(item.className)) {
+          if (el.nodeType === 1 && getClass(el).split(/\s+/).indexOf(item.className) > -1) {
             item.el = el;
             item.updated = true;
             return true;
