@@ -13691,8 +13691,8 @@ __webpack_require__.r(__webpack_exports__);
 // 常量
 
 
-// 默认配置
-const defaultConfig = {
+// 默认配置（用工厂函数每次返回全新对象，避免 whitelist 等引用类型被 config 共享后遭 init 的 push 污染）
+const getDefaultConfig = () => ({
   // hooks
   begin: null,
   // 开始处理时触发的回调
@@ -13742,12 +13742,12 @@ const defaultConfig = {
   getAttr: null,
   // 使用自定义的获取属性的方法
   setAttr: null // 使用自定义的设置属性的方法
-};
+});
 const config = {
   hasInit: false,
   // 是否初始化过配置
 
-  ...defaultConfig,
+  ...getDefaultConfig(),
   // 设置配置
   set(type, opt, key) {
     const value = opt[key];
@@ -13783,7 +13783,7 @@ const config = {
   // 重置配置
   reset() {
     this.hasInit = false;
-    Object.assign(this, defaultConfig);
+    Object.assign(this, getDefaultConfig()); // 用全新默认对象覆盖，whitelist 等引用类型不会残留上次 push 的内容
   }
 };
 const trim = str => str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
@@ -13798,7 +13798,7 @@ const setStyle = (node, styles) => {
   }
 };
 const getClass = node => {
-  return config.getClass === null ? node.classList.toString() : config.getClass(node);
+  return config.getClass === null ? node.classList?.toString() || '' : config.getClass(node);
 };
 const setClass = (node, className) => {
   if (config.setClass === null) {
@@ -14233,7 +14233,7 @@ const tableClassObj = {
 // 判断table相关元素有没有指定class
 function hasTableClass(el) {
   let color = null;
-  Array.prototype.some.call(el.classList, className => {
+  (0,_config__WEBPACK_IMPORTED_MODULE_0__.getClass)(el).split(/\s+/).some(className => {
     if (tableClassObj.hasOwnProperty(className)) {
       color = tableClassObj[className];
       return true;
@@ -14980,15 +14980,16 @@ class SDK {
       }
       let dmClassName = '';
       let dmBgClassName = '';
-      if ((isUpdate || needReset) && el.classList?.length) {
+      const elClassName = isUpdate || needReset ? (0,_config__WEBPACK_IMPORTED_MODULE_4__.getClass)(el) : '';
+      if (elClassName) {
         // 先提取dm className
-        let matches = (0,_config__WEBPACK_IMPORTED_MODULE_4__.getClass)(el).match(_constant__WEBPACK_IMPORTED_MODULE_3__.DM_CLASSNAME_REGEXP);
+        let matches = elClassName.match(_constant__WEBPACK_IMPORTED_MODULE_3__.DM_CLASSNAME_REGEXP);
         if (matches) {
           dmClassName = matches[0];
         }
 
         // 再提取dm bg className
-        matches = (0,_config__WEBPACK_IMPORTED_MODULE_4__.getClass)(el).match(_global__WEBPACK_IMPORTED_MODULE_5__.bgStack.classNameReg);
+        matches = elClassName.match(_global__WEBPACK_IMPORTED_MODULE_5__.bgStack.classNameReg);
         if (matches) {
           dmBgClassName = matches[0];
         }
@@ -15712,8 +15713,11 @@ const switchToDarkmode = (mqlObj, opt = {
       // 处理节点
       _modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.isDarkmode && _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].begin?.(_modules_global__WEBPACK_IMPORTED_MODULE_3__.domUtils.hasDelay());
       Array.prototype.forEach.call(_modules_global__WEBPACK_IMPORTED_MODULE_3__.domUtils.get(), node => {
-        if (_modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.isDarkmode && node.classList?.length) {
-          (0,_modules_config__WEBPACK_IMPORTED_MODULE_2__.setClass)(node, (0,_modules_config__WEBPACK_IMPORTED_MODULE_2__.getClass)(node).replace(classReg, '')); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
+        if (_modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.isDarkmode) {
+          const className = (0,_modules_config__WEBPACK_IMPORTED_MODULE_2__.getClass)(node);
+          if (className) {
+            (0,_modules_config__WEBPACK_IMPORTED_MODULE_2__.setClass)(node, className.replace(classReg, '')); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
+          }
         }
         if (_modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.isDarkmode || _modules_global__WEBPACK_IMPORTED_MODULE_3__.plugins.length) {
           if (!_modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].needJudgeFirstPage) {
@@ -15890,6 +15894,11 @@ function getContrast(color1, color2) {
 
 // 根据 Light Mode 背景色转换生成 Dark Mode 背景色
 function getDmBgColor(lmBgColor, dmBgColorExist = _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].defaultDarkBgColor) {
+  if (!_modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].hasInit) {
+    // 未初始化则阈值未预计算，结果会出错，提示业务方先调用 init
+    console.warn('Dark Mode should be initialized by calling `init()` or `run()` before using `getDmBgColor()`');
+    return null;
+  }
   const lmBgColorInstance = (0,_modules_color__WEBPACK_IMPORTED_MODULE_5__.ColorParser)(lmBgColor);
   const dmBgColorExistInstance = (0,_modules_color__WEBPACK_IMPORTED_MODULE_5__.ColorParser)(dmBgColorExist);
   if (lmBgColorInstance && dmBgColorExistInstance) {
@@ -15902,6 +15911,11 @@ function getDmBgColor(lmBgColor, dmBgColorExist = _modules_config__WEBPACK_IMPOR
 
 // 根据 Light Mode 前景色转换生成 Dark Mode 前景色
 function getDmFontColor(lmFontColor, dmBgColor = _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].defaultDarkBgColor) {
+  if (!_modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].hasInit) {
+    // 未初始化则阈值未预计算，结果会出错，提示业务方先调用 init
+    console.warn('Dark Mode should be initialized by calling `init()` or `run()` before using `getDmFontColor()`');
+    return null;
+  }
   const lmFontColorInstance = (0,_modules_color__WEBPACK_IMPORTED_MODULE_5__.ColorParser)(lmFontColor);
   const dmBgColorInstance = (0,_modules_color__WEBPACK_IMPORTED_MODULE_5__.ColorParser)(dmBgColor);
   if (lmFontColorInstance && dmBgColorInstance) {
@@ -15920,7 +15934,7 @@ function extend(pluginList) {
 
 // 重置
 function reset(nodes) {
-  _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].reset();
+  _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].reset(); // 内部会重置 config.hasInit = false，使下次可重新 init
   _modules_global__WEBPACK_IMPORTED_MODULE_3__.plugins.reset();
   _modules_global__WEBPACK_IMPORTED_MODULE_3__.tnQueue.reset();
   _modules_global__WEBPACK_IMPORTED_MODULE_3__.bgStack.reset();

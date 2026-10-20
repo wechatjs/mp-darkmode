@@ -20,6 +20,7 @@
 import config, {
   getStyle,
   setStyle,
+  getClass,
 } from './config';
 
 import {
@@ -52,7 +53,7 @@ const tableClassObj = {
 export function hasTableClass(el: HTMLElement): string | null {
   let color = null;
 
-  Array.prototype.some.call(el.classList, className => {
+  getClass(el).split(/\s+/).some(className => {
     if (tableClassObj.hasOwnProperty(className)) {
       color = tableClassObj[className as keyof typeof tableClassObj];
       return true;

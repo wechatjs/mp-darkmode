@@ -80,8 +80,8 @@ interface Config extends DefaultConfig {
   reset: () => void;
 }
 
-// 默认配置
-const defaultConfig: DefaultConfig = {
+// 默认配置（用工厂函数每次返回全新对象，避免 whitelist 等引用类型被 config 共享后遭 init 的 push 污染）
+const getDefaultConfig = (): DefaultConfig => ({
   // hooks
   begin: null, // 开始处理时触发的回调
   showFirstPage: null, // 首屏处理完成时触发的回调
@@ -109,12 +109,12 @@ const defaultConfig: DefaultConfig = {
   setClass: null, // 使用自定义的设置类的方法
   getAttr: null, // 使用自定义的获取属性的方法
   setAttr: null, // 使用自定义的设置属性的方法
-};
+});
 
 const config: Config = {
   hasInit: false, // 是否初始化过配置
 
-  ...defaultConfig,
+  ...getDefaultConfig(),
 
   // 设置配置
   set(type, opt, key) {
@@ -157,7 +157,7 @@ const config: Config = {
   // 重置配置
   reset() {
     this.hasInit = false;
-    Object.assign(this, defaultConfig);
+    Object.assign(this, getDefaultConfig()); // 用全新默认对象覆盖，whitelist 等引用类型不会残留上次 push 的内容
   }
 };
 
@@ -176,7 +176,7 @@ export const setStyle: SetStyle = (node, styles) => {
 }
 
 export const getClass: GetClass = (node) => {
-  return config.getClass === null ? node.classList.toString() : config.getClass(node);
+  return config.getClass === null ? (node.classList?.toString() || '') : config.getClass(node);
 }
 
 export const setClass: SetClass = (node, className) => {

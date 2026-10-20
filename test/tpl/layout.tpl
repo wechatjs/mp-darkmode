@@ -247,6 +247,7 @@
     //   Darkmode.convertBg(el.querySelectorAll('*'));
     // }); // 模拟秒开分批渲染
 
+    // 测试getDmBgColor和getDmFontColor
     console.log('getDmBgColor: rgb(254, 233, 94) →', Darkmode.getDmBgColor('rgb(254, 233, 94)'));
     console.log('getDmFontColor: red →', Darkmode.getDmFontColor('red'));
     console.log('getDmBgColor: #2B77BF →', Darkmode.getDmBgColor('#2B77BF'));

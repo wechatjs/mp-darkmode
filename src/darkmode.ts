@@ -133,8 +133,11 @@ const switchToDarkmode = (mqlObj: MediaQueryList | null, opt: SwitchToDarkmodeOp
       sdk.isDarkmode && config.begin?.(domUtils.hasDelay());
 
       Array.prototype.forEach.call(domUtils.get(), node => {
-        if (sdk.isDarkmode && node.classList?.length) {
-          setClass(node, getClass(node).replace(classReg, '')); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
+        if (sdk.isDarkmode) {
+          const className = getClass(node);
+          if (className) {
+            setClass(node, className.replace(classReg, '')); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
+          }
         }
 
         if (sdk.isDarkmode || plugins.length) {
@@ -315,6 +318,10 @@ export function getContrast(color1: string, color2: string): number {
 
 // 根据 Light Mode 背景色转换生成 Dark Mode 背景色
 export function getDmBgColor(lmBgColor: string, dmBgColorExist: string = config.defaultDarkBgColor): string | null {
+  if (!config.hasInit) { // 未初始化则阈值未预计算，结果会出错，提示业务方先调用 init
+    console.warn('Dark Mode should be initialized by calling `init()` or `run()` before using `getDmBgColor()`');
+    return null;
+  }
   const lmBgColorInstance = ColorParser(lmBgColor);
   const dmBgColorExistInstance = ColorParser(dmBgColorExist);
   if (lmBgColorInstance && dmBgColorExistInstance) {
@@ -326,6 +333,10 @@ export function getDmBgColor(lmBgColor: string, dmBgColorExist: string = config.
 
 // 根据 Light Mode 前景色转换生成 Dark Mode 前景色
 export function getDmFontColor(lmFontColor: string, dmBgColor: string = config.defaultDarkBgColor): string | null {
+  if (!config.hasInit) { // 未初始化则阈值未预计算，结果会出错，提示业务方先调用 init
+    console.warn('Dark Mode should be initialized by calling `init()` or `run()` before using `getDmFontColor()`');
+    return null;
+  }
   const lmFontColorInstance = ColorParser(lmFontColor);
   const dmBgColorInstance = ColorParser(dmBgColor);
   if (lmFontColorInstance && dmBgColorInstance) {
@@ -342,7 +353,7 @@ export function extend(pluginList: PluginConstructor[]) {
 
 // 重置
 export function reset(nodes: HTMLElement[]) {
-  config.reset();
+  config.reset(); // 内部会重置 config.hasInit = false，使下次可重新 init
   plugins.reset();
   tnQueue.reset();
   bgStack.reset();

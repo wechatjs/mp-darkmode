@@ -143,8 +143,8 @@
           <tr><td><code>convertBg(nodes)</code></td><td>二次处理「背景图 / 渐变」下的文字节点（延迟背景判断场景）</td></tr>
           <tr><td><code>updateStyle(node, styles)</code></td><td>运行时更新单个节点的样式并重新转换</td></tr>
           <tr><td><code>getContrast(c1, c2)</code></td><td>计算两个颜色对比度 <code>[1, 21]</code></td></tr>
-          <tr><td><code>getDmBgColor(lmBgColor, dmBgColorExist?)</code></td><td><span class="badge">v1.2.3-alpha.4 新增</span> 由 Light 背景色 + 已有深色底算出 Dark 背景色（返回字符串或 null），底层复用 <code>sdk.adjustBackgroundBrightness</code></td></tr>
-          <tr><td><code>getDmFontColor(lmFontColor, dmBgColor?)</code></td><td><span class="badge">v1.2.3-alpha.4 新增</span> 由 Light 字体色 + 深色底算出 Dark 字体色（返回字符串或 null），底层复用 <code>sdk.adjustTextBrightness</code></td></tr>
+          <tr><td><code>getDmBgColor(lmBgColor, dmBgColorExist?)</code></td><td><span class="badge">v1.2.3-alpha.4 新增</span> 由 Light 背景色 + 已有深色底算出 Dark 背景色（返回字符串或 null），底层复用 <code>sdk.adjustBackgroundBrightness</code>。<strong>须先 <code>init</code>/<code>run</code></strong>：未初始化时会 <code>console.warn</code> 并返回 <code>null</code>（依赖 <code>sdk.init()</code> 预计算的阈值）</td></tr>
+          <tr><td><code>getDmFontColor(lmFontColor, dmBgColor?)</code></td><td><span class="badge">v1.2.3-alpha.4 新增</span> 由 Light 字体色 + 深色底算出 Dark 字体色（返回字符串或 null），底层复用 <code>sdk.adjustTextBrightness</code>。<strong>须先 <code>init</code>/<code>run</code></strong>：未初始化时会 <code>console.warn</code> 并返回 <code>null</code></td></tr>
           <tr><td><code>extend(pluginList)</code></td><td>挂载插件</td></tr>
           <tr><td><code>reset(nodes)</code></td><td>卸载所有状态、移除注入的样式表、清理节点上的私有属性</td></tr>
           <tr><td><code>validate(container, opt, filter)</code></td><td>校验深色模式效果（低对比度 / 文字背景渐变 / 白名单）</td></tr>
@@ -610,13 +610,13 @@
         <li><strong><code>&lt;html&gt;</code> 根元素刻意不走钩子</strong>：强制模式下给 <code>&lt;html&gt;</code> 加/删 <code>data_color_scheme_dark</code>（<code>darkmode.ts</code> 的 <code>init</code> 与 <code>reset</code>）直接用 <code>document.getElementsByTagName('html')[0].classList.add/remove</code>，<strong>不经过 <code>setClass</code> / <code>removeClass</code></strong>。因为根节点恒为真实 document 元素，无需被自定义渲染环境接管，<strong>属有意为之</strong>。</li>
         <li><strong>真实 HTML 属性读取不走 <code>getAttr</code></strong>：<code>el.getAttribute('color'/'bgcolor')</code>、<code>el.hasAttribute(...)</code>、<code>dataset.ignoreDm</code> 读的是真实 HTML attribute，与读 expando 的 <code>getAttr</code> 语义不同，<strong>刻意不混用</strong>。</li>
         <li><strong>样式表注入不属节点级钩子</strong>：<code>cssUtils.ts</code> 的 <code>document.head.insertAdjacentHTML</code>（注入 <code>&lt;style&gt;</code>）、<code>getElementById</code> / <code>removeChild</code> 操作的是 <code>&lt;head&gt;</code> 的样式表节点，不在这套节点读写钩子的职责内。</li>
-        <li><strong>判空仍用 <code>classList?.length</code></strong>：取 class 前的「是否元素节点 / 有无 class」防御判断保留 <code>node.classList?.length</code>（兼顾非元素节点、SVG），取值才走 <code>getClass</code>。</li>
+        <li><strong>判空与取值已同源（<span class="badge">2026-10-20 修复</span>）</strong>：早期「是否有 class」的判空用原生 <code>node.classList?.length</code>、取值却用 <code>getClass</code>，二者数据源不一致——自定义 <code>getClass</code> 把 class 存自管结构时会被误判为无 class 而整段跳过。现已统一改为基于 <code>getClass(node)</code> 判空（<code>darkmode.ts</code> 清理旧 class 处、<code>sdk.ts</code> 提取 dmClassName 处），<code>getClass</code> 默认实现加 <code>node.classList?.toString() || ''</code> 防护以兼容无 <code>classList</code> 的节点。</li>
       </ul>
 
       <h3>SVG className 兼容（<code>a3e09ee</code>）</h3>
       <p>SVG 元素的 <code>className</code> 是 <code>SVGAnimatedString</code> 对象而非字符串，旧代码 <code>typeof node.className === 'string'</code> 会漏判且 <code>node.className.replace(...)</code> 会报错。修复后统一改为：</p>
       <ul class="tight">
-        <li>判空：<code>node.classList?.length</code>（替代 <code>node.className &amp;&amp; typeof node.className === 'string'</code>）。</li>
+        <li>判空：基于 <code>getClass(node)</code> 是否为空串（早期用 <code>node.classList?.length</code>，后统一为与取值同源，见上「已知边界」）。</li>
         <li>取值：<code>getClass(node)</code>（默认实现 <code>classList.toString()</code>，替代直接读 <code>node.className</code>），再做正则匹配 / 替换。</li>
         <li>涉及 <code>darkmode.ts</code> 清理旧 dark class 处、<code>sdk.ts</code> 提取 <code>dmClassName</code> / <code>dmBgClassName</code> 处。</li>
       </ul>
@@ -658,6 +658,12 @@
             <td>2026-10-20</td>
             <td>修复 <code>convertBg</code> 重置继承属性处 expando 读写不对称（<code>darkmode.ts</code> L182/L184 改走 <code>removeAttr</code> / <code>setAttr</code>）；新增 <code>getStyle</code> / <code>getClass</code> 两个读钩子，把库内所有读内联样式（<code>cssText</code> / 单属性）、读 class（<code>toString</code> / <code>contains</code> 判断）统一收敛走钩子，补齐读写配对；<code>filterClass</code> 改用 <code>getClass</code></td>
             <td>§三、§十四</td>
+          </tr>
+          <tr>
+            <td><span class="badge">工作区</span></td>
+            <td>2026-10-20</td>
+            <td>CR 隐患修复批次：①<code>getDmBgColor</code>/<code>getDmFontColor</code> 增加初始化前置校验——未 <code>init</code> 时 <code>console.warn</code> 并返回 <code>null</code>（不自动兜底，强制业务方先 <code>init</code>/<code>run</code>），复用 <code>config.hasInit</code> 判断；②钩子一致性：<code>hasTableClass</code> 改走 <code>getClass</code>，<code>darkmode.ts</code>/<code>sdk.ts</code> 判空由原生 <code>classList?.length</code> 改为与取值同源的 <code>getClass</code>，<code>getClass</code> 默认实现加 <code>classList?.</code> 防护；③修复 <code>config</code> 浅拷贝污染：默认配置改为工厂函数 <code>getDefaultConfig()</code>，初始化与 <code>reset</code> 均取全新对象，杜绝 <code>whitelist</code> 被 <code>init</code> 的 <code>push</code> 污染并跨 <code>run/reset</code> 累积</td>
+            <td>§二、§十四</td>
           </tr>
         </tbody>
       </table>

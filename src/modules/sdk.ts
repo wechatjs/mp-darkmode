@@ -204,7 +204,7 @@ export default class SDK {
 
           // 对文字颜色做继承传递，用于文字亮度计算
           getChildrenAndIt(el).forEach(dom => {
-            setAttr(dom, COLORATTR, mixColors([parentElementBgColor, ret.newColor || parentTextColor]))
+            setAttr(dom, COLORATTR, mixColors([parentElementBgColor, ret.newColor || parentTextColor]));
             setAttr(dom, ORIGINAL_COLORATTR, parentTextColor);
           });
         }
@@ -450,15 +450,16 @@ export default class SDK {
 
       let dmClassName = '';
       let dmBgClassName = '';
-      if ((isUpdate || needReset) && el.classList?.length) {
+      const elClassName = (isUpdate || needReset) ? getClass(el) : '';
+      if (elClassName) {
         // 先提取dm className
-        let matches = getClass(el).match(DM_CLASSNAME_REGEXP);
+        let matches = elClassName.match(DM_CLASSNAME_REGEXP);
         if (matches) {
           dmClassName = matches[0];
         }
 
         // 再提取dm bg className
-        matches = getClass(el).match(bgStack.classNameReg);
+        matches = elClassName.match(bgStack.classNameReg);
         if (matches) {
           dmBgClassName = matches[0];
         }
