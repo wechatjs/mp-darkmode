@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ProseMirror × mp-darkmode B(b) 方案 PoC</title>
+
+<!-- ProseMirror 官方视图样式 -->
+<link rel="stylesheet" href="https://esm.sh/prosemirror-view@1/style/prosemirror.css" />
+
+<!-- 用 importmap 让所有 prosemirror-* 包共享同一套单例（否则 prosemirror-model 多实例会报 RangeError） -->
+<script type="importmap">
+{
+  "imports": {
+    "prosemirror-model": "https://esm.sh/prosemirror-model@1",
+    "prosemirror-transform": "https://esm.sh/prosemirror-transform@1?external=prosemirror-model",
+    "prosemirror-state": "https://esm.sh/prosemirror-state@1?external=prosemirror-model,prosemirror-transform",
+    "prosemirror-view": "https://esm.sh/prosemirror-view@1?external=prosemirror-model,prosemirror-state,prosemirror-transform"
+  }
+}
+</script>
+
+<style>
+  body { font-family: -apple-system, "PingFang SC", sans-serif; max-width: 860px; margin: 24px auto; padding: 0 16px; color: #24292f; line-height: 1.7; }
+  h1 { font-size: 20px; }
+  .toolbar { margin: 16px 0; display: flex; gap: 12px; align-items: center; }
+  button { padding: 6px 14px; border: 1px solid #d0d7de; border-radius: 6px; background: #f6f8fa; cursor: pointer; font-size: 14px; }
+  button.on { background: #0969da; color: #fff; border-color: #0969da; }
+  .status { font-size: 13px; color: #57606a; }
+
+  .editor-wrap { border: 1px solid #d0d7de; border-radius: 8px; padding: 4px 14px; transition: background .2s; }
+  .ProseMirror { outline: none; min-height: 120px; font-size: 16px; }
+  .ProseMirror p { margin: 10px 0; }
+
+  /* ===== Dark Mode 态（整体容器变深底）===== */
+  .editor-wrap.dm { background: #191919; }
+  .editor-wrap.dm .ProseMirror { color: rgba(255,255,255,.72); }
+
+  /* ===== 验证核心：decoration 加的 class + !important 能否盖住 mark 的 inline color ===== */
+  /* 若红/绿字在 DM 下变成统一灰白 → !important 覆盖成功，B(b) 成立 */
+  /* 若红/绿字仍是原色 → decoration 在 mark 外层、盖不住，需走 plan B（见页面底部）*/
+  .pm-dm-fg { color: rgba(255,255,255,.72) !important; }
+
+  .note { background: #fff8e6; border-left: 4px solid #f0c36d; padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 14px; margin: 18px 0; }
+  code { background: #f6f8fa; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+  ol.steps li { margin: 6px 0; }
+</style>
+</head>
+<body>
+<h1>ProseMirror × mp-darkmode · B(b) 纯视图方案 PoC</h1>
+<p class="status">目标：验证 ① decoration 的 <code>class + !important</code> 能否覆盖 mark 渲染出的 inline <code>color</code>；② 输入时 decoration 区间能否正确延展继承。</p>
+
+<div class="toolbar">
+  <button id="toggle">切到 Dark Mode</button>
+  <span class="status" id="state">当前：Light Mode（doc 恒为 LM）</span>
+</div>
+
+<div class="editor-wrap" id="wrap">
+  <div id="editor"></div>
+</div>
+
+<div class="note">
+  <strong>验证步骤：</strong>
+  <ol class="steps">
+    <li><strong>点「切到 Dark Mode」</strong>：看第一段的<span style="color:#e00">红字</span>、<span style="color:#0a0">绿字</span>是否<strong>都变成灰白</strong>。
+      <br>· 变灰白 → <code>!important</code> 覆盖成功，<strong>B(b) 成立</strong>；
+      <br>· 仍是红/绿 → decoration 被渲染在 mark span 外层、盖不住内层 inline color，需走下方 plan B。</li>
+    <li><strong>保持 DM 态，在红字中间点一下、打几个字</strong>：看新字是否<strong>也为灰白、且 decoration 不断裂</strong>（验证 <code>inclusiveStart/End</code> 区间延展继承）。</li>
+    <li><strong>在红字右边界后紧挨着打字</strong>：看新字是否「延续红字组」还是「落回普通组」——确认边界 inclusive 行为是否符合预期。</li>
+    <li><strong>切回 Light Mode</strong>：确认 doc 本身颜色不变（decoration 是纯视图态，doc 恒 LM）。</li>
+    <li>打开 DevTools 看红字那段的 DOM 结构：确认 decoration 的 <code>&lt;span class="pm-dm-fg"&gt;</code> 与 mark 的 <code>&lt;span style="color:#e00"&gt;</code> 的<strong>嵌套顺序</strong>（谁在内层）。</li>
+  </ol>
+</div>
+
+<script type="module">
+import { Schema } from 'prosemirror-model';
+import { EditorState, Plugin, PluginKey } from 'prosemirror-state';
+import { EditorView, Decoration, DecorationSet } from 'prosemirror-view';
+
+// ---- 最小 schema：doc / paragraph / text + 一个 color mark（模拟业务里的颜色 mark）----
+const schema = new Schema({
+  nodes: {
+    doc: { content: 'block+' },
+    paragraph: { group: 'block', content: 'inline*', parseDOM: [{ tag: 'p' }], toDOM: () => ['p', 0] },
+    text: { group: 'inline' },
+  },
+  marks: {
+    color: {
+      attrs: { color: {} },
+      parseDOM: [{ style: 'color', getAttrs: v => ({ color: v }) }],
+      toDOM: m => ['span', { style: `color:${m.attrs.color}` }, 0], // LM 态渲染成 inline color —— 就是要被 DM 盖住的东西
+    },
+  },
+});
+const colorType = schema.marks.color;
+
+// ---- 初始文档：混排 红字 / 绿字 / 普通字 ----
+const doc = schema.node('doc', null, [
+  schema.node('paragraph', null, [
+    schema.text('普通黑字开头，'),
+    schema.text('这是一段红色文字', [colorType.create({ color: '#e00' })]),
+    schema.text('，中间普通，'),
+    schema.text('这是绿色文字', [colorType.create({ color: '#0a0' })]),
+    schema.text('，结尾普通。'),
+  ]),
+  schema.node('paragraph', null, [
+    schema.text('第二段：切到 DM 后，在上面红字中间点一下打字，观察新字是否也变灰白且不断裂。'),
+  ]),
+]);
+
+// ---- DM 插件：维护 DecorationSet，演示「全量重算(toggle) + map 增量(输入)」----
+const dmKey = new PluginKey('darkmode');
+
+// 把 DM 前景色 class 挂到每个非空 text 节点上（inclusive 两端，便于验证输入延展）
+// 真实接入时：这里的 class / 具体色值由 mp-darkmode 的「per-fragment 直出入口」产出，而非写死
+function buildDecos(doc) {
+  const decos = [];
+  doc.descendants((node, pos) => {
+    if (node.isText && node.text && node.text.trim()) {
+      decos.push(
+        Decoration.inline(
+          pos, pos + node.nodeSize,
+          { class: 'pm-dm-fg' },
+          { inclusiveStart: true, inclusiveEnd: true },
+        ),
+      );
+    }
+  });
+  return DecorationSet.create(doc, decos);
+}
+
+const dmPlugin = new Plugin({
+  key: dmKey,
+  state: {
+    init: () => ({ on: false, deco: DecorationSet.empty }),
+    apply(tr, value) {
+      const meta = tr.getMeta(dmKey);
+      if (meta && 'on' in meta) {
+        // 切换 DM 开关 → 全量重算（LM 时清空）
+        return { on: meta.on, deco: meta.on ? buildDecos(tr.doc) : DecorationSet.empty };
+      }
+      if (value.on) {
+        // 文档变化但 DM 仍开 → 用 map 做增量：已有 decoration 位置自动迁移/延展（不重算）
+        return { on: true, deco: value.deco.map(tr.mapping, tr.doc) };
+      }
+      return value;
+    },
+  },
+  props: {
+    decorations: state => dmKey.getState(state).deco,
+
+    // 外部片段粘贴接入点占位：真实实现里对 slice 跑 mp-darkmode 的 per-fragment 直出入口，
+    // 产出新 decoration（新颜色组的 class + 注入对应 !important 规则），再并进 DecorationSet。
+    transformPasted(slice) {
+      console.log('[PoC] transformPasted —— 这里接 mp-darkmode 的 convertFragment(slice)，当前原样透传', slice);
+      return slice;
+    },
+  },
+});
+
+// ---- 挂载 ----
+const state = EditorState.create({ doc, plugins: [dmPlugin] });
+const view = new EditorView(document.getElementById('editor'), { state });
+
+// ---- 工具栏 ----
+const wrap = document.getElementById('wrap');
+const btn = document.getElementById('toggle');
+const label = document.getElementById('state');
+btn.addEventListener('click', () => {
+  const cur = dmKey.getState(view.state).on;
+  view.dispatch(view.state.tr.setMeta(dmKey, { on: !cur }));
+  const on = dmKey.getState(view.state).on;
+  wrap.classList.toggle('dm', on);
+  btn.classList.toggle('on', on);
+  btn.textContent = on ? '切回 Light Mode' : '切到 Dark Mode';
+  label.textContent = on ? '当前：Dark Mode（纯 decoration 视图态，doc 不变）' : '当前：Light Mode（doc 恒为 LM）';
+  view.focus();
+});
+
+window.__view = view; // 方便在 console 里调试
+</script>
+
+<div class="note">
+  <strong>如果验证步骤 1 失败（红/绿字盖不住）的 plan B：</strong>
+  <ul>
+    <li><strong>B-1 让 color mark 的 <code>toDOM</code> 感知全局 DM 状态</strong>：DM 态时直接输出算法转换后的 DM 色，而非原色。缺点是把 DM 逻辑渗进 schema、且 toDOM 读外部状态不优雅。</li>
+    <li><strong>B-2 用 mark view / node view 接管渲染</strong>：在 view 层根据 DM 状态覆盖 mark 的样式输出，比 toDOM 干净，能拿到外部 DM 开关与算法结果。</li>
+    <li>两者都仍保持「doc 恒 LM」，只是把「覆盖 LM 颜色」的手段从 decoration 换成 markView —— B(b) 的「doc 恒 LM」收益不丢。</li>
+  </ul>
+</div>
+</body>
+</html>

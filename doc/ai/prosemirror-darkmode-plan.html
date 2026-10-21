@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ProseMirror × mp-darkmode 适配方案（定稿）</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #24292f; --muted: #57606a; --border: #d0d7de;
+    --code-bg: #f6f8fa; --accent: #0969da; --th-bg: #f6f8fa;
+    --note-bg: #fff8e6; --note-border: #f0c36d;
+    --ok-bg: #e6f6ec; --ok-border: #51b36a;
+    --del-bg: #ffeef0; --del-border: #ff8182;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #191919; --fg: rgba(255,255,255,0.85); --muted: rgba(255,255,255,0.55); --border: #30363d;
+      --code-bg: #22272e; --accent: #58a6ff; --th-bg: #22272e;
+      --note-bg: #2d2a1e; --note-border: #6b5a2e;
+      --ok-bg: #1b2d22; --ok-border: #2e6b40;
+      --del-bg: #2d1e1f; --del-border: #6b2e30;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); line-height: 1.7; font-size: 15px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+  .layout { display: flex; max-width: 1180px; margin: 0 auto; }
+  nav.toc { position: sticky; top: 0; align-self: flex-start; width: 240px; max-height: 100vh; overflow-y: auto;
+    padding: 24px 16px; border-right: 1px solid var(--border); font-size: 13px; }
+  nav.toc h2 { font-size: 13px; text-transform: uppercase; color: var(--muted); letter-spacing: .5px; margin: 0 0 12px; }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; }
+  nav.toc li { margin: 5px 0; }
+  nav.toc a { color: var(--muted); text-decoration: none; }
+  nav.toc a:hover { color: var(--accent); }
+  main { flex: 1; min-width: 0; padding: 32px 40px; }
+  h1 { font-size: 27px; border-bottom: 2px solid var(--border); padding-bottom: 12px; margin-top: 0; }
+  h2 { font-size: 21px; margin-top: 40px; border-bottom: 1px solid var(--border); padding-bottom: 6px; scroll-margin-top: 16px; }
+  h3 { font-size: 16px; margin-top: 24px; scroll-margin-top: 16px; }
+  code { background: var(--code-bg); padding: 2px 6px; border-radius: 4px; font-size: 13px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+  pre { background: var(--code-bg); padding: 16px; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); }
+  pre code { background: none; padding: 0; font-size: 13px; line-height: 1.5; }
+  pre.diagram { font-size: 12px; line-height: 1.4; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--th-bg); font-weight: 600; }
+  a { color: var(--accent); }
+  .note { background: var(--note-bg); border-left: 4px solid var(--note-border); padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 16px 0; }
+  .ok { background: var(--ok-bg); border-left: 4px solid var(--ok-border); padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 16px 0; }
+  .muted { color: var(--muted); }
+  .badge { display: inline-block; background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 8px; font-size: 12px; color: var(--muted); }
+  .tag-ok { color: #1a7f37; font-weight: 600; } .tag-del { color: #cf222e; font-weight: 600; }
+  @media (prefers-color-scheme: dark) { .tag-ok { color: #3fb950; } .tag-del { color: #f85149; } }
+  ul.tight li { margin: 4px 0; }
+  header.meta { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+  .summary { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+  .fig-cap { font-size: 12px; color: var(--muted); text-align: center; margin: -8px 0 20px; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#bg">背景与目标</a></li>
+      <li><a href="#term">一、术语</a></li>
+      <li><a href="#arch">二、总体架构</a></li>
+      <li><a href="#switch">三、模式切换约定</a></li>
+      <li><a href="#change">四、DmChange 数据结构</a></li>
+      <li><a href="#premise">五、关键业务前提</a></li>
+      <li><a href="#flow">六、运行时数据流</a></li>
+      <li><a href="#algo">七、算法侧要做什么</a></li>
+      <li><a href="#caller">八、调用方要做什么</a></li>
+      <li><a href="#simplify">九、相比最初方案的简化</a></li>
+      <li><a href="#verify">十、验证结论（实测）</a></li>
+      <li><a href="#todo">十一、落地待办与风险</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="meta">AI 协作讨论定稿 · doc/ai/prosemirror-darkmode-plan.html</header>
+    <h1>ProseMirror × mp-darkmode 适配方案（定稿）</h1>
+    <p class="muted">用 mp-darkmode 算法为 ProseMirror 架构编辑器做 Dark Mode 适配。本文档为多轮讨论 + 真实环境 PoC 实测后的收敛定稿，作为算法侧改造与编辑器接入的实现总纲。</p>
+
+    <section id="bg">
+      <h2>背景与目标</h2>
+      <p>现状算法通过「<strong>加 className + 注入 <code>&lt;style&gt;</code> + <code>@media</code> 媒体查询</strong>」给页面上 Dark Mode 样式（见 <a href="architecture.html">算法架构文档</a>）。这在只读文章里没问题，但在<strong>编辑器</strong>里会出问题：</p>
+      <div class="note">
+        <strong>根因</strong>：ProseMirror 的样式必须活在它的数据/视图模型里（node attrs / marks / decorations），而「className + <code>&lt;style&gt;</code> + <code>@media</code>」是一条<strong>游离在 PM 模型之外的旁路 CSS</strong>——PM 的 <code>parseDOM</code> / <code>toDOM</code> / clipboard 序列化根本不认这些动态类名和外部规则。任何 split / 粘贴 / 重渲染都会让这套样式与文档模型错位（例如换行时新段落把 computed 的 DM 样式固化进 inline、丢失 LM）。
+      </div>
+      <p><strong>目标</strong>：让 DM 样式回到 PM 可管理的范畴，且<strong>不污染文档（doc 恒存 Light Mode）</strong>。</p>
+    </section>
+
+    <section id="term">
+      <h2>一、术语</h2>
+      <table>
+        <thead><tr><th>名称</th><th>含义</th><th>适用</th></tr></thead>
+        <tbody>
+          <tr><td><strong>全包</strong></td><td>现状方案。算法包办 <code>className + &lt;style&gt; + @media</code> 全链路，样式自动生效</td><td>只读文章</td></tr>
+          <tr><td><strong>半包</strong></td><td>新增方案。算法只吐 per-node DM diff（<code>DmChange[]</code>），落地（decoration / 继承 / 粘贴）由调用方负责</td><td>编辑器</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="arch">
+      <h2>二、总体架构（B(b) 纯视图方案）</h2>
+      <ul class="tight">
+        <li>编辑器用<strong>半包</strong>。</li>
+        <li>DM 用 ProseMirror <strong>Decoration（加 class + 注入一份视图级 <code>&lt;style&gt;</code>，规则带 <code>!important</code>）</strong> 表达；DM 开关由 <strong>JS 控制</strong>（DM 态才生成 decoration），<strong>不用 <code>@media</code></strong>。</li>
+        <li><strong>doc 恒存 LM</strong>，DM 永不进文档模型 —— 这是整套方案能大幅简化的根基。</li>
+        <li>对<strong>编辑器视图 DOM</strong> 跑算法（有真实布局，背景图位置判断与 <code>posAtDOM</code> 均可用），靠全钩子接管避免写真实 DOM，从而<strong>不触发 PM 的 <code>DOMObserver</code></strong>。</li>
+      </ul>
+      <div class="note"><strong>为什么纯视图能绕开根因</strong>：decoration 是 PM 视图层每次渲染重新应用的、<strong>绝不进 doc</strong>。于是 split/粘贴/重渲染都不会把 DM 固化；复制粘贴走 doc 序列化天然得到 LM；保存直接存 doc（LM）无需还原。「className 由 decoration 动态挂、DM 由 JS 开关控制」替代了「className 直接写 DOM + @media」，原痛点全部消失。</div>
+    </section>
+
+    <section id="switch">
+      <h2>三、模式切换约定</h2>
+      <ul class="tight">
+        <li>以<strong>「有无传 <code>setDmStyle</code> 钩子」</strong>区分全包 / 半包，<strong>不新增 <code>mode</code> 字段</strong>。</li>
+        <li><strong><code>setDmStyle</code> 存在 ⇒ 自动隐含全套半包行为</strong>：不 <code>addClass</code>、不 <code>genCss</code> 选择器、不注入 <code>&lt;style&gt;</code>（隐含 <code>noEmit</code>），产出改为逐属性收集 <code>DmChange</code> 并通过 <code>setDmStyle(el, changes)</code> 吐出。调用方只需传这一个钩子即进入半包，不用再记得配 <code>noEmit</code>。</li>
+        <li>对内实现仍以 <code>config.setDmStyle !== null</code> 作为半包判断，在 <code>convert</code> 产出段、diff 收集、<code>writeStyle</code> 注入几处切换；<strong>全包行为零变化</strong>。</li>
+      </ul>
+    </section>
+
+    <section id="change">
+      <h2>四、DmChange 数据结构（定稿）</h2>
+      <pre><code>type DmChange = { prop: string; dm: string; lm?: string };
+type SetDmStyle = (node: HTMLElement, changes: DmChange[]) => void;</code></pre>
+      <ul class="tight">
+        <li><code>prop</code>：CSS 属性；</li>
+        <li><code>dm</code>：该属性最终的 Dark Mode 值（<strong>必填</strong>，调用方落地 decoration 用它）——同时覆盖「替换已有属性」和「新增原本没有的属性」两种情况，统一成「最终就该是这个值」；</li>
+        <li><code>lm?</code>：原 Light Mode 值，<strong>可选、仅调试/校验</strong>——B(b) 下 doc 恒 LM、不需要还原。</li>
+      </ul>
+      <p class="muted">早期曾设计 <code>replace / set / appendBg</code> 三类 op，已收敛为<strong>单一结构</strong>：因背景图写在 inline、算法跑视图 DOM 能读到完整 <code>background-image</code>，可直接给整条多层值，无需 <code>appendBg</code>。背景图多层拆成多条 <code>{prop, dm}</code> 表达：</p>
+      <pre class="diagram"><code>// 一个背景图节点的 changes：
+[
+  { prop:'background-image',    dm:'url(a.png), linear-gradient(#fff,#fff)' },
+  { prop:'background-position', dm:'top left, top left' },
+  { prop:'background-size',     dm:'cover, 100%' },
+]</code></pre>
+    </section>
+
+    <section id="premise">
+      <h2>五、关键业务前提（约束了复杂度）</h2>
+      <ul class="tight">
+        <li><strong>禁色板</strong>：用户不能选中已有文本改 color / bgColor → 日常输入 / split <strong>不产生新颜色、无继承级联重算</strong>。</li>
+        <li><strong>但粘贴外部片段会带入自定义颜色</strong>（如红字片段粘进空编辑器），且<strong>会出现渐变背景 / 背景图 / 文字描边</strong>等复杂内容 → 必须用完整算法（半包 <code>run</code> / <code>convertFragment</code>），<strong>不能只靠 <code>getDmBgColor</code> / <code>getDmFontColor</code> 纯函数</strong>（它们只处理纯色 color/bg）。</li>
+      </ul>
+    </section>
+
+    <section id="flow">
+      <h2>六、运行时数据流（三条路径）</h2>
+      <pre class="diagram"><code>① 首次全量
+   对编辑器视图 DOM 跑 run()（半包）
+     → 每节点产出 DmChange[]（经 setDmStyle）
+     → 用 view.posAtDOM 映射到 doc position
+     → 生成 decoration（加入 DecorationSet）
+   expando 走默认 property 写视图 DOM（DOMObserver 监听不到，rerender 丢失无妨）
+
+② 日常输入 / split  —— 不跑算法
+   decoration 靠 DecorationSet.map(tr.mapping) 增量延展继承
+   （禁色板下无新颜色、无级联重算）
+
+③ 粘贴外部复杂片段
+   transformPasted → 对片段跑 convertFragment(nodes, container)（半包增量入口）
+     继承：算法从 container 沿 parentNode 向上重建祖先 expando（O(depth)），调用方不参与
+     → DmChange[] → decoration</code></pre>
+      <p class="fig-cap">图：三条路径。只有 ① 和 ③ 跑算法，② 靠 decoration 增量跟随。</p>
+    </section>
+
+    <section id="algo">
+      <h2>七、算法侧要做什么</h2>
+      <ol>
+        <li><strong>新增 <code>setDmStyle</code> 钩子</strong>：<code>darkmode.d.ts</code> 加 <code>SetDmStyle</code> 类型 + <code>ConfigOption.setDmStyle</code>；<code>config.ts</code> 默认 <code>null</code>（即全包）。</li>
+        <li><strong><code>sdk.ts</code> <code>convert</code> 加半包分支</strong>（<code>config.setDmStyle !== null</code>）：逐属性收集 <code>{prop, dm, lm?}</code>、<strong>跳过</strong> <code>addClass</code> / <code>genCss</code>、改调 <code>setDmStyle(el, changes)</code>；<code>setDmStyle</code> 存在隐含 <code>noEmit</code>（<code>darkmode.ts</code> 不走 <code>writeStyle</code> 注入）。</li>
+        <li><strong>新增 per-fragment 入口 <code>convertFragment(nodes: HTMLElement[], container: HTMLElement)</code></strong>：<code>run</code> 的干净子集——复用已 <code>init</code> 的 config / 阈值，只对片段直出，不碰首屏 / 整篇注入。<code>nodes</code> 为要转换的片段节点，<code>container</code> 为其父容器（插入点父节点）。算法内部<strong>从 <code>container</code> 沿 <code>parentNode</code> 向上收集祖先链、自顶向下读各祖先 LM 内联色并逐级 mix，重建出 <code>container</code> 处的继承 expando（即 <code>rebuildAncestorExpando(container)</code>）</strong>，再对 <code>nodes</code> 半包 convert——<strong>继承计算全在算法内部，调用方不传继承起点</strong>。祖先无背景色时 fallback 到 <code>config.defaultLightBgColor</code>；若祖先带背景则精确继承。</li>
+        <li><strong>背景图 <code>bgStack</code> 产出路径改造</strong>（半包最需小心的点）：
+          <ul class="tight">
+            <li>背景图节点的多层 background 通过 <code>setDmStyle</code> 发给该节点（替代原 <code>genCss(bgStackClassName, …)</code>）；</li>
+            <li><code>bgStack.contains</code> 矩形相交<strong>保留</strong>（视图 DOM 有真实布局），但命中后的产出改走 <code>setDmStyle</code> 而非 <code>genCss</code>。</li>
+          </ul>
+          普通 color / border / shadow 的替换反而简单，背景图 / 文字底图这条延迟产出链才是重点。</li>
+        <li><strong>半包下不触碰真实 DOM 的 attribute / style</strong>（否则触发 DOMObserver）：
+          <ul class="tight">
+            <li>清 <code>!important</code> 的 <code>setStyle</code>（<code>sdk.ts</code> 调用点<strong>不改</strong>）→ 由调用方传 <strong>no-op</strong> 兜底（半包不需清，decoration 内层 <code>!important</code> 自然覆盖）；</li>
+            <li><code>addClass</code> / <code>setClass</code>：半包分支本就不调用；</li>
+            <li><code>setAttr</code> / <code>getAttr</code> / <code>removeAttr</code>：默认 expando property，<code>MutationObserver</code> 监听不到。</li>
+          </ul>
+        </li>
+        <li><strong>编辑器场景配置</strong>：<code>needJudgeFirstPage:false</code>、<code>delayBgJudge:false</code>。</li>
+        <li><strong>全包行为零变化</strong>（以 <code>setDmStyle</code> 有无隔离，保护只读文章存量）。</li>
+      </ol>
+    </section>
+
+    <section id="caller">
+      <h2>八、调用方（编辑器）要做什么</h2>
+      <ol>
+        <li><strong>DM 插件（核心）</strong>：维护 <code>DecorationSet</code>
+          <ul class="tight">
+            <li><code>init</code>：首次对视图 DOM 跑 <code>run()</code>（半包）→ 在 <code>setDmStyle</code> 回调里收集每节点 <code>DmChange[]</code> → <code>view.posAtDOM</code> 映射到 doc position → 生成 decoration 加入 <code>DecorationSet</code>；</li>
+            <li><code>apply</code>：切 DM 开关 → 全量重算 <code>buildDecos</code>；文档变化 → <code>DecorationSet.map(tr.mapping, tr.doc)</code> 增量延展（日常输入 / split 走这条，<strong>不跑算法</strong>）；</li>
+            <li>注入一份视图级 <code>&lt;style&gt;</code>（DM class 规则 + <code>!important</code>），由 JS 开关控制是否生成 decoration（不用 <code>@media</code>）。</li>
+          </ul>
+        </li>
+        <li><strong>decoration 生成规则</strong>：text 的 color / 描边（<code>-webkit-text-stroke</code> 等）→ <code>Decoration.inline</code>（加 class+<code>!important</code>，class 在内层盖住 mark inline color）；block 的背景 / 渐变 / 背景图多层 → <code>Decoration.node</code>。</li>
+        <li><strong>钩子</strong>：实现 <code>setDmStyle</code>（diff→decoration）；传 <code>setStyle</code> / <code>setClass</code> 为 <strong>no-op</strong>；<code>setAttr</code> / <code>getAttr</code> <strong>不传</strong>（用默认 property）。</li>
+        <li><strong>继承（调用方无需处理）</strong>：继承全由算法 expando 机制承担。粘贴时调用方<strong>只需把片段节点 <code>nodes</code> 和插入点父容器 <code>container</code> 传给 <code>convertFragment</code>，</strong>算法自己从 <code>container</code> 向上重建继承。<span class="muted">（早期「轻量路线」里由调用方维护的「继承 dmBg 栈」仅适用于只用 <code>getDm*</code> 纯函数的场景，本重路线方案不需要。）</span></li>
+        <li><strong>位置映射</strong>：用 PM 原生 <code>view.posAtDOM</code> / <code>domAtPos</code> 把算法按 DOM 产出的 diff 映射到 doc position。</li>
+        <li><strong>复制粘贴</strong>：内部→内部 / 内部→外部 走 doc(LM)，<strong>天然是 LM</strong>，无需特殊处理；外部→内部 在 <code>transformPasted</code>（或 <code>handlePaste</code>）对片段跑 <code>convertFragment(nodes, container)</code>（<code>container</code> = 插入点父容器），继承由算法从 container 向上重建、调用方不参与。</li>
+        <li><strong>保存</strong>：doc 恒 LM，<strong>直接存，无需任何还原 / 合并</strong>。</li>
+        <li><strong>非颜色样式编辑</strong>（font-size / margin 等）：LM === DM，正常走 mark / node attr，<strong>不进 DM 逻辑、不进 decoration</strong>，保存无需处理。</li>
+        <li><strong>配置</strong>：调 <code>run</code> / <code>init</code> 时传 <code>needJudgeFirstPage:false</code>、<code>delayBgJudge:false</code> 及上述钩子。</li>
+      </ol>
+
+      <h3>两侧职责边界（一句话）</h3>
+      <div class="summary">
+        <strong>算法</strong>：吃 DOM（首次=视图 DOM；增量=片段 <code>nodes</code> + <code>container</code>）→ 产出 per-node <code>DmChange[]</code>（经 <code>setDmStyle</code>），继承 / 渐变 / 背景图补色 / 描边全包内；不碰真实 DOM attribute/style。<br>
+        <strong>调用方</strong>：把 <code>DmChange[]</code> + 节点 → 映射成 ProseMirror decoration 并维护增量；doc 恒 LM，保存 / 复制 / 非颜色编辑一概按常规走。
+      </div>
+    </section>
+
+    <section id="simplify">
+      <h2>九、相比最初方案的简化（务必对齐）</h2>
+      <table>
+        <thead><tr><th>最初设想</th><th>B(b) 下结论</th></tr></thead>
+        <tbody>
+          <tr><td>DM 写 inline、LM 存 <code>data-lm-style</code> attr</td><td class="tag-del">取消 —— doc 恒 LM，无需存 LM 副本</td></tr>
+          <tr><td>保存时 <code>data-lm-style</code> 还原回 inline、清 DM</td><td class="tag-del">取消 —— doc 本就是 LM，直接存</td></tr>
+          <tr><td>复制粘贴特殊保留 / 还原 LM</td><td class="tag-del">大幅简化 —— 走 doc(LM) 天然正确，只剩「外部→内部」要跑算法</td></tr>
+          <tr><td><code>dmExpando</code> attr 持久化 + 序列化</td><td class="tag-del">取消 —— expando 退化为「一次转换内写视图 DOM property 的临时态」，用完即弃</td></tr>
+          <tr><td>非颜色样式 (font-size/margin) 保存时合并</td><td class="tag-del">取消 —— LM===DM，正常走 mark / node，不进 DM 逻辑</td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>关于 expando 与 <code>WeakMap&lt;PMNode&gt;</code></strong>：PMNode 不可变，编辑后旧 node 被新 node 替换，<code>WeakMap&lt;PMNode&gt;</code> 会失效，<strong>不能做跨编辑的持久缓存</strong>。B(b) 下根本不需要持久化 expando：它只是「一次转换遍历内、写在（视图/临时）DOM property 上的临时态」，转换完提取出 <code>DmChange</code> 即弃；跨编辑的继承由 ① decoration 区间延展 ② 粘贴时 <code>convertFragment(nodes, container)</code> 从 <code>container</code> 向上重建祖先 expando 两者承担。</div>
+    </section>
+
+    <section id="verify">
+      <h2>十、验证结论（真实环境实测）</h2>
+      <p>真实 WebKit 内核 + 真实 ProseMirror + <code>getComputedStyle</code> / PM API 实跑（PoC：<code>poc/pm-darkmode-poc.html</code>、<code>poc/verify-pending.html</code>）：</p>
+      <div class="ok">
+        <table style="margin:0;">
+          <thead><tr><th>验证项</th><th>实测</th><th>结论</th></tr></thead>
+          <tbody>
+            <tr><td>B(b) 优先级覆盖</td><td><code>pm-dm-fg</code> 在内层 + <code>!important</code></td><td class="tag-ok">✅ 盖住 mark inline color</td></tr>
+            <tr><td>背景图补色多层</td><td><code>backgroundImage 层数 = 2</code></td><td class="tag-ok">✅ 图 + 补色层成立</td></tr>
+            <tr><td><code>-webkit-text</code> 描边</td><td><code>-webkit-text-stroke = 1px rgb(57,255,20)</code></td><td class="tag-ok">✅ 描边生效</td></tr>
+            <tr><td><code>posAtDOM</code> 映射</td><td>往返 <code>3/3</code></td><td class="tag-ok">✅ 稳定</td></tr>
+            <tr><td>decoration 增量性能</td><td>2000 段：全量 <code>buildDecos</code> 1.2ms，一次 <code>map</code> 0.2ms</td><td class="tag-ok">✅ 量级安全</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">性能注：WebKit 内核 + 该 decoration 密度下的数字，远好于预估；真实业务若单段 decoration 更密或有 nodeView 开销，建议用真实文档再量一次，但量级上非常安全。全量 <code>buildDecos</code> 只应在切 DM 开关时做，日常编辑一律走 <code>map</code> 增量。</p>
+    </section>
+
+    <section id="todo">
+      <h2>十一、落地待办与风险</h2>
+      <h3>算法侧实现清单</h3>
+      <ul class="tight">
+        <li><code>darkmode.d.ts</code>：<code>SetDmStyle</code> / <code>DmChange</code> 类型 + <code>ConfigOption.setDmStyle</code></li>
+        <li><code>config.ts</code>：<code>setDmStyle</code> 默认 <code>null</code></li>
+        <li><code>sdk.ts</code> <code>convert</code>：半包分支（收集 diff / 跳过 addClass+genCss / 调 setDmStyle）</li>
+        <li><code>darkmode.ts</code>：半包隐含 noEmit、不走 writeStyle；新增 <code>convertFragment</code> 入口</li>
+        <li><code>bgStack</code> 产出路径：多层 background 与 contains 命中产出改走 setDmStyle</li>
+      </ul>
+      <h3>仍需注意 / 后续验证</h3>
+      <ul class="tight">
+        <li>背景图 <code>bgStack</code> 延迟产出链在半包下的改造是最易出错处，建议优先写单测 / PoC 覆盖。</li>
+        <li>真实业务文档规模下的 decoration 密度与 nodeView 开销，用真实内容再量一次性能。</li>
+        <li><code>convertFragment(nodes, container)</code> 内 <code>rebuildAncestorExpando(container)</code>（从 container 向上重建继承）的边界场景：祖先无色 fallback、带背景祖先的精确继承、遍历终点（根容器 / body）。</li>
+      </ul>
+    </section>
+
+    <footer>
+      本文档由 AI 协作讨论定稿并经真实环境 PoC 实测，随实现推进可能更新。相关：算法总览见 <code>doc/ai/architecture.html</code>，PoC 见 <code>poc/</code>。
+    </footer>
+  </main>
+</div>
+</body>
+</html>
