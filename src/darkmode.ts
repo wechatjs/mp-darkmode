@@ -84,6 +84,8 @@ const classReg = new RegExp(`${CLASS_PREFIX}[^ ]+`, 'g');
 import config, {
   getClass,
   setClass,
+  addClass,
+  removeClass,
   getAttr,
   setAttr,
   removeAttr,
@@ -257,7 +259,7 @@ export function init(opt: ConfigOption = {}) {
 
   if (opt.mode && ['dark', 'light'].indexOf(opt.mode) > -1) {
     config.set('string', opt, 'mode');
-    opt.mode === 'dark' && document.getElementsByTagName('html')[0].classList.add(HTML_CLASS);
+    opt.mode === 'dark' && addClass(document.getElementsByTagName('html')[0], HTML_CLASS);
   }
 
   config.set('function', opt, 'begin');
@@ -345,7 +347,7 @@ export function reset(nodes: HTMLElement[]) {
   domUtils.reset();
   sdk.reset();
 
-  document.getElementsByTagName('html')[0].classList.remove(HTML_CLASS);
+  removeClass(document.getElementsByTagName('html')[0], HTML_CLASS);
 
   if (mql) {
     mql.removeListener(switchToDarkmode as any); // 取消监听
@@ -367,3 +369,6 @@ export function reset(nodes: HTMLElement[]) {
 export function validate(container: HTMLElement, opt: ValidateOption, filter?: ValidateFilter): ValidateResult[] {
   return validator.validate(container, opt, filter);
 };
+
+// 对外暴露强制暗黑模式时给 html 添加的 class，供调用方自行控制开关时机（如编辑器场景）
+export { HTML_CLASS as htmlClass };

@@ -27,6 +27,14 @@ API
   - `opt.defaultDarkWebviewColor` &lt;string&gt; Webview color in Dark Mode. Default `#000`.
   - `opt.defaultDarkBgColor` &lt;string&gt; Background color in Dark Mode. Default `#191919`.
   - `opt.defaultDarkTextColor` &lt;string&gt; Font color in Dark Mode. Default `#a3a3a3`.
+  - `options.getStyle` &lt;Function&gt; Custom method to read a node's inline style. Default `null` (use native DOM).
+  - `options.setStyle` &lt;Function&gt; Custom method to set a node's inline style. Default `null` (use native DOM).
+  - `options.getClass` &lt;Function&gt; Custom method to read a node's class. Default `null` (use native DOM).
+  - `options.setClass` &lt;Function&gt; Custom method to set a node's class. Default `null` (use native DOM).
+  - `options.getAttr` &lt;Function&gt; Custom method to read a node's attribute. Default `null` (use native DOM).
+  - `options.setAttr` &lt;Function&gt; Custom method to set a node's attribute. Default `null` (use native DOM).
+
+> The 6 hooks above let you take over how the algorithm reads/writes the DOM in **non-standard browser environments** (e.g. custom renderers, virtual DOM, SSR, editors and other "DOM-like" objects). When not configured, everything falls back to native DOM and behaves as before.
 
 Init and run Dark Mode conversion algorithm. **Note: The conversion can be run multiple times, but it can only be initialized once.**
 
@@ -108,6 +116,30 @@ Get the contrast between two colors.
 Darkmode.getContrast('#fff', '#000'); // return 21
 ```
 
+### `Darkmode.getDmBgColor(lmBgColor[, dmBgColorExist]) => dmBgColor`
+
+- `lmBgColor` &lt;string&gt; The Light Mode background color to be converted, supports CSS color format.
+- `dmBgColorExist` &lt;string&gt; The existing Dark Mode base background color, supports CSS color format. Defaults to the configured `defaultDarkBgColor`.
+- return `dmBgColor` &lt;string | null&gt; The converted Dark Mode background color; returns `null` when an invalid color is passed in.
+
+Calculate the Dark Mode background color from a Light Mode background color. **Note: `Darkmode.init()` or `Darkmode.run()` must be called first; otherwise it prints a warning and returns `null`.**
+
+```javascript
+Darkmode.getDmBgColor('#fff'); // calculate Dark Mode background color from white
+```
+
+### `Darkmode.getDmFontColor(lmFontColor[, dmBgColor]) => dmFontColor`
+
+- `lmFontColor` &lt;string&gt; The Light Mode font color to be converted, supports CSS color format.
+- `dmBgColor` &lt;string&gt; The Dark Mode base background color used to compute font contrast, supports CSS color format. Defaults to the configured `defaultDarkBgColor`.
+- return `dmFontColor` &lt;string | null&gt; The converted Dark Mode font color; returns `null` when an invalid color is passed in.
+
+Calculate a suitable Dark Mode font color from a Light Mode font color and a Dark Mode background color. **Note: `Darkmode.init()` or `Darkmode.run()` must be called first; otherwise it prints a warning and returns `null`.**
+
+```javascript
+Darkmode.getDmFontColor('#191919'); // calculate Dark Mode font color from a dark font color
+```
+
 ### `Darkmode.extend(pluginList)`
 
 - `pluginList` &lt;Plugin Array&gt; List of plugins to mount.
@@ -146,4 +178,14 @@ Validate the effect of the Dark Mode algorithm conversion.
 const result = Darkmode.validate(document.body, {
   minContrast: 1.5
 }, node => node.classList.has('dm-ignore'));
+```
+
+### `Darkmode.htmlClass`
+
+- &lt;string&gt; The class name added to the `<html>` element when forcing Dark Mode (`mode: 'dark'`).
+
+This constant is exposed so the caller can control the Dark Mode toggle timing themselves (e.g. in editor scenarios, together with the `setClass` hook, the caller decides when to add/remove this class on `<html>`).
+
+```javascript
+document.getElementsByTagName('html')[0].classList.add(Darkmode.htmlClass);
 ```

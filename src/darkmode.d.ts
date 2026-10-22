@@ -101,4 +101,5 @@ export interface DarkMode {
   extend: (pluginList: PluginConstructor[]) => void;
   reset: (nodes: HTMLElement[]) => void;
   validate: (container: HTMLElement, opt: ValidateOption, filter?: ValidateFilter) => ValidateResult[];
+  htmlClass: string;
 }

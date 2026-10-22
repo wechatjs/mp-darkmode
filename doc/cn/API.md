@@ -27,6 +27,14 @@ API
   - `options.defaultDarkWebviewColor` &lt;string&gt; Dark Mode 下 webview 颜色，默认 `#000`。
   - `options.defaultDarkBgColor` &lt;string&gt; Dark Mode 下背景颜色，默认 `#191919`。
   - `options.defaultDarkTextColor` &lt;string&gt; Dark Mode 下字体颜色，默认 `#a3a3a3`。
+  - `options.getStyle` &lt;Function&gt; 自定义「读取节点内联样式」的方法，默认 `null`（使用原生 DOM）。
+  - `options.setStyle` &lt;Function&gt; 自定义「设置节点内联样式」的方法，默认 `null`（使用原生 DOM）。
+  - `options.getClass` &lt;Function&gt; 自定义「读取节点 class」的方法，默认 `null`（使用原生 DOM）。
+  - `options.setClass` &lt;Function&gt; 自定义「设置节点 class」的方法，默认 `null`（使用原生 DOM）。
+  - `options.getAttr` &lt;Function&gt; 自定义「读取节点属性」的方法，默认 `null`（使用原生 DOM）。
+  - `options.setAttr` &lt;Function&gt; 自定义「设置节点属性」的方法，默认 `null`（使用原生 DOM）。
+
+> 以上 6 个钩子用于在**非标准浏览器环境**（如自定义渲染器、虚拟 DOM、SSR、编辑器等「类 DOM」对象）中接管算法对 DOM 的读写；不配置时全部走原生 DOM，行为不变。
 
 初始化并运行 Dark Mode 转换算法。**注意：可多次运行转换算法，但配置只可设置一次。**
 
@@ -108,6 +116,30 @@ Darkmode.updateStyle(node, {
 Darkmode.getContrast('#fff', '#000'); // return 21
 ```
 
+### `Darkmode.getDmBgColor(lmBgColor[, dmBgColorExist]) => dmBgColor`
+
+- `lmBgColor` &lt;string&gt; 要转换的 Light Mode 背景色，支持 css 颜色格式。
+- `dmBgColorExist` &lt;string&gt; 已有的 Dark Mode 背景底色，支持 css 颜色格式，默认为配置的 `defaultDarkBgColor`。
+- return `dmBgColor` &lt;string | null&gt; 转换后的 Dark Mode 背景色；传入非法颜色时返回 `null`。
+
+根据 Light Mode 背景色计算出 Dark Mode 背景色。**注意：需先调用 `Darkmode.init()` 或 `Darkmode.run()` 完成初始化，否则会打印警告并返回 `null`。**
+
+```javascript
+Darkmode.getDmBgColor('#fff'); // 由白色背景算出 Dark Mode 背景色
+```
+
+### `Darkmode.getDmFontColor(lmFontColor[, dmBgColor]) => dmFontColor`
+
+- `lmFontColor` &lt;string&gt; 要转换的 Light Mode 字体色，支持 css 颜色格式。
+- `dmBgColor` &lt;string&gt; 作为计算字体对比度的 Dark Mode 背景底色，支持 css 颜色格式，默认为配置的 `defaultDarkBgColor`。
+- return `dmFontColor` &lt;string | null&gt; 转换后的 Dark Mode 字体色；传入非法颜色时返回 `null`。
+
+根据 Light Mode 字体色和 Dark Mode 背景色计算出合适的 Dark Mode 字体色。**注意：需先调用 `Darkmode.init()` 或 `Darkmode.run()` 完成初始化，否则会打印警告并返回 `null`。**
+
+```javascript
+Darkmode.getDmFontColor('#191919'); // 由深色字体算出 Dark Mode 字体色
+```
+
 ### `Darkmode.extend(pluginList)`
 
 - `pluginList` &lt;Plugin Array&gt; 要挂载的插件列表。
@@ -146,4 +178,14 @@ Darkmode.reset(document.body.querySelectorAll('*'));
 const result = Darkmode.validate(document.body, {
   minContrast: 1.5
 }, node => node.classList.has('dm-ignore'));
+```
+
+### `Darkmode.htmlClass`
+
+- &lt;string&gt; 强制 Dark Mode（`mode: 'dark'`）时给 `<html>` 节点添加的 class 名。
+
+对外暴露该常量，供调用方在需要自行控制 Dark Mode 开关时机时使用（例如编辑器场景，配合 `setClass` 钩子由调用方决定何时给 `<html>` 加/删该 class）。
+
+```javascript
+document.getElementsByTagName('html')[0].classList.add(Darkmode.htmlClass);
 ```

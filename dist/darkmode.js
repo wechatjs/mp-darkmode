@@ -15644,6 +15644,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getContrast: () => (/* binding */ getContrast),
 /* harmony export */   getDmBgColor: () => (/* binding */ getDmBgColor),
 /* harmony export */   getDmFontColor: () => (/* binding */ getDmFontColor),
+/* harmony export */   htmlClass: () => (/* reexport safe */ _modules_constant__WEBPACK_IMPORTED_MODULE_1__.HTML_CLASS),
 /* harmony export */   init: () => (/* binding */ init),
 /* harmony export */   reset: () => (/* binding */ reset),
 /* harmony export */   run: () => (/* binding */ run),
@@ -15864,7 +15865,7 @@ function init(opt = {}) {
   }
   if (opt.mode && ['dark', 'light'].indexOf(opt.mode) > -1) {
     _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].set('string', opt, 'mode');
-    opt.mode === 'dark' && document.getElementsByTagName('html')[0].classList.add(_modules_constant__WEBPACK_IMPORTED_MODULE_1__.HTML_CLASS);
+    opt.mode === 'dark' && (0,_modules_config__WEBPACK_IMPORTED_MODULE_2__.addClass)(document.getElementsByTagName('html')[0], _modules_constant__WEBPACK_IMPORTED_MODULE_1__.HTML_CLASS);
   }
   _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].set('function', opt, 'begin');
   _modules_config__WEBPACK_IMPORTED_MODULE_2__["default"].set('function', opt, 'showFirstPage');
@@ -15955,7 +15956,7 @@ function reset(nodes) {
   _modules_global__WEBPACK_IMPORTED_MODULE_3__.cssUtils.reset();
   _modules_global__WEBPACK_IMPORTED_MODULE_3__.domUtils.reset();
   _modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.reset();
-  document.getElementsByTagName('html')[0].classList.remove(_modules_constant__WEBPACK_IMPORTED_MODULE_1__.HTML_CLASS);
+  (0,_modules_config__WEBPACK_IMPORTED_MODULE_2__.removeClass)(document.getElementsByTagName('html')[0], _modules_constant__WEBPACK_IMPORTED_MODULE_1__.HTML_CLASS);
   if (mql) {
     mql.removeListener(switchToDarkmode); // 取消监听
     mql = null;
@@ -15977,6 +15978,9 @@ function validate(container, opt, filter) {
   return _modules_global__WEBPACK_IMPORTED_MODULE_3__.validator.validate(container, opt, filter);
 }
 ;
+
+// 对外暴露强制暗黑模式时给 html 添加的 class，供调用方自行控制开关时机（如编辑器场景）
+
 })();
 
 /******/ 	return __webpack_exports__;
