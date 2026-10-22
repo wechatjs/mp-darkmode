@@ -180,7 +180,10 @@
    text ：inline decoration 走 DecorationSet.map 跟随
 
 ③ 粘贴外部复杂片段
-   transformPasted → 对片段跑算法 → 写入各节点 data-dm-class → 生成 decoration
+   transformPasted → 对片段复用 run(片段节点, opt, container) 跑算法
+     ├ run 内部先 rebuildAncestorExpando(container)：从 container 向上遍历到根、
+     │   自顶向下读各祖先 LM 背景逐级 mix，把继承 expando 写到【片段顶层节点】
+     └ 再 convert 片段 → 写入各节点 data-dm-class → 生成 decoration
 
 ④ 保存
    doc 恒 LM；序列化过滤 data-dm-class → 存进后台的是纯 LM</code></pre>
@@ -198,10 +201,18 @@
         </li>
         <li><strong>暴露 <code>HTML_CLASS</code> 给调用方</strong>（<span class="badge">待办</span>）：把常量 <code>HTML_CLASS</code>（<code>data_color_scheme_dark</code>）对外导出，调用方据此决定何时给 <code>&lt;html&gt;</code> 加该 class 作为 DM 总开关。</li>
         <li><strong>配置 <code>mode:'dark'</code></strong>：使算法生成带 <code>html.data_color_scheme_dark</code> 作用域的规则并注入 <code>&lt;style&gt;</code>（全局视图资源，不进 doc）。</li>
+        <li><strong>粘贴场景：<code>run</code> 增加第三个可选参数 <code>container: HTMLElement</code></strong>（<span class="badge">待办</span>）：
+          <ul class="tight">
+            <li>粘贴片段复用 <code>run(片段节点, opt, container)</code>。第二次 <code>run</code> 的 <code>init</code> 因 <code>config.hasInit</code> 已 true 被安全跳过（不重复注册监听/重置配置），<code>switchToDarkmode</code> 的 <code>force</code> 会重置 <code>isFinish</code> 再跑一遍。</li>
+            <li>新增 <code>rebuildAncestorExpando(container)</code>：从 <code>container</code> 沿 <code>parentNode</code> <strong>向上遍历到根</strong>（方案 A），自顶向下读各祖先 inline 背景色（doc 恒 LM，读到即 LM）、用 <code>mixColors</code> 逐级叠加，算出「到 container 处的 DM / 原始背景上下文」。</li>
+            <li><strong>关键：继承 expando 要写到【片段顶层节点】</strong>（不是 container）——因为 <code>convert(片段节点)</code> 读的是片段节点自己的 expando，且 expando 不会自动父传子（靠 <code>convert</code> 处理父时主动写给子）。写到片段顶层后，<code>convert</code> 才能正确继承祖先背景并往片段内子孙传递。</li>
+            <li>调用时机：<code>container</code> 相关处理须放在 <code>domUtils.set(nodes)</code> 之后、<code>switchToDarkmode</code> 之前（<strong>不能放 <code>init</code>，因第二次 run 的 init 被跳过</strong>）。</li>
+          </ul>
+        </li>
         <li><strong>其余 DOM 写操作走钩子、不碰真实 DOM</strong>：<code>setClass</code> 接管块/文字 class（交给调用方记录，不写 DOM）；<code>setStyle</code>（清 <code>!important</code> 等）传 <strong>no-op</strong> 兜底；<code>setAttr</code> / <code>getAttr</code> 用默认 expando property（<code>MutationObserver</code> 监听不到，rerender 丢失无妨）。</li>
         <li><strong>编辑器场景配置</strong>：<code>needJudgeFirstPage:false</code>、<code>delayBgJudge:false</code>（首屏优化/背景延迟判断对编辑器无意义）。</li>
       </ol>
-      <div class="note">本路线<strong>不需要</strong>之前设想的 <code>setDmStyle</code> 钩子 / diff 直出 / <code>convertFragment</code> 等改造——直接复用算法现有 CSS 产出即可。</div>
+      <div class="note"><strong>不需要</strong>之前设想的 <code>setDmStyle</code> 钩子 / diff 直出 / 专门的 <code>convertFragment</code> API——直接复用算法现有 CSS 产出即可。<strong>但「对粘贴片段跑算法转换」这个能力仍然需要</strong>，只是改为<strong>复用 <code>run(nodes, opt, container)</code></strong> 实现（见上条），而非新造 API。</div>
     </section>
 
     <section id="caller">
@@ -221,7 +232,7 @@
           </ul>
         </li>
         <li><strong>DM 开关</strong>：用算法暴露的 <code>HTML_CLASS</code>，在需要时给 <code>&lt;html&gt;</code> 加/删。</li>
-        <li><strong>复制粘贴</strong>：内部→内部 / 内部→外部 走 doc(LM)，<strong>天然是 LM</strong>，无需特殊处理；外部→内部 在 <code>transformPasted</code> 对片段跑算法并写入 <code>data-dm-class</code>。</li>
+        <li><strong>复制粘贴</strong>：内部→内部 / 内部→外部 走 doc(LM)，<strong>天然是 LM</strong>，无需特殊处理；外部→内部 在 <code>transformPasted</code> 调 <code>run(片段节点, opt, container)</code>（<code>container</code> = 插入点父容器）跑算法并写入 <code>data-dm-class</code>，继承由算法 <code>rebuildAncestorExpando(container)</code> 从祖先链重建。</li>
         <li><strong>保存</strong>：doc 恒 LM，序列化过滤 <code>data-dm-class</code>，<strong>直接存、无需还原</strong>。</li>
         <li><strong>非颜色样式编辑</strong>（font-size / margin 等）：LM === DM，正常走 mark / node attr，不进 DM 逻辑。</li>
       </ol>
@@ -257,20 +268,22 @@
       <ul class="tight">
         <li><code>darkmode.ts</code>：<code>&lt;html&gt;</code> 的 <code>classList.add/remove(HTML_CLASS)</code>（L260 / L348）改为走 <code>setClass</code> 钩子可接管的路径。</li>
         <li>对外<strong>导出 <code>HTML_CLASS</code></strong> 常量。</li>
+        <li><code>run</code> 增加第三个可选参数 <code>container: HTMLElement</code>；新增 <code>rebuildAncestorExpando(container)</code>（方案 A：向上遍历到根逐级 mix，继承 expando 写到片段顶层节点），调用时机在 <code>domUtils.set</code> 之后、<code>switchToDarkmode</code> 之前。</li>
         <li>确认 <code>mode:'dark'</code> + <code>setClass</code> 全链路下不再有任何「绕过钩子直接写真实 DOM class/style」的残留。</li>
       </ul>
       <h3>调用方改动清单</h3>
       <ul class="tight">
         <li>schema 加 <code>data-dm-class</code> attr（<code>toDOM</code> 不渲染）。</li>
         <li>DM 插件：<code>setClass</code> 钩子落地 + <code>DecorationSet</code>（block 重建 / text map）+ <code>&lt;html&gt;</code> 开关控制。</li>
-        <li><code>transformPasted</code> 跑算法转换粘贴片段。</li>
+        <li><code>transformPasted</code> 调 <code>run(片段, opt, container)</code> 转换粘贴片段。</li>
         <li>保存链路过滤 <code>data-dm-class</code>。</li>
       </ul>
       <h3>仍需注意 / 后续验证</h3>
       <ul class="tight">
+        <li><strong><code>&lt;style&gt;</code> 累积（已知待优化，不阻塞主流程）</strong>：每次 <code>run</code>（含每次粘贴）末尾 <code>writeStyle</code> 都 <code>insertAdjacentHTML</code> 注入一个新 <code>&lt;style&gt;</code>，规则只增不减——长时间编辑 + 频繁粘贴会累积上千条规则，导致<strong>内存单调增长 + 样式重算(recalc)变慢</strong>（单 class 选择器匹配本身不慢，问题在规则总量）。几百个无感，上千/上万需处理。<strong>倾向解法（后续主流程完成再做）</strong>：复用现有 <code>reset()</code>（本就会 <code>removeChild</code> 所有 <code>js_darkmode_style__</code> 标签）在标签数超阈值 / 失焦 / 空闲时「合并重建」——<code>reset</code> + 对全文重跑一次全量 <code>run</code>，把规则压回 1–2 张。</li>
         <li>背景图补色是「追加一层 background」，确认算法跑视图 DOM 时读得到完整 <code>background-image</code> 并产出正确多层规则（背景图在 inline style 上，可读）。</li>
         <li>真实业务文档规模下的 decoration 密度与 nodeView 开销，用真实内容再量一次性能。</li>
-        <li>粘贴片段的颜色继承起点（插入点上下文），确认与首次全量结果一致。</li>
+        <li>粘贴片段经 <code>rebuildAncestorExpando(container)</code> 的继承结果，确认与首次全量一致（尤其嵌套在带背景祖先里粘贴的场景）。</li>
       </ul>
     </section>
 
