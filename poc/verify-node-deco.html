@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<link rel="stylesheet" href="https://esm.sh/prosemirror-view@1/style/prosemirror.css" />
+<script type="importmap">
+{
+  "imports": {
+    "prosemirror-model": "https://esm.sh/prosemirror-model@1",
+    "prosemirror-transform": "https://esm.sh/prosemirror-transform@1?external=prosemirror-model",
+    "prosemirror-state": "https://esm.sh/prosemirror-state@1?external=prosemirror-model,prosemirror-transform",
+    "prosemirror-view": "https://esm.sh/prosemirror-view@1?external=prosemirror-model,prosemirror-state,prosemirror-transform"
+  }
+}
+</script>
+<style>
+  /* node decoration 挂的 class：多种样式集中在同一节点 */
+  .dm-block {
+    background-color: rgb(25,25,25) !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='8' height='8' fill='%23f00'/%3E%3C/svg%3E"), linear-gradient(rgb(40,40,40), rgb(40,40,40)) !important;
+    background-size: 8px 8px, 100% !important;
+    border: 2px solid rgb(80,80,80) !important;
+    box-shadow: 0 0 4px rgb(10,10,10) !important;
+  }
+  .dm-fg { color: rgb(200,200,200) !important; }
+  /* 问题2 探针：仅当 <html> 带 data_color_scheme_dark 时命中 */
+  html.data_color_scheme_dark .dm-block { outline: 2px solid rgb(1,2,3) !important; }
+</style>
+</head>
+<body>
+<div id="editor"></div>
+<script type="module">
+import { Schema } from 'prosemirror-model';
+import { EditorState, Plugin, PluginKey } from 'prosemirror-state';
+import { EditorView, Decoration, DecorationSet } from 'prosemirror-view';
+
+const schema = new Schema({
+  nodes: {
+    doc: { content: 'block+' },
+    paragraph: { group: 'block', content: 'inline*', parseDOM: [{ tag: 'p' }], toDOM: () => ['p', 0] },
+    text: { group: 'inline' },
+  },
+  marks: {
+    color: { attrs:{color:{}}, toDOM: m => ['span',{style:`color:${m.attrs.color}`},0], parseDOM:[{style:'color',getAttrs:v=>({color:v})}] },
+  },
+});
+const colorType = schema.marks.color;
+
+const doc = schema.node('doc', null, [
+  schema.node('paragraph', null, [ schema.text('第一段带块背景，这里有一段', []), schema.text('红色字', [colorType.create({color:'#e00'})]), schema.text('继续普通文字凑够长度以便从中间回车拆分。') ]),
+  schema.node('paragraph', null, [ schema.text('第二段普通段落。') ]),
+]);
+
+const key = new PluginKey('dm');
+function build(doc){
+  const decos = [];
+  let first = true;
+  doc.descendants((node,pos)=>{
+    if(node.type.name==='paragraph'){
+      if(first){ decos.push(Decoration.node(pos, pos+node.nodeSize, {class:'dm-block'})); first=false; }
+    }
+    if(node.isText && node.text){
+      decos.push(Decoration.inline(pos, pos+node.nodeSize, {class:'dm-fg'}, {inclusiveStart:true, inclusiveEnd:true}));
+    }
+  });
+  return DecorationSet.create(doc, decos);
+}
+const plugin = new Plugin({
+  key,
+  state:{ init:(_,s)=>build(s.doc), apply:(tr,old)=> tr.docChanged ? old.map(tr.mapping, tr.doc) : old },
+  props:{ decorations:s=>key.getState(s) },
+});
+const view = new EditorView(document.getElementById('editor'), { state: EditorState.create({doc, plugins:[plugin]}) });
+
+setTimeout(()=>{
+  const r = {};
+  const pm = view.dom;                       // .ProseMirror
+  const ps = pm.querySelectorAll('p');
+  const p0 = ps[0];
+
+  // —— 问题3：Decoration.node 是否创建包裹元素 ——
+  r.pCount = ps.length;
+  r.p0_isDirectChildOfPM = p0.parentElement === pm;      // true = 无额外包裹
+  r.p0_tag = p0.tagName;
+  r.p0_hasDmBlockClass = p0.classList.contains('dm-block'); // true = class 直接加在 <p> 上
+  r.p0_outerHTMLHead = p0.outerHTML.slice(0, 120);
+  const cs = getComputedStyle(p0);
+  r.p0_bg = cs.backgroundColor;
+  r.p0_borderTop = cs.borderTopWidth;
+  r.p0_boxShadow = cs.boxShadow.slice(0,24);
+  r.p0_bgImgLayers = (cs.backgroundImage.match(/url\(|gradient\(/g)||[]).length; // 多层背景同节点
+  // inline deco 是否 span 包裹
+  const fg = pm.querySelector('.dm-fg');
+  r.fg_tag = fg ? fg.tagName : null;
+
+  // —— 问题2：html.data_color_scheme_dark 作用域选择器能否命中 decoration 挂的 class ——
+  r.outline_before = getComputedStyle(p0).outlineColor;
+  document.documentElement.classList.add('data_color_scheme_dark');
+  r.outline_after = getComputedStyle(p0).outlineColor;   // 期望变 rgb(1, 2, 3)
+  document.documentElement.classList.remove('data_color_scheme_dark');
+
+  // —— 问题1：回车 split 后 node / inline decoration 的 map 行为 ——
+  const firstPara = view.state.doc.firstChild;
+  const splitPos = 1 + Math.floor(firstPara.content.size/2);
+  view.dispatch(view.state.tr.split(splitPos));
+  const ps2 = view.dom.querySelectorAll('p');
+  r.afterSplit_pCount = ps2.length;
+  r.afterSplit_p0_hasBlock = ps2[0].classList.contains('dm-block');
+  r.afterSplit_p1_hasBlock = ps2[1] ? ps2[1].classList.contains('dm-block') : null; // 新段是否自动获得 node deco
+  r.afterSplit_fgCount = view.dom.querySelectorAll('.dm-fg').length;                  // inline deco 是否跟随切成两段
+
+  window.__result = r;
+  window.__done = true;
+}, 500);
+</script>
+</body>
+</html>
