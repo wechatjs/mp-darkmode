@@ -148,7 +148,40 @@ export default class SDK {
 
   isDarkmode = false; // 当前是否需要运行Darkmode处理
 
+  _inheritTargets: HTMLElement[] | null = null; // convert 继承传递时的目标白名单（仅 rebuildAncestorExpando 场景使用，null 时走整子树）
+
   constructor() {}
+
+  // convert 继承传递（setAttr/removeAttr 给子树）时的目标节点集合
+  // 默认（_inheritTargets 为 null）走原逻辑 getChildrenAndIt(el) 覆盖整个子树；
+  // rebuildAncestorExpando 场景下限定为 inheritTargets 中 el 的后代（含自身），避免遍历整子树 + 污染旁支。
+  _inheritNodes(el: HTMLElement): HTMLElement[] {
+    return this._inheritTargets ? this._inheritTargets.filter(t => el.contains(t)) : getChildrenAndIt(el);
+  }
+
+  // 重建祖先继承上下文（用于粘贴等增量场景）
+  // 片段节点（nodes）已在 container 内，但其继承 expando（背景色/字体色上下文）尚未建立，直接 convert 会用默认底色算错颜色。
+  // 做法：从 container 沿 parentElement 向上收集祖先链（到 config.container 为止，否则到根），
+  // 以「祖先链 + nodes」为继承目标白名单，自顶向下对每个祖先跑「仅 expando」的 convert——
+  // 继承沿祖先链逐级传递、最终到达 nodes，完全复用 convert 的继承逻辑，且不碰 container 子树里的其它旧节点。
+  // 背景图补色（COMPLEMENTARY_BGIMAGECOLORATTR）与渐变标记（BGGRADIENT_MIXCOLORATTR）在 onlyExpando 下
+  // 改用 DOM 包含关系直接继承，绕开 bgStack 的位置判断（见 convert）。
+  rebuildAncestorExpando(nodes: HTMLElement[], container: HTMLElement) {
+    if (!nodes || !nodes.length || !container) return;
+
+    // 收集祖先链（含 container 自身），自顶向下排列
+    const ancestors: HTMLElement[] = [];
+    let cur: HTMLElement | null = container;
+    while (cur) {
+      ancestors.unshift(cur);
+      if (cur === config.container) break; // 到达配置的容器即停止向上
+      cur = cur.parentElement;
+    }
+
+    // 继承目标白名单 = 祖先链 + 片段节点；逐级 convert（仅做 expando 继承传递）
+    const inheritTargets = [...ancestors, ...nodes];
+    ancestors.forEach(ancestor => this.convert(ancestor, [], false, false, true, inheritTargets));
+  }
 
   // 调整明度
   _adjustBrightness(color: ColorInstance, el: HTMLElement, options: ConvertOptions, isUpdate: boolean = false, needReset: boolean = false): AdjustBrightnessRet {
@@ -172,7 +205,7 @@ export default class SDK {
     if (options.isBgColor) { // 背景色
       // 如果有背景颜色，取消背景图片的影响
       if (color.alpha() >= IGNORE_ALPHA && getAttr(el, BGIMAGEATTR)) {
-        getChildrenAndIt(el).forEach(dom => {
+        this._inheritNodes(el).forEach(dom => {
           removeAttr(dom, BGIMAGEATTR);
         });
       }
@@ -191,7 +224,7 @@ export default class SDK {
         }
 
         // 否则取消背景图片补色的影响
-        getChildrenAndIt(el).forEach(dom => {
+        this._inheritNodes(el).forEach(dom => {
           removeAttr(dom, COMPLEMENTARY_BGIMAGECOLORATTR);
         });
       }
@@ -215,7 +248,7 @@ export default class SDK {
           extStyle += cssUtils.genCssKV('color', (ret.newColor || parentTextColor).toString());
 
           // 对文字颜色做继承传递，用于文字亮度计算
-          getChildrenAndIt(el).forEach(dom => {
+          this._inheritNodes(el).forEach(dom => {
             setAttr(dom, COLORATTR, mixColors([parentElementBgColor, ret.newColor || parentTextColor]));
             setAttr(dom, ORIGINAL_COLORATTR, parentTextColor);
           });
@@ -259,7 +292,7 @@ export default class SDK {
   _updateBgWithGradient(gradientColor: ColorInstance, el: HTMLElement, className: string, cssKVList: CssKV[], isUpdate: boolean = false, needReset: boolean = false): string {
     const newBgColor = mixColors([getAttr(el, BGCOLORATTR) || config.defaultDarkBgColor, gradientColor]);
     const newOriginalBgColor = mixColors([getAttr(el, ORIGINAL_BGCOLORATTR) || config.defaultLightBgColor, gradientColor]);
-    getChildrenAndIt(el).forEach(dom => {
+    this._inheritNodes(el).forEach(dom => {
       setAttr(dom, BGCOLORATTR, newBgColor);
       setAttr(dom, ORIGINAL_BGCOLORATTR, newOriginalBgColor);
     });
@@ -294,7 +327,7 @@ export default class SDK {
     }, isUpdate, needReset);
     const newColor = mixColors([newBgColor, ret.newColor || color]);
     const newOriginColor = color;
-    getChildrenAndIt(el).forEach(dom => {
+    this._inheritNodes(el).forEach(dom => {
       setAttr(dom, COLORATTR, newColor);
       setAttr(dom, ORIGINAL_COLORATTR, newOriginColor);
     });
@@ -329,20 +362,29 @@ export default class SDK {
   }
 
   // 处理节点
-  convert(el: HTMLElement, cssKVList: CssKV[] = [], isUpdate: boolean = false, needReset: boolean = false): string {
-    plugins.resetCss();
-    let beforeConvertNodeHookName = PLUGIN_HOOK.BEFORE_CONVERT_NODE;
-    if (isUpdate) {
-      beforeConvertNodeHookName = PLUGIN_HOOK.BEFORE_CONVERT_NODE_BY_UPDATE_STYLE;
-    } else if (needReset) {
-      beforeConvertNodeHookName = PLUGIN_HOOK.BEFORE_CONVERT_NODE_BY_RESET;
+  // onlyExpando 为 true 时：仅做 expando 继承传递（setAttr），跳过所有产出副作用
+  //   （className/样式生成、bgStack/tnQueue 入栈、setStyle 清 important、插件钩子），用于 rebuildAncestorExpando 补算祖先继承。
+  //   其中背景图补色（COMPLEMENTARY_BGIMAGECOLORATTR）与渐变继承/标记（BGGRADIENT_MIXCOLORATTR）原走 bgStack 延迟位置判断，
+  //   onlyExpando 下改用 DOM 包含关系（_inheritNodes）直接继承，绕开 getBoundingClientRect。
+  //   inheritTargets：继承传递的目标白名单（仅 onlyExpando 场景传入），限定 setAttr/removeAttr 只作用于其中的节点，避免遍历整子树。
+  convert(el: HTMLElement, cssKVList: CssKV[] = [], isUpdate: boolean = false, needReset: boolean = false, onlyExpando: boolean = false, inheritTargets?: HTMLElement[]): string {
+    this._inheritTargets = inheritTargets || null;
+
+    if (!onlyExpando) {
+      plugins.resetCss();
+      let beforeConvertNodeHookName = PLUGIN_HOOK.BEFORE_CONVERT_NODE;
+      if (isUpdate) {
+        beforeConvertNodeHookName = PLUGIN_HOOK.BEFORE_CONVERT_NODE_BY_UPDATE_STYLE;
+      } else if (needReset) {
+        beforeConvertNodeHookName = PLUGIN_HOOK.BEFORE_CONVERT_NODE_BY_RESET;
+      }
+      plugins.emit(beforeConvertNodeHookName, el);
     }
-    plugins.emit(beforeConvertNodeHookName, el);
 
     let css = ''; // css
     let bgCss = ''; // 文字底图css
 
-    if (this.isDarkmode || isUpdate || needReset) {
+    if (this.isDarkmode || isUpdate || needReset || onlyExpando) {
       const nodeName = el.nodeName;
 
       if (config.whitelist.tagName.indexOf(nodeName) > -1) return '';
@@ -542,7 +584,7 @@ export default class SDK {
               if ((isBgColor || textColorIdx >= 5) && replaceIndex === 0) { // 只处理color及之后的属性
                 const newColor = mixColors([getAttr(el, BGCOLORATTR) || config.defaultDarkBgColor, retColor || matchColor]);
                 const newOriginalColor = isBgColor ? mixColors([getAttr(el, ORIGINAL_BGCOLORATTR) || config.defaultLightBgColor, matchColor]) : matchColor;
-                getChildrenAndIt(el).forEach(dom => {
+                this._inheritNodes(el).forEach(dom => {
                   if (isBgColor) {
                     setAttr(dom, BGCOLORATTR, newColor);
                     setAttr(dom, ORIGINAL_BGCOLORATTR, newOriginalColor);
@@ -580,7 +622,7 @@ export default class SDK {
               let tmpCssKvStr = '';
 
               // 标记为有背景图片
-              !getAttr(el, BGIMAGEATTR) && getChildrenAndIt(el).forEach(dom => {
+              !getAttr(el, BGIMAGEATTR) && this._inheritNodes(el).forEach(dom => {
                 setAttr(dom, BGIMAGEATTR, true);
               });
 
@@ -596,9 +638,15 @@ export default class SDK {
                   tmpCssKvStr += cssUtils.genCssKV('background-size', `${elBackgroundSizeAttr},100%`);
                 }
                 if (!needReset) {
-                  if (dmBgClassName) { // 如果是文字底图，则直接加样式
+                  if (onlyExpando) {
+                    // onlyExpando（rebuildAncestorExpando）：粘贴节点在背景图祖先的 DOM 内即视为落在背景图区域，
+                    // 用 DOM 包含关系（_inheritNodes）直接继承补色，绕开 bgStack 的 getBoundingClientRect 位置判断
+                    this._inheritNodes(el).forEach(dom => {
+                      setAttr(dom, COMPLEMENTARY_BGIMAGECOLORATTR, imgBgColor);
+                    });
+                  } else if (dmBgClassName) { // 如果是文字底图，则直接加样式
                     bgCss += cssUtils.genCss(dmBgClassName, tmpCssKvStr);
-                    getChildrenAndIt(el).forEach(dom => {
+                    this._inheritNodes(el).forEach(dom => {
                       setAttr(dom, COMPLEMENTARY_BGIMAGECOLORATTR, imgBgColor);
                     });
                   } else { // 否则背景图入栈
@@ -615,7 +663,7 @@ export default class SDK {
                 }
               } else {
                 // border-image元素，如果当前元素没有背景颜色，补背景颜色
-                if (imgBgColor && !hasInlineBackground && !needReset) {
+                if (imgBgColor && !hasInlineBackground && !needReset && !onlyExpando) {
                   tmpCssKvStr = cssUtils.genCssKV('background-image', `linear-gradient(${imgBgColor}, ${imgBgColor})`);
                   if (dmBgClassName) { // 如果是文字底图，则直接加样式
                     bgCss += cssUtils.genCss(dmBgClassName, tmpCssKvStr);
@@ -630,7 +678,7 @@ export default class SDK {
             if (!hasInlineColor) {
               const textColor = getAttr(el, ORIGINAL_COLORATTR) || config.defaultLightTextColor;
               cssKV += cssUtils.genCssKV('color', textColor);
-              getChildrenAndIt(el).forEach(dom => {
+              this._inheritNodes(el).forEach(dom => {
                 setAttr(dom, COLORATTR, textColor);
               });
             }
@@ -638,9 +686,16 @@ export default class SDK {
         }
 
         if (cssChange || needReset) {
-          !isUpdate && !needReset && IMPORTANT_REGEXP.test(oldValue) && setStyle(el, { [key]: oldValue.replace(IMPORTANT_REGEXP, '') }); // 清除inline style的!important
+          !isUpdate && !needReset && !onlyExpando && IMPORTANT_REGEXP.test(oldValue) && setStyle(el, { [key]: oldValue.replace(IMPORTANT_REGEXP, '') }); // 清除inline style的!important
           if (isGradient) {
-            if (!needReset) {
+            if (onlyExpando) {
+              // onlyExpando（rebuildAncestorExpando）：渐变背景的继承传递——复用 _updateBgWithGradient 的 expando 部分
+              // （产出的 css 丢弃），并重建渐变标记 BGGRADIENT_MIXCOLORATTR，绕开 bgStack 位置判断
+              if (gradientMixColor && /^background/.test(key) && !URL_REGEXP.test(value)) {
+                this._updateBgWithGradient(gradientMixColor, el, '', cssKVList, isUpdate, needReset);
+                setAttr(el, BGGRADIENT_MIXCOLORATTR, gradientMixColor);
+              }
+            } else if (!needReset) {
               if (dmBgClassName) { // 如果是文字底图，则直接加样式
                 bgCss += cssUtils.genCss(dmBgClassName, cssUtils.genCssKV(key, value));
                 if (gradientMixColor && /^background/.test(key) && !URL_REGEXP.test(value)) { // 是无背景图的渐变，需要重新计算背景色
@@ -670,7 +725,7 @@ export default class SDK {
         cssUtils.unwatch('color');
       }
 
-      if (cssKV) { // 有处理过或者是背景图片就加class以及css
+      if (cssKV && !onlyExpando) { // 有处理过或者是背景图片就加class以及css
         if (!dmClassName) {
           dmClassName = `${CLASS_PREFIX}${this._idx++}`;
           addClass(el, dmClassName);
@@ -680,7 +735,7 @@ export default class SDK {
 
       css += bgCss; // 追加文字底图样式，要在添加cssKV之后添加，避免被覆盖
 
-      if (!isUpdate && hasTextNode(el) && !needReset) { // 如果节点里有文本，要判断是否在背景图里
+      if (!isUpdate && hasTextNode(el) && !needReset && !onlyExpando) { // 如果节点里有文本，要判断是否在背景图里
         if (config.delayBgJudge) { // 延迟背景判断
           tnQueue.push(el); // 文字入队
         } else {
@@ -692,13 +747,15 @@ export default class SDK {
       }
     }
 
-    let afterConvertNodeHookName = PLUGIN_HOOK.AFTER_CONVERT_NODE;
-    if (isUpdate) {
-      afterConvertNodeHookName = PLUGIN_HOOK.AFTER_CONVERT_NODE_BY_UPDATE_STYLE;
-    } else if (needReset) {
-      afterConvertNodeHookName = PLUGIN_HOOK.AFTER_CONVERT_NODE_BY_RESET;
+    if (!onlyExpando) {
+      let afterConvertNodeHookName = PLUGIN_HOOK.AFTER_CONVERT_NODE;
+      if (isUpdate) {
+        afterConvertNodeHookName = PLUGIN_HOOK.AFTER_CONVERT_NODE_BY_UPDATE_STYLE;
+      } else if (needReset) {
+        afterConvertNodeHookName = PLUGIN_HOOK.AFTER_CONVERT_NODE_BY_RESET;
+      }
+      plugins.emit(afterConvertNodeHookName, el);
     }
-    plugins.emit(afterConvertNodeHookName, el);
 
     return css;
   }

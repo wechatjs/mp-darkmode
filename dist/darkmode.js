@@ -14679,7 +14679,7 @@ function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = 
 // 节点相关操作工具API
 
 class SDK {
-  // 当前是否需要运行Darkmode处理
+  // convert 继承传递时的目标白名单（仅 rebuildAncestorExpando 场景使用，null 时走整子树）
 
   constructor() {
     _defineProperty(this, "_idx", 0);
@@ -14692,6 +14692,39 @@ class SDK {
     _defineProperty(this, "_defaultDarkBgColorHslBrightness", 0);
     _defineProperty(this, "_maxLimitOffsetBrightness", 0);
     _defineProperty(this, "isDarkmode", false);
+    // 当前是否需要运行Darkmode处理
+    _defineProperty(this, "_inheritTargets", null);
+  }
+
+  // convert 继承传递（setAttr/removeAttr 给子树）时的目标节点集合
+  // 默认（_inheritTargets 为 null）走原逻辑 getChildrenAndIt(el) 覆盖整个子树；
+  // rebuildAncestorExpando 场景下限定为 inheritTargets 中 el 的后代（含自身），避免遍历整子树 + 污染旁支。
+  _inheritNodes(el) {
+    return this._inheritTargets ? this._inheritTargets.filter(t => el.contains(t)) : (0,_domUtils__WEBPACK_IMPORTED_MODULE_6__.getChildrenAndIt)(el);
+  }
+
+  // 重建祖先继承上下文（用于粘贴等增量场景）
+  // 片段节点（nodes）已在 container 内，但其继承 expando（背景色/字体色上下文）尚未建立，直接 convert 会用默认底色算错颜色。
+  // 做法：从 container 沿 parentElement 向上收集祖先链（到 config.container 为止，否则到根），
+  // 以「祖先链 + nodes」为继承目标白名单，自顶向下对每个祖先跑「仅 expando」的 convert——
+  // 继承沿祖先链逐级传递、最终到达 nodes，完全复用 convert 的继承逻辑，且不碰 container 子树里的其它旧节点。
+  // 背景图补色（COMPLEMENTARY_BGIMAGECOLORATTR）与渐变标记（BGGRADIENT_MIXCOLORATTR）在 onlyExpando 下
+  // 改用 DOM 包含关系直接继承，绕开 bgStack 的位置判断（见 convert）。
+  rebuildAncestorExpando(nodes, container) {
+    if (!nodes || !nodes.length || !container) return;
+
+    // 收集祖先链（含 container 自身），自顶向下排列
+    const ancestors = [];
+    let cur = container;
+    while (cur) {
+      ancestors.unshift(cur);
+      if (cur === _config__WEBPACK_IMPORTED_MODULE_4__["default"].container) break; // 到达配置的容器即停止向上
+      cur = cur.parentElement;
+    }
+
+    // 继承目标白名单 = 祖先链 + 片段节点；逐级 convert（仅做 expando 继承传递）
+    const inheritTargets = [...ancestors, ...nodes];
+    ancestors.forEach(ancestor => this.convert(ancestor, [], false, false, true, inheritTargets));
   }
 
   // 调整明度
@@ -14716,7 +14749,7 @@ class SDK {
       // 背景色
       // 如果有背景颜色，取消背景图片的影响
       if (color.alpha() >= _constant__WEBPACK_IMPORTED_MODULE_3__.IGNORE_ALPHA && (0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.BGIMAGEATTR)) {
-        (0,_domUtils__WEBPACK_IMPORTED_MODULE_6__.getChildrenAndIt)(el).forEach(dom => {
+        this._inheritNodes(el).forEach(dom => {
           (0,_config__WEBPACK_IMPORTED_MODULE_4__.removeAttr)(dom, _constant__WEBPACK_IMPORTED_MODULE_3__.BGIMAGEATTR);
         });
       }
@@ -14735,7 +14768,7 @@ class SDK {
         }
 
         // 否则取消背景图片补色的影响
-        (0,_domUtils__WEBPACK_IMPORTED_MODULE_6__.getChildrenAndIt)(el).forEach(dom => {
+        this._inheritNodes(el).forEach(dom => {
           (0,_config__WEBPACK_IMPORTED_MODULE_4__.removeAttr)(dom, _constant__WEBPACK_IMPORTED_MODULE_3__.COMPLEMENTARY_BGIMAGECOLORATTR);
         });
       }
@@ -14758,7 +14791,7 @@ class SDK {
           extStyle += _global__WEBPACK_IMPORTED_MODULE_5__.cssUtils.genCssKV('color', (ret.newColor || parentTextColor).toString());
 
           // 对文字颜色做继承传递，用于文字亮度计算
-          (0,_domUtils__WEBPACK_IMPORTED_MODULE_6__.getChildrenAndIt)(el).forEach(dom => {
+          this._inheritNodes(el).forEach(dom => {
             (0,_config__WEBPACK_IMPORTED_MODULE_4__.setAttr)(dom, _constant__WEBPACK_IMPORTED_MODULE_3__.COLORATTR, (0,_color__WEBPACK_IMPORTED_MODULE_2__.mixColors)([parentElementBgColor, ret.newColor || parentTextColor]));
             (0,_config__WEBPACK_IMPORTED_MODULE_4__.setAttr)(dom, _constant__WEBPACK_IMPORTED_MODULE_3__.ORIGINAL_COLORATTR, parentTextColor);
           });
@@ -14799,7 +14832,7 @@ class SDK {
   _updateBgWithGradient(gradientColor, el, className, cssKVList, isUpdate = false, needReset = false) {
     const newBgColor = (0,_color__WEBPACK_IMPORTED_MODULE_2__.mixColors)([(0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.BGCOLORATTR) || _config__WEBPACK_IMPORTED_MODULE_4__["default"].defaultDarkBgColor, gradientColor]);
     const newOriginalBgColor = (0,_color__WEBPACK_IMPORTED_MODULE_2__.mixColors)([(0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.ORIGINAL_BGCOLORATTR) || _config__WEBPACK_IMPORTED_MODULE_4__["default"].defaultLightBgColor, gradientColor]);
-    (0,_domUtils__WEBPACK_IMPORTED_MODULE_6__.getChildrenAndIt)(el).forEach(dom => {
+    this._inheritNodes(el).forEach(dom => {
       (0,_config__WEBPACK_IMPORTED_MODULE_4__.setAttr)(dom, _constant__WEBPACK_IMPORTED_MODULE_3__.BGCOLORATTR, newBgColor);
       (0,_config__WEBPACK_IMPORTED_MODULE_4__.setAttr)(dom, _constant__WEBPACK_IMPORTED_MODULE_3__.ORIGINAL_BGCOLORATTR, newOriginalBgColor);
     });
@@ -14835,7 +14868,7 @@ class SDK {
     }, isUpdate, needReset);
     const newColor = (0,_color__WEBPACK_IMPORTED_MODULE_2__.mixColors)([newBgColor, ret.newColor || color]);
     const newOriginColor = color;
-    (0,_domUtils__WEBPACK_IMPORTED_MODULE_6__.getChildrenAndIt)(el).forEach(dom => {
+    this._inheritNodes(el).forEach(dom => {
       (0,_config__WEBPACK_IMPORTED_MODULE_4__.setAttr)(dom, _constant__WEBPACK_IMPORTED_MODULE_3__.COLORATTR, newColor);
       (0,_config__WEBPACK_IMPORTED_MODULE_4__.setAttr)(dom, _constant__WEBPACK_IMPORTED_MODULE_3__.ORIGINAL_COLORATTR, newOriginColor);
     });
@@ -14867,19 +14900,27 @@ class SDK {
   }
 
   // 处理节点
-  convert(el, cssKVList = [], isUpdate = false, needReset = false) {
-    _global__WEBPACK_IMPORTED_MODULE_5__.plugins.resetCss();
-    let beforeConvertNodeHookName = _darkmode_d__WEBPACK_IMPORTED_MODULE_0__.PLUGIN_HOOK.BEFORE_CONVERT_NODE;
-    if (isUpdate) {
-      beforeConvertNodeHookName = _darkmode_d__WEBPACK_IMPORTED_MODULE_0__.PLUGIN_HOOK.BEFORE_CONVERT_NODE_BY_UPDATE_STYLE;
-    } else if (needReset) {
-      beforeConvertNodeHookName = _darkmode_d__WEBPACK_IMPORTED_MODULE_0__.PLUGIN_HOOK.BEFORE_CONVERT_NODE_BY_RESET;
+  // onlyExpando 为 true 时：仅做 expando 继承传递（setAttr），跳过所有产出副作用
+  //   （className/样式生成、bgStack/tnQueue 入栈、setStyle 清 important、插件钩子），用于 rebuildAncestorExpando 补算祖先继承。
+  //   其中背景图补色（COMPLEMENTARY_BGIMAGECOLORATTR）与渐变继承/标记（BGGRADIENT_MIXCOLORATTR）原走 bgStack 延迟位置判断，
+  //   onlyExpando 下改用 DOM 包含关系（_inheritNodes）直接继承，绕开 getBoundingClientRect。
+  //   inheritTargets：继承传递的目标白名单（仅 onlyExpando 场景传入），限定 setAttr/removeAttr 只作用于其中的节点，避免遍历整子树。
+  convert(el, cssKVList = [], isUpdate = false, needReset = false, onlyExpando = false, inheritTargets) {
+    this._inheritTargets = inheritTargets || null;
+    if (!onlyExpando) {
+      _global__WEBPACK_IMPORTED_MODULE_5__.plugins.resetCss();
+      let beforeConvertNodeHookName = _darkmode_d__WEBPACK_IMPORTED_MODULE_0__.PLUGIN_HOOK.BEFORE_CONVERT_NODE;
+      if (isUpdate) {
+        beforeConvertNodeHookName = _darkmode_d__WEBPACK_IMPORTED_MODULE_0__.PLUGIN_HOOK.BEFORE_CONVERT_NODE_BY_UPDATE_STYLE;
+      } else if (needReset) {
+        beforeConvertNodeHookName = _darkmode_d__WEBPACK_IMPORTED_MODULE_0__.PLUGIN_HOOK.BEFORE_CONVERT_NODE_BY_RESET;
+      }
+      _global__WEBPACK_IMPORTED_MODULE_5__.plugins.emit(beforeConvertNodeHookName, el);
     }
-    _global__WEBPACK_IMPORTED_MODULE_5__.plugins.emit(beforeConvertNodeHookName, el);
     let css = ''; // css
     let bgCss = ''; // 文字底图css
 
-    if (this.isDarkmode || isUpdate || needReset) {
+    if (this.isDarkmode || isUpdate || needReset || onlyExpando) {
       const nodeName = el.nodeName;
       if (_config__WEBPACK_IMPORTED_MODULE_4__["default"].whitelist.tagName.indexOf(nodeName) > -1) return '';
       if (_config__WEBPACK_IMPORTED_MODULE_4__["default"].whitelist.attribute.some(attribute => el.hasAttribute(attribute))) return '';
@@ -15081,7 +15122,7 @@ class SDK {
                 // 只处理color及之后的属性
                 const newColor = (0,_color__WEBPACK_IMPORTED_MODULE_2__.mixColors)([(0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.BGCOLORATTR) || _config__WEBPACK_IMPORTED_MODULE_4__["default"].defaultDarkBgColor, retColor || matchColor]);
                 const newOriginalColor = isBgColor ? (0,_color__WEBPACK_IMPORTED_MODULE_2__.mixColors)([(0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.ORIGINAL_BGCOLORATTR) || _config__WEBPACK_IMPORTED_MODULE_4__["default"].defaultLightBgColor, matchColor]) : matchColor;
-                (0,_domUtils__WEBPACK_IMPORTED_MODULE_6__.getChildrenAndIt)(el).forEach(dom => {
+                this._inheritNodes(el).forEach(dom => {
                   if (isBgColor) {
                     (0,_config__WEBPACK_IMPORTED_MODULE_4__.setAttr)(dom, _constant__WEBPACK_IMPORTED_MODULE_3__.BGCOLORATTR, newColor);
                     (0,_config__WEBPACK_IMPORTED_MODULE_4__.setAttr)(dom, _constant__WEBPACK_IMPORTED_MODULE_3__.ORIGINAL_BGCOLORATTR, newOriginalColor);
@@ -15116,7 +15157,7 @@ class SDK {
               let tmpCssKvStr = '';
 
               // 标记为有背景图片
-              !(0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.BGIMAGEATTR) && (0,_domUtils__WEBPACK_IMPORTED_MODULE_6__.getChildrenAndIt)(el).forEach(dom => {
+              !(0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.BGIMAGEATTR) && this._inheritNodes(el).forEach(dom => {
                 (0,_config__WEBPACK_IMPORTED_MODULE_4__.setAttr)(dom, _constant__WEBPACK_IMPORTED_MODULE_3__.BGIMAGEATTR, true);
               });
 
@@ -15132,10 +15173,16 @@ class SDK {
                   tmpCssKvStr += _global__WEBPACK_IMPORTED_MODULE_5__.cssUtils.genCssKV('background-size', `${elBackgroundSizeAttr},100%`);
                 }
                 if (!needReset) {
-                  if (dmBgClassName) {
+                  if (onlyExpando) {
+                    // onlyExpando（rebuildAncestorExpando）：粘贴节点在背景图祖先的 DOM 内即视为落在背景图区域，
+                    // 用 DOM 包含关系（_inheritNodes）直接继承补色，绕开 bgStack 的 getBoundingClientRect 位置判断
+                    this._inheritNodes(el).forEach(dom => {
+                      (0,_config__WEBPACK_IMPORTED_MODULE_4__.setAttr)(dom, _constant__WEBPACK_IMPORTED_MODULE_3__.COMPLEMENTARY_BGIMAGECOLORATTR, imgBgColor);
+                    });
+                  } else if (dmBgClassName) {
                     // 如果是文字底图，则直接加样式
                     bgCss += _global__WEBPACK_IMPORTED_MODULE_5__.cssUtils.genCss(dmBgClassName, tmpCssKvStr);
-                    (0,_domUtils__WEBPACK_IMPORTED_MODULE_6__.getChildrenAndIt)(el).forEach(dom => {
+                    this._inheritNodes(el).forEach(dom => {
                       (0,_config__WEBPACK_IMPORTED_MODULE_4__.setAttr)(dom, _constant__WEBPACK_IMPORTED_MODULE_3__.COMPLEMENTARY_BGIMAGECOLORATTR, imgBgColor);
                     });
                   } else {
@@ -15154,7 +15201,7 @@ class SDK {
                 }
               } else {
                 // border-image元素，如果当前元素没有背景颜色，补背景颜色
-                if (imgBgColor && !hasInlineBackground && !needReset) {
+                if (imgBgColor && !hasInlineBackground && !needReset && !onlyExpando) {
                   tmpCssKvStr = _global__WEBPACK_IMPORTED_MODULE_5__.cssUtils.genCssKV('background-image', `linear-gradient(${imgBgColor}, ${imgBgColor})`);
                   if (dmBgClassName) {
                     // 如果是文字底图，则直接加样式
@@ -15171,18 +15218,25 @@ class SDK {
             if (!hasInlineColor) {
               const textColor = (0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.ORIGINAL_COLORATTR) || _config__WEBPACK_IMPORTED_MODULE_4__["default"].defaultLightTextColor;
               cssKV += _global__WEBPACK_IMPORTED_MODULE_5__.cssUtils.genCssKV('color', textColor);
-              (0,_domUtils__WEBPACK_IMPORTED_MODULE_6__.getChildrenAndIt)(el).forEach(dom => {
+              this._inheritNodes(el).forEach(dom => {
                 (0,_config__WEBPACK_IMPORTED_MODULE_4__.setAttr)(dom, _constant__WEBPACK_IMPORTED_MODULE_3__.COLORATTR, textColor);
               });
             }
           }
         }
         if (cssChange || needReset) {
-          !isUpdate && !needReset && _constant__WEBPACK_IMPORTED_MODULE_3__.IMPORTANT_REGEXP.test(oldValue) && (0,_config__WEBPACK_IMPORTED_MODULE_4__.setStyle)(el, {
+          !isUpdate && !needReset && !onlyExpando && _constant__WEBPACK_IMPORTED_MODULE_3__.IMPORTANT_REGEXP.test(oldValue) && (0,_config__WEBPACK_IMPORTED_MODULE_4__.setStyle)(el, {
             [key]: oldValue.replace(_constant__WEBPACK_IMPORTED_MODULE_3__.IMPORTANT_REGEXP, '')
           }); // 清除inline style的!important
           if (isGradient) {
-            if (!needReset) {
+            if (onlyExpando) {
+              // onlyExpando（rebuildAncestorExpando）：渐变背景的继承传递——复用 _updateBgWithGradient 的 expando 部分
+              // （产出的 css 丢弃），并重建渐变标记 BGGRADIENT_MIXCOLORATTR，绕开 bgStack 位置判断
+              if (gradientMixColor && /^background/.test(key) && !_constant__WEBPACK_IMPORTED_MODULE_3__.URL_REGEXP.test(value)) {
+                this._updateBgWithGradient(gradientMixColor, el, '', cssKVList, isUpdate, needReset);
+                (0,_config__WEBPACK_IMPORTED_MODULE_4__.setAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.BGGRADIENT_MIXCOLORATTR, gradientMixColor);
+              }
+            } else if (!needReset) {
               if (dmBgClassName) {
                 // 如果是文字底图，则直接加样式
                 bgCss += _global__WEBPACK_IMPORTED_MODULE_5__.cssUtils.genCss(dmBgClassName, _global__WEBPACK_IMPORTED_MODULE_5__.cssUtils.genCssKV(key, value));
@@ -15214,7 +15268,7 @@ class SDK {
         cssKV += _global__WEBPACK_IMPORTED_MODULE_5__.cssUtils.genCssKV('color', (0,_config__WEBPACK_IMPORTED_MODULE_4__.getStyle)(el, 'color') || (0,_config__WEBPACK_IMPORTED_MODULE_4__.getAttr)(el, _constant__WEBPACK_IMPORTED_MODULE_3__.COLORATTR) || _config__WEBPACK_IMPORTED_MODULE_4__["default"].defaultDarkTextColor);
         _global__WEBPACK_IMPORTED_MODULE_5__.cssUtils.unwatch('color');
       }
-      if (cssKV) {
+      if (cssKV && !onlyExpando) {
         // 有处理过或者是背景图片就加class以及css
         if (!dmClassName) {
           dmClassName = `${_constant__WEBPACK_IMPORTED_MODULE_3__.CLASS_PREFIX}${this._idx++}`;
@@ -15224,7 +15278,7 @@ class SDK {
       }
       css += bgCss; // 追加文字底图样式，要在添加cssKV之后添加，避免被覆盖
 
-      if (!isUpdate && (0,_domUtils__WEBPACK_IMPORTED_MODULE_6__.hasTextNode)(el) && !needReset) {
+      if (!isUpdate && (0,_domUtils__WEBPACK_IMPORTED_MODULE_6__.hasTextNode)(el) && !needReset && !onlyExpando) {
         // 如果节点里有文本，要判断是否在背景图里
         if (_config__WEBPACK_IMPORTED_MODULE_4__["default"].delayBgJudge) {
           // 延迟背景判断
@@ -15237,13 +15291,15 @@ class SDK {
         }
       }
     }
-    let afterConvertNodeHookName = _darkmode_d__WEBPACK_IMPORTED_MODULE_0__.PLUGIN_HOOK.AFTER_CONVERT_NODE;
-    if (isUpdate) {
-      afterConvertNodeHookName = _darkmode_d__WEBPACK_IMPORTED_MODULE_0__.PLUGIN_HOOK.AFTER_CONVERT_NODE_BY_UPDATE_STYLE;
-    } else if (needReset) {
-      afterConvertNodeHookName = _darkmode_d__WEBPACK_IMPORTED_MODULE_0__.PLUGIN_HOOK.AFTER_CONVERT_NODE_BY_RESET;
+    if (!onlyExpando) {
+      let afterConvertNodeHookName = _darkmode_d__WEBPACK_IMPORTED_MODULE_0__.PLUGIN_HOOK.AFTER_CONVERT_NODE;
+      if (isUpdate) {
+        afterConvertNodeHookName = _darkmode_d__WEBPACK_IMPORTED_MODULE_0__.PLUGIN_HOOK.AFTER_CONVERT_NODE_BY_UPDATE_STYLE;
+      } else if (needReset) {
+        afterConvertNodeHookName = _darkmode_d__WEBPACK_IMPORTED_MODULE_0__.PLUGIN_HOOK.AFTER_CONVERT_NODE_BY_RESET;
+      }
+      _global__WEBPACK_IMPORTED_MODULE_5__.plugins.emit(afterConvertNodeHookName, el);
     }
-    _global__WEBPACK_IMPORTED_MODULE_5__.plugins.emit(afterConvertNodeHookName, el);
     return css;
   }
 
@@ -15832,10 +15888,18 @@ const switchToDarkmode = (mqlObj, opt = {
 };
 
 // 初始化Dark Mode配置并运行Dark Mode处理
-function run(nodes, opt = {}) {
+// nodes 传空数组时，会从 config.container 动态读取要处理的节点（见 domUtils.get）
+// container 用于粘贴等增量场景：传入时会从该容器的祖先链重建继承上下文（nodes 须已在 container 内）
+function run(nodes, opt = {}, container) {
   init(opt); // 初始化配置
 
   _modules_global__WEBPACK_IMPORTED_MODULE_3__.domUtils.set(nodes);
+
+  // 粘贴等增量场景：传入 container 时，从祖先链重建继承上下文，使片段节点获得正确的继承色
+  // （须放在 set 之后、switchToDarkmode 之前；不能放 init，因第二次 run 的 init 会被 hasInit 跳过）
+  if (container && nodes.length) {
+    _modules_global__WEBPACK_IMPORTED_MODULE_3__.sdk.rebuildAncestorExpando(nodes, container);
+  }
   switchToDarkmode(mql, {
     force: true,
     type: 'dom'

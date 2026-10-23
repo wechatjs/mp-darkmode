@@ -225,10 +225,18 @@ const switchToDarkmode = (mqlObj: MediaQueryList | null, opt: SwitchToDarkmodeOp
 };
 
 // 初始化Dark Mode配置并运行Dark Mode处理
-export function run(nodes: HTMLElement[], opt: ConfigOption = {}) {
+// nodes 传空数组时，会从 config.container 动态读取要处理的节点（见 domUtils.get）
+// container 用于粘贴等增量场景：传入时会从该容器的祖先链重建继承上下文（nodes 须已在 container 内）
+export function run(nodes: HTMLElement[], opt: ConfigOption = {}, container?: HTMLElement) {
   init(opt); // 初始化配置
 
   domUtils.set(nodes);
+
+  // 粘贴等增量场景：传入 container 时，从祖先链重建继承上下文，使片段节点获得正确的继承色
+  // （须放在 set 之后、switchToDarkmode 之前；不能放 init，因第二次 run 的 init 会被 hasInit 跳过）
+  if (container && nodes.length) {
+    sdk.rebuildAncestorExpando(nodes, container);
+  }
 
   switchToDarkmode(mql, {
     force: true,

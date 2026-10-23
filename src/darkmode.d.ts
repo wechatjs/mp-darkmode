@@ -91,7 +91,7 @@ export interface ValidateResult {
 }
 
 export interface DarkMode {
-  run: (nodes: HTMLElement[], opt?: ConfigOption) => void;
+  run: (nodes: HTMLElement[], opt?: ConfigOption, container?: HTMLElement) => void;
   init: (opt?: ConfigOption) => void;
   convertBg: (nodes: HTMLElement[]) => void;
   updateStyle: (node: HTMLElement, styles: Record<string, string>) => void;
