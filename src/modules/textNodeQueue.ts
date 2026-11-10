@@ -9,27 +9,42 @@
  * @attr {number} length 队列长度
  *
  * @method push 文本节点入队
- * @param {DOM Object} el 文本节点对象
+ * @param {HTMLElement} el 文本节点对象
  * @return void
  *
  * @method forEach 遍历，遍历过的文本节点出队
- * @param {Function} callback 回调
+ * @param {Callback} callback 回调
  * @return void
  *
  * @method update 更新队列的节点对象，主要解决前后节点不一致的问题
- * @param {DOM Object Array} els 要更新的节点对象列表
+ * @param {HTMLElement[]} els 要更新的节点对象列表
+ * @return void
+ *
+ * @method reset 重置
  * @return void
  *
  */
 
 // Darkmode配置
-import config from './config';
+import config, {
+  getClass,
+  addClass,
+} from './config';
+
+type Callback = (el: HTMLElement) => void;
+
+interface QueueItem {
+  el: HTMLElement;
+  className: string;
+  updated: boolean;
+}
 
 export default class TextNodeQueue {
-  _queue = []; // 文本节点队列，{ el, className, updated }
+  _prefix: string;
+  _queue: QueueItem[] = []; // 文本节点队列
   _idx = 0; // 索引值
 
-  constructor(prefix) {
+  constructor(prefix: string) {
     this._prefix = prefix;
   }
 
@@ -39,9 +54,9 @@ export default class TextNodeQueue {
   }
 
   // 文本节点入队
-  push(el) {
+  push(el: HTMLElement) {
     const className = `${this._prefix}${this._idx++}`;
-    el.classList.add(className);
+    addClass(el, className);
     this._queue.push({
       el,
       className,
@@ -50,8 +65,8 @@ export default class TextNodeQueue {
   }
 
   // 遍历，遍历过的文本节点出队
-  forEach(callback) {
-    const idxStack = [];
+  forEach(callback: Callback) {
+    const idxStack: number[] = [];
 
     this._queue.forEach((item, idx) => {
       if (item.updated) {
@@ -61,16 +76,18 @@ export default class TextNodeQueue {
     });
 
     while (idxStack.length) { // 处理完之后删除部分节点
-      this._queue.splice(idxStack.shift(), 1);
+      const idx = idxStack.shift();
+      if (idx === undefined) continue;
+      this._queue.splice(idx, 1);
     }
   }
 
   // 更新队列的节点对象，主要解决前后节点不一致的问题
-  update(els) {
+  update(els: HTMLElement[]) {
     this._queue.forEach(item => {
       if (!item.updated) {
         Array.prototype.some.call(els, el => {
-          if (el.nodeType === 1 && el.classList.contains(item.className)) {
+          if (el.nodeType === 1 && getClass(el, true).indexOf(item.className) > -1) {
             item.el = el;
             item.updated = true;
             return true;
@@ -79,5 +96,11 @@ export default class TextNodeQueue {
         });
       }
     });
+  }
+
+  // 重置
+  reset() {
+    this._queue = [];
+    this._idx = 0;
   }
 };

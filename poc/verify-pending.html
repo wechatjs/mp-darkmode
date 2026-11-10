@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PM × mp-darkmode 待验证项实测</title>
+<link rel="stylesheet" href="https://esm.sh/prosemirror-view@1/style/prosemirror.css" />
+<script type="importmap">
+{
+  "imports": {
+    "prosemirror-model": "https://esm.sh/prosemirror-model@1",
+    "prosemirror-transform": "https://esm.sh/prosemirror-transform@1?external=prosemirror-model",
+    "prosemirror-state": "https://esm.sh/prosemirror-state@1?external=prosemirror-model,prosemirror-transform",
+    "prosemirror-view": "https://esm.sh/prosemirror-view@1?external=prosemirror-model,prosemirror-state,prosemirror-transform"
+  }
+}
+</script>
+<style>
+  body { font-family: -apple-system, "PingFang SC", sans-serif; max-width: 900px; margin: 24px auto; padding: 0 16px; }
+  .ProseMirror { outline: none; border: 1px solid #d0d7de; border-radius: 8px; padding: 10px 14px; min-height: 60px; }
+  #results { white-space: pre-wrap; background: #0d1117; color: #c9d1d9; padding: 16px; border-radius: 8px; font: 13px/1.6 Menlo, monospace; margin-top: 16px; }
+  h1 { font-size: 18px; } h2 { font-size: 15px; margin-top: 22px; }
+
+  /* 验证 2：背景图补色 —— node decoration 加这个 class，把 background 改成「图 + LM底色补层」 */
+  .dm-bgimg {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Crect width='10' height='10' fill='%23f00'/%3E%3C/svg%3E"), linear-gradient(#ffffff, #ffffff) !important;
+    background-size: 10px 10px, 100% !important;
+    background-position: top left, top left !important;
+  }
+  /* 验证 3：描边 —— inline decoration 加这个 class */
+  .dm-stroke { -webkit-text-stroke: 1px #39ff14 !important; }
+</style>
+</head>
+<body>
+<h1>ProseMirror × mp-darkmode 待验证项实测（2/3/4/1）</h1>
+<div id="bgEditor"></div>
+<h2>② 背景段落（上面第一段挂了 .dm-bgimg，验证多层 background）</h2>
+<div id="results">运行中…</div>
+
+<script type="module">
+import { Schema } from 'prosemirror-model';
+import { EditorState, Plugin, PluginKey } from 'prosemirror-state';
+import { EditorView, Decoration, DecorationSet } from 'prosemirror-view';
+
+const log = (...a) => { document.getElementById('results').textContent += '\n' + a.join(' '); };
+document.getElementById('results').textContent = '';
+
+const schema = new Schema({
+  nodes: {
+    doc: { content: 'block+' },
+    paragraph: { group: 'block', content: 'inline*', parseDOM: [{ tag: 'p' }], toDOM: () => ['p', 0] },
+    text: { group: 'inline' },
+  },
+  marks: {
+    color: { attrs: { color: {} }, toDOM: m => ['span', { style: `color:${m.attrs.color}` }, 0],
+      parseDOM: [{ style: 'color', getAttrs: v => ({ color: v }) }] },
+  },
+});
+const colorType = schema.marks.color;
+
+const doc = schema.node('doc', null, [
+  schema.node('paragraph', null, [ schema.text('背景图测试段：这段的 background 会被 node decoration 改成「红点图 + 白色补层」。') ]),
+  schema.node('paragraph', null, [ schema.text('描边测试段：', []), schema.text('这几个字带绿色描边', [colorType.create({ color:'#333' })]) ]),
+  schema.node('paragraph', null, [ schema.text('posAtDOM 往返测试段落。') ]),
+]);
+
+// node decoration（第1段背景图补色） + inline decoration（第2段描边）
+function buildDecos(doc) {
+  const decos = [];
+  let i = 0;
+  doc.descendants((node, pos) => {
+    if (node.type.name === 'paragraph') {
+      if (i === 0) decos.push(Decoration.node(pos, pos + node.nodeSize, { class: 'dm-bgimg' }));
+      i++;
+    }
+    if (node.isText && node.text && node.text.includes('描边')) {
+      decos.push(Decoration.inline(pos, pos + node.nodeSize, { class: 'dm-stroke' }, { inclusiveStart:true, inclusiveEnd:true }));
+    }
+  });
+  return DecorationSet.create(doc, decos);
+}
+
+const key = new PluginKey('dm');
+const plugin = new Plugin({
+  key,
+  state: { init: (_, s) => buildDecos(s.doc), apply: (tr, old) => tr.docChanged ? old.map(tr.mapping, tr.doc) : old },
+  props: { decorations: s => key.getState(s) },
+});
+
+const view = new EditorView(document.getElementById('bgEditor'), { state: EditorState.create({ doc, plugins:[plugin] }) });
+
+// ===== 实测 =====
+setTimeout(() => {
+  try {
+    // ② 背景图补色：读第一段 computedStyle.backgroundImage 是否为「图 + gradient」两层
+    const p1 = view.dom.querySelector('p');
+    const bg = getComputedStyle(p1).backgroundImage;
+    const layers = (bg.match(/url\(|linear-gradient\(/g) || []).length;
+    log('【②背景图补色】backgroundImage 层数 =', layers, layers >= 2 ? '✅ 多层(图+补色)成立' : '❌ 未成多层');
+    log('   原始值:', bg.slice(0, 90) + '…');
+
+    // ③ 描边：读带 .dm-stroke 的 span 的 webkitTextStroke
+    const strokeEl = view.dom.querySelector('.dm-stroke');
+    if (strokeEl) {
+      const cs = getComputedStyle(strokeEl);
+      const sw = cs.webkitTextStrokeWidth, sc = cs.webkitTextStrokeColor;
+      log('【③描边】-webkit-text-stroke =', sw, sc, (sw !== '0px' && sw !== '') ? '✅ 描边生效' : '❌ 未生效');
+    } else log('【③描边】❌ 没找到 .dm-stroke 元素（inline decoration 未落到 DOM）');
+
+    // ④ posAtDOM 往返：对多种节点位置做 domAtPos → posAtDOM 往返
+    let ok = 0, total = 0;
+    view.state.doc.descendants((node, pos) => {
+      if (node.isBlock) {
+        total++;
+        try {
+          const dom = view.domAtPos(pos + 1);
+          const back = view.posAtDOM(dom.node, dom.offset);
+          if (typeof back === 'number') ok++;
+        } catch (e) { log('   posAtDOM 异常 @', pos, e.message); }
+      }
+    });
+    log('【④posAtDOM】往返成功', ok + '/' + total, ok === total ? '✅ 稳定' : '⚠️ 有异常');
+
+    // ① 性能量级：构造 N 段大文档，测 buildDecos 全量 + 一次 map 增量
+    const N = 2000;
+    const bigParas = [];
+    for (let k = 0; k < N; k++) bigParas.push(schema.node('paragraph', null, [schema.text('第' + k + '段，一些用于测试的文字内容，包含'), schema.text('彩色片段', [colorType.create({color:'#c00'})])]));
+    const bigDoc = schema.node('doc', null, bigParas);
+    let t = performance.now();
+    const set = buildDecos(bigDoc);
+    const tFull = performance.now() - t;
+    // 模拟一次编辑的 map
+    const st = EditorState.create({ doc: bigDoc });
+    const tr = st.tr.insertText('x', 1);
+    t = performance.now();
+    set.map(tr.mapping, tr.doc);
+    const tMap = performance.now() - t;
+    log('【①性能量级】' + N + ' 段：全量 buildDecos =', tFull.toFixed(1) + 'ms，一次 map 增量 =', tMap.toFixed(2) + 'ms');
+    log('   (仅量级参考，真实取决于你的文档规模与 decoration 密度)');
+
+    log('\n===DONE===');
+  } catch (e) {
+    log('运行出错:', e && e.message);
+    log('\n===DONE===');
+  }
+}, 600);
+
+window.__ready = true;
+</script>
+</body>
+</html>

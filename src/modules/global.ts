@@ -33,3 +33,6 @@ export const domUtils = new DomUtils();
 // sdk
 import SDK from './sdk';
 export const sdk = new SDK();
+
+// 校验器
+export * as validator from './validator';

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mp-darkmode 项目逻辑梳理</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #24292f;
+    --muted: #57606a;
+    --border: #d0d7de;
+    --code-bg: #f6f8fa;
+    --accent: #0969da;
+    --th-bg: #f6f8fa;
+    --note-bg: #fff8e6;
+    --note-border: #f0c36d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #191919;
+      --fg: rgba(255,255,255,0.85);
+      --muted: rgba(255,255,255,0.55);
+      --border: #30363d;
+      --code-bg: #22272e;
+      --accent: #58a6ff;
+      --th-bg: #22272e;
+      --note-bg: #2d2a1e;
+      --note-border: #6b5a2e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    line-height: 1.7;
+    font-size: 15px;
+  }
+  .layout { display: flex; max-width: 1200px; margin: 0 auto; }
+  nav.toc {
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    width: 240px;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: 24px 16px;
+    border-right: 1px solid var(--border);
+    font-size: 13px;
+  }
+  nav.toc h2 { font-size: 13px; text-transform: uppercase; color: var(--muted); letter-spacing: .5px; margin: 0 0 12px; }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; }
+  nav.toc li { margin: 4px 0; }
+  nav.toc a { color: var(--muted); text-decoration: none; }
+  nav.toc a:hover { color: var(--accent); }
+  main { flex: 1; min-width: 0; padding: 32px 40px; }
+  h1 { font-size: 28px; border-bottom: 2px solid var(--border); padding-bottom: 12px; margin-top: 0; }
+  h2 { font-size: 22px; margin-top: 40px; border-bottom: 1px solid var(--border); padding-bottom: 6px; scroll-margin-top: 16px; }
+  h3 { font-size: 17px; margin-top: 28px; scroll-margin-top: 16px; }
+  code { background: var(--code-bg); padding: 2px 6px; border-radius: 4px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-size: 13px; }
+  pre { background: var(--code-bg); padding: 16px; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); }
+  pre code { background: none; padding: 0; font-size: 13px; line-height: 1.5; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--th-bg); font-weight: 600; }
+  a { color: var(--accent); }
+  .note { background: var(--note-bg); border-left: 4px solid var(--note-border); padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 16px 0; }
+  .muted { color: var(--muted); }
+  .badge { display: inline-block; background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 8px; font-size: 12px; color: var(--muted); }
+  ul.tight li { margin: 4px 0; }
+  header.meta { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+  .summary { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 24px 0; }
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+  pre.diagram { font-size: 12px; line-height: 1.4; }
+  .fig-cap { font-size: 12px; color: var(--muted); text-align: center; margin: -8px 0 20px; }
+  table.lines td:first-child { white-space: nowrap; font-family: "SFMono-Regular", Consolas, monospace; color: var(--accent); font-size: 12px; }
+  table.lines code { font-size: 12px; }
+  .step { counter-reset: none; }
+  .tag-a { color: #1a7f37; font-weight: 600; }
+  .tag-b { color: #9a6700; font-weight: 600; }
+  .tag-c { color: #0969da; font-weight: 600; }
+  .tag-d { color: #cf222e; font-weight: 600; }
+  @media (prefers-color-scheme: dark) {
+    .tag-a { color: #3fb950; }
+    .tag-b { color: #d29922; }
+    .tag-c { color: #58a6ff; }
+    .tag-d { color: #f85149; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#positioning">一、项目定位</a></li>
+      <li><a href="#api">二、对外 API</a></li>
+      <li><a href="#algorithm">三、核心转换算法</a></li>
+      <li><a href="#bgimage">四、背景图与渐变</a></li>
+      <li><a href="#css">五、样式生成与注入</a></li>
+      <li><a href="#plugin">六、插件系统</a></li>
+      <li><a href="#validator">七、校验器</a></li>
+      <li><a href="#deps">八、模块依赖关系</a></li>
+      <li><a href="#summary">九、一句话总结</a></li>
+    </ol>
+    <h2 style="margin-top:20px;">深入专题</h2>
+    <ol start="10">
+      <li><a href="#diagrams">十、流程图与时序图</a></li>
+      <li><a href="#adjusttext">十一、adjustTextBrightness 逐行拆解</a></li>
+      <li><a href="#bgstack">十二、背景图位置判断时序</a></li>
+      <li><a href="#firstpage">十三、首屏优化与闪烁规避</a></li>
+      <li><a href="#domhooks">十四、DOM 操作抽象层（钩子）</a></li>
+      <li><a href="#changelog">十五、近期变更记录</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="meta">AI 生成的项目逻辑梳理文档 · doc/ai/architecture.html</header>
+    <h1>mp-darkmode 项目完整逻辑解析</h1>
+    <p class="muted">微信公众平台 Dark Mode 转换算法。本文档梳理项目的整体架构、核心算法与模块协作关系，供开发与维护参考。</p>
+
+    <section id="positioning">
+      <h2>一、项目定位</h2>
+      <p><code>mp-darkmode</code> 是微信公众平台（WeChat）开源的一套 <strong>Dark Mode（深色模式）颜色转换算法库</strong>。核心目标：在<strong>不修改原始 HTML / 内联样式</strong>的前提下，通过 JS 遍历 DOM 节点、动态生成一套 <code>&lt;style&gt;</code> 样式表并注入 <code>&lt;head&gt;</code>，把一篇原本为 Light Mode（浅色）设计的公众号文章「自动翻译」成一套视觉舒适的深色配色。</p>
+      <ul class="tight">
+        <li><strong>产物</strong>：UMD 格式的 <code>dist/darkmode.min.js</code>，全局暴露 <code>Darkmode</code> 对象（也支持 AMD/CMD <code>require</code>）。</li>
+        <li><strong>构建</strong>：webpack + babel + TypeScript，<code>npm run build</code> 打包并把 <code>.d.ts</code> 复制到 <code>dist</code>。</li>
+        <li><strong>依赖</strong>：<code>colorjs.io</code>（颜色解析/转换，含 rgb / hsl / lch / oklch / lab / <code>color()</code> 等全部 CSS 色值）、<code>color-blend</code>（混合模式）、<code>color-name</code>（颜色名）、<code>object.hasown</code>（低版本 iOS polyfill）。</li>
+      </ul>
+    </section>
+
+    <section id="api">
+      <h2>二、对外 API<span class="muted"> · src/darkmode.ts</span></h2>
+      <p><code>DarkMode</code> 接口对外暴露 11 个方法与 1 个常量：</p>
+      <table>
+        <thead><tr><th>方法</th><th>作用</th></tr></thead>
+        <tbody>
+          <tr><td><code>run(nodes, opt, container?)</code></td><td>初始化配置 + 立即执行转换（最常用，= <code>init</code> + <code>set</code> + <code>switchToDarkmode</code>）；粘贴等增量场景传入 <code>container</code> 时，会在 <code>set</code> 之后、<code>switchToDarkmode</code> 之前调用 <code>rebuildAncestorExpando</code> 从祖先链重建继承上下文</td></tr>
+          <tr><td><code>init(opt)</code></td><td>只初始化配置（只能调用一次），并注册系统深色模式媒体查询监听</td></tr>
+          <tr><td><code>convertBg(nodes)</code></td><td>二次处理「背景图 / 渐变」下的文字节点（延迟背景判断场景）</td></tr>
+          <tr><td><code>updateStyle(node, styles)</code></td><td>运行时更新单个节点的样式并重新转换</td></tr>
+          <tr><td><code>getContrast(c1, c2)</code></td><td>计算两个颜色对比度 <code>[1, 21]</code></td></tr>
+          <tr><td><code>getDmBgColor(lmBgColor, dmBgColorExist?)</code></td><td><span class="badge">v1.2.3-alpha.4 新增</span> 由 Light 背景色 + 已有深色底算出 Dark 背景色（返回字符串或 null），底层复用 <code>sdk.adjustBackgroundBrightness</code>。<strong>须先 <code>init</code>/<code>run</code></strong>：未初始化时会 <code>console.warn</code> 并返回 <code>null</code>（依赖 <code>sdk.init()</code> 预计算的阈值）</td></tr>
+          <tr><td><code>getDmFontColor(lmFontColor, dmBgColor?)</code></td><td><span class="badge">v1.2.3-alpha.4 新增</span> 由 Light 字体色 + 深色底算出 Dark 字体色（返回字符串或 null），底层复用 <code>sdk.adjustTextBrightness</code>。<strong>须先 <code>init</code>/<code>run</code></strong>：未初始化时会 <code>console.warn</code> 并返回 <code>null</code></td></tr>
+          <tr><td><code>colorToCssString(color)</code></td><td>把算法内部的颜色对象（节点上 <code>data-darkmode-*</code> 属性、插件钩子回调里的 <code>fontColor</code>/<code>bgColor</code>）转成 css 色值，统一输出 <code>rgb()</code>/<code>rgba()</code>；直接 <code>toString()</code> 可能得到 <code>hsl()</code>/百分比等老 webview 不支持的写法</td></tr>
+          <tr><td><code>extend(pluginList)</code></td><td>挂载插件</td></tr>
+          <tr><td><code>reset(nodes)</code></td><td>卸载所有状态、移除注入的样式表、清理节点上的私有属性</td></tr>
+          <tr><td><code>validate(container, opt, filter)</code></td><td>校验深色模式效果（低对比度 / 文字背景渐变 / 白名单）</td></tr>
+          <tr><td><code>htmlClass</code></td><td>强制深色模式时加在 <code>&lt;html&gt;</code> 上的 class 名常量，供调用方自行控制开关时机</td></tr>
+        </tbody>
+      </table>
+
+      <h3>核心调度函数 <code>switchToDarkmode</code></h3>
+      <p>整个流程的中枢，通过 <code>opt.type</code> 分两种模式：</p>
+      <p><span class="badge">type: 'dom'</span> <strong>处理节点</strong></p>
+      <ul class="tight">
+        <li>先根据 <code>config.mode</code> 或系统媒体查询 <code>mql.matches</code> 决定 <code>sdk.isDarkmode</code>。</li>
+        <li>遍历所有节点：先清理节点上原有的 <code>js_darkmode__</code> class（防止复制文章时把旧暗黑 class 带过来），再调用 <code>sdk.convert(node)</code> 得到该节点的 CSS，累加到样式表。</li>
+        <li><strong>首屏优化逻辑</strong>（<code>needJudgeFirstPage</code>）：用 <code>getBoundingClientRect()</code> 判断节点在首屏前 / 首屏内 / 首屏后。首屏内的节点先隐藏（<code>visibility</code>），单独写「首屏样式表」并优先显示，避免用户看到「浅色闪一下再变深色」的闪烁；一旦遍历到首屏之后的节点，就写入首屏样式、显示首屏节点、执行 <code>showFirstPage</code> 回调，之后不再判断首屏。</li>
+      </ul>
+      <p><span class="badge">type: 'bg'</span> <strong>处理背景</strong></p>
+      <ul class="tight">
+        <li>配合 <code>convertBg</code>，处理背景图/渐变区域内的文字节点，重新计算这些子节点的继承颜色属性并再次转换。</li>
+      </ul>
+      <p>Light Mode 时：如果没有强制指定 mode，会把节点转移到「延迟处理队列」，等系统切到深色时再处理。</p>
+    </section>
+
+    <section id="algorithm">
+      <h2>三、核心转换算法<span class="muted"> · src/modules/sdk.ts + color.ts</span></h2>
+      <p>项目的灵魂。设计原则见 <code>doc/cn/principle.md</code>：<strong>只处理 4 类颜色</strong>——背景色、字体色、边框色、字体阴影色。</p>
+
+      <h3>关键概念：感知亮度（Perceived Brightness）</h3>
+      <pre><code>brightness = (R×299 + G×587 + B×114) / 1000   // W3C AERT 公式</code></pre>
+      <p>算法不是简单反色，而是基于<strong>人眼感知亮度</strong>来调整，并全程考虑透明度（用 <code>mixColors</code> 把半透明色叠加到背景上算出真实观感色）。</p>
+
+      <h3><code>convert(el)</code> 的处理流程</h3>
+      <ol>
+        <li>白名单过滤（<code>MPCPS</code> / <code>IFRAME</code> 标签，或带白名单属性的节点直接跳过）。</li>
+        <li>从内联 <code>style.cssText</code> 解析出 <code>[key, value]</code> 列表，过滤出支持的颜色属性（<code>CSS_PROP_LIST</code>），并排序（<code>color</code> 放最后、<code>-webkit-text</code> 放最前、<code>background-image</code> 在 <code>background-color</code> 后）。</li>
+        <li>特殊兜底：<code>table/tr/td/th</code> 的 <code>bgcolor</code> 或特定 class、<code>&lt;font color&gt;</code>、<code>-webkit-text-fill-color/-webkit-text-stroke</code> 都被归一化成内联颜色来处理。</li>
+        <li>逐个颜色值用正则 <code>COLOR_REGEXP</code> 匹配，调用 <code>_adjustBrightness</code> 转换，<code>!important</code> 会被清除后统一由生成的 CSS 加回。</li>
+      </ol>
+
+      <h3>三个调整函数（由 <code>_adjustBrightness</code> 分发）</h3>
+      <p><strong>1. <code>adjustBackgroundBrightness</code>（背景 / 字体阴影）</strong></p>
+      <ul class="tight">
+        <li>黑白灰(饱和度=0)且亮度 &gt; 40，或感知亮度 &gt; 250（白色）→ 做亮度<strong>取反</strong>（白底翻成默认深色底 <code>#191919</code>）。</li>
+        <li>感知亮度 &gt; 190 → 压到 190。</li>
+        <li>HSL 亮度 &lt; 22 → 抬到 22（纯黑背景适当提亮，避免死黑）。</li>
+      </ul>
+      <p><strong>2. <code>adjustTextBrightness</code>（字体 / 边框）</strong></p>
+      <ul class="tight">
+        <li>接近白色（亮度 ≥ 250）→ 不动，保持高亮。</li>
+        <li>与背景的感知亮度差 ≥ 65（<code>MIN_LIMIT_OFFSET_BRIGHTNESS</code>）→ 不动（对比足够）。</li>
+        <li>差值不足 → 亮背景调暗字、暗背景调亮字，优先通过翻转 HSL 亮度达成，再用 <code>adjustBrightnessTo</code> 精确调到目标感知亮度，保证可读性。</li>
+      </ul>
+
+      <h3>颜色继承机制（关键设计）</h3>
+      <p>节点上挂了一批以随机数结尾的私有 DOM 属性（<code>constant.ts</code> 定义），用于<strong>父子节点间透传颜色</strong>：</p>
+      <table>
+        <thead><tr><th>属性</th><th>含义</th></tr></thead>
+        <tbody>
+          <tr><td><code>COLORATTR</code> / <code>BGCOLORATTR</code></td><td>算法算出的新色（已 mix）</td></tr>
+          <tr><td><code>ORIGINAL_COLORATTR</code> / <code>ORIGINAL_BGCOLORATTR</code></td><td>原始 Light Mode 色值</td></tr>
+          <tr><td><code>BGIMAGEATTR</code></td><td>是否有背景图标记</td></tr>
+          <tr><td><code>BGGRADIENT_MIXCOLORATTR</code></td><td>渐变 mix 后的色</td></tr>
+          <tr><td><code>COMPLEMENTARY_BGIMAGECOLORATTR</code></td><td>背景图补色</td></tr>
+        </tbody>
+      </table>
+      <p>处理某节点背景色后，会把「新背景色 / 原背景色 / 计算出的合适字体色」写到<strong>它自己和所有子节点</strong>上（<code>getChildrenAndIt</code>），这样子节点在计算自身文字对比度时能拿到真实的背景上下文。只有背景色没字体色的节点会<strong>追加</strong>一条计算出的字体色。</p>
+      <div class="note"><strong>v1.2.3-alpha.2 起</strong>：这些 expando 属性的读 / 写 / 删不再直接操作 <code>(el as any)[ATTR]</code>，而是统一经由 DOM 操作钩子 <code>getAttr</code> / <code>setAttr</code> / <code>removeAttr</code>（详见 <a href="#domhooks">§十四 DOM 操作抽象层</a>），以便在非标准浏览器环境中接管。</div>
+    </section>
+
+    <section id="bgimage">
+      <h2>四、背景图与渐变的特殊处理</h2>
+      <ul class="tight">
+        <li><strong>背景图</strong>（处理 2）：深色下不能直接反色图片。策略是<strong>在图片下方补一层底色</strong>（黑白灰补 Light Mode 原背景色，否则补处理后的 Dark Mode 新背景色）（<code>linear-gradient(imgBgColor, imgBgColor)</code> 多层背景），保证图片上文字仍可读；SVG 跳过。</li>
+        <li><strong>渐变色</strong>：先用 <code>mixColors(colors, 'mix')</code> 算出一个代表色，深色模式下<strong>统一转成纯色</strong>处理。</li>
+        <li><strong>位置判断</strong>（<code>bgNodeStack.ts</code> + <code>textNodeQueue.ts</code>）：背景图节点入「背景堆栈」，文字节点入「文字队列」。因为背景图影响的是它<strong>视觉覆盖区域</strong>内的文字（不一定是 DOM 子节点），所以要用 <code>getBoundingClientRect()</code> 做矩形相交判断（<code>contains</code>），确定哪些文字落在背景图区域内。<code>delayBgJudge</code> 支持把这个判断延后到 <code>convertBg</code> 阶段（解决 DOM 前后不一致，用 <code>update</code> 重新绑定节点）。</li>
+      </ul>
+    </section>
+
+    <section id="css">
+      <h2>五、样式生成与注入<span class="muted"> · cssUtils.ts</span></h2>
+      <ul class="tight">
+        <li>不改内联样式，而是给节点加 class（<code>js_darkmode__序号</code>），生成 <code>.js_darkmode__N{ color: xxx !important; }</code> 形式的规则。</li>
+        <li>选择器前缀：强制 <code>mode:'dark'</code> 时前缀 <code>html.data_color_scheme_dark</code>；否则整段包在 <code>@media (prefers-color-scheme: dark) {}</code> 里，跟随系统。</li>
+        <li>分「首屏样式表」和「非首屏样式表」两份，配合首屏优化。</li>
+        <li>最终 <code>document.head.insertAdjacentHTML</code> 注入 <code>&lt;style id="js_darkmode_style__时间戳_序号"&gt;</code>。<code>noEmit</code> 可关闭注入（用于服务端/自定义场景）。<code>isFinish</code> 标记是否已运行过。</li>
+      </ul>
+    </section>
+
+    <section id="plugin">
+      <h2>六、插件系统<span class="muted"> · plugins.ts</span></h2>
+      <ul class="tight">
+        <li>从 <code>v1.1.0</code> 起支持，<code>Darkmode.extend([pluginFactory])</code>。</li>
+        <li>插件继承 <code>PluginBaseAbstract</code>，可用 <code>loopTimes</code> / <code>isDarkmode</code> / <code>addCss</code>。</li>
+        <li>提供 9 个钩子（<code>PLUGIN_HOOK</code>），分别在「转换节点前 / 转换文字色后 / 转换节点后」触发，并区分普通转换、<code>updateStyle</code> 更新、<code>reset</code> 重置三种场景。典型用途：过滤 DOM 属性、注入自定义样式。</li>
+      </ul>
+    </section>
+
+    <section id="validator">
+      <h2>七、校验器<span class="muted"> · validator.ts</span></h2>
+      <p><code>validate</code> 用 <code>TreeWalker</code> 遍历容器，跳过隐藏/背景图/SVG 节点，检测三类问题并返回结果列表：</p>
+      <ol>
+        <li><code>low-contrast</code>：文字与背景对比度低于阈值（默认 1.5）。</li>
+        <li><code>no-gradient</code>：文字背景使用了渐变。</li>
+        <li><code>whitelist</code>：命中白名单会被跳过转换的提醒。</li>
+      </ol>
+      <p>节点可用 <code>data-ignore-dm</code> 属性声明忽略某规则；<code>validate</code> 的 <code>opt.ignoreRules</code> 用同样的取值对全文生效，两者取并集。</p>
+    </section>
+
+    <section id="deps">
+      <h2>八、模块依赖关系</h2>
+      <pre><code>darkmode.ts (入口/调度)
+    └── global.ts (单例容器: plugins / tnQueue / bgStack / cssUtils / domUtils / sdk / validator)
+            ├── sdk.ts        ← 核心算法, 依赖 color.ts / config.ts / constant.ts / domUtils.ts
+            ├── color.ts      ← 颜色解析/混合/感知亮度/反推前景色 (统一封装 colorjs.io，另用 color-blend/color-name 做混合与颜色名)
+            ├── config.ts     ← 配置与默认颜色 (#191919 深色底 / rgba(255,255,255,0.6) 深色字)
+            ├── constant.ts   ← 所有常量、阈值、正则、私有属性名
+            ├── cssUtils.ts   ← CSS 生成与 &lt;style&gt; 注入、首屏/非首屏管理
+            ├── domUtils.ts   ← 节点集合管理、首屏节点、延迟队列
+            ├── bgNodeStack.ts / textNodeQueue.ts ← 背景图位置判断
+            ├── plugins.ts    ← 插件系统与钩子
+            └── validator.ts  ← 效果校验
+    darkmode.d.ts             ← 全部类型定义与插件抽象类
+    vd.ts                     ← 空占位（Virtual DOM，未实现）</code></pre>
+    </section>
+
+    <section id="summary">
+      <h2>九、一句话总结整体逻辑</h2>
+      <div class="summary">
+        遍历传入的 DOM 节点 → 解析每个节点内联样式里的颜色 → 基于「感知亮度 + 透明度混合 + 父子颜色继承」算法，把背景/文字/边框/阴影色重算成深色配色（背景图则补底色保可读性）→ 通过给节点加 class、生成 <code>@media (prefers-color-scheme: dark)</code> 或 <code>html.data_color_scheme_dark</code> 作用域的 <code>&lt;style&gt;</code> 并注入 head 来生效 → 全程配合首屏优化避免闪烁、插件扩展和效果校验，且不侵入原始 HTML。
+      </div>
+    </section>
+
+    <section id="diagrams">
+      <h2>十、流程图与时序图</h2>
+
+      <h3>图 1 · <code>run()</code> 整体流程</h3>
+      <pre class="diagram"><code>Darkmode.run(nodes, opt, container?)
+        │
+        ▼
+  init(opt) ──► config.set(...) 解析配置 / setDefaultColor 预计算默认深浅色
+        │       sdk.init() 预计算 _maxLimitOffsetBrightness 等阈值
+        │       注册 matchMedia('(prefers-color-scheme: dark)') 监听
+        ▼
+  domUtils.set(nodes)
+        │
+        ▼
+  container ? sdk.rebuildAncestorExpando(nodes, container) : 跳过  // 粘贴等增量场景重建祖先继承上下文
+        │
+        ▼
+  switchToDarkmode(mql, {force:true, type:'dom'})
+        │
+        ├─ 判定 sdk.isDarkmode（config.mode 优先，否则看系统 mql.matches）
+        │
+        ├─ 遍历 domUtils.get() 每个 node：
+        │        ├─ 清理旧的 js_darkmode__ class
+        │        ├─ sdk.convert(node) ──► 生成该节点 CSS 字符串
+        │        └─ cssUtils.addCss(css[, 首屏?])  （仅累积到内存，不立即注入）
+        │           └─（needJudgeFirstPage 时按首屏前/内/后分流，见 §13）
+        │
+        ├─ cssUtils.writeStyle()  ──► 拼接并 insertAdjacentHTML 注入 &lt;style&gt;
+        └─ Light Mode 且无强制 mode ──► domUtils.delay() 转入延迟队列，等系统切深色再处理</code></pre>
+      <p class="fig-cap">图 1：从入口到样式注入的主链路</p>
+
+      <h3>图 2 · <code>sdk.convert(el)</code> 单节点处理</h3>
+      <pre class="diagram"><code>convert(el)
+   │
+   ├─ plugins.emit(BEFORE_CONVERT_NODE...)
+   │
+   ├─ 白名单过滤（tagName / attribute）── 命中则 return ''
+   │
+   ├─ 解析内联样式 style.cssText ──► [ [key,value], ... ]
+   │     └─ 过滤出 CSS_PROP_LIST 支持的属性；排序（color 最后 / -webkit-text 最前 / bg-image 在 bg-color 后）
+   │
+   ├─ 兜底归一化：table[bgcolor]/class、&lt;font color&gt;、-webkit-text-fill/stroke → 视作内联颜色
+   │
+   ├─ 逐条 [key,value]：
+   │     ├─ parseColorName → COLOR_REGEXP 匹配色值
+   │     ├─ 渐变？→ mixColors(colors,'mix') 求代表色，深色下统一转纯色
+   │     ├─ 对每个色值 _adjustBrightness(color, el, {isBgColor/isTextColor/...})   （见 §11）
+   │     │       └─ 把「新色/原色」透传写到 el 及所有子节点的私有属性上（颜色继承）
+   │     ├─ 背景图/边框图（url）→ 补一层底色（黑白灰补 Light 原色，否则补 Dark 新色）；入 bgStack 或直接加文字底图样式
+   │     └─ 生成 cssKV（key: value !important;）
+   │
+   ├─ 有 cssKV → 给节点加 class js_darkmode__N，genCss 拼成规则
+   │
+   ├─ 含文本节点(hasTextNode) 且非 update/reset：
+   │     ├─ delayBgJudge? → tnQueue.push(el)（延迟到 convertBg）
+   │     └─ 否则 bgStack.contains(el, cb)（立即做矩形相交判断，见 §12）
+   │
+   └─ plugins.emit(AFTER_CONVERT_NODE...) ── return css</code></pre>
+      <p class="fig-cap">图 2：单个节点的颜色提取、转换、继承与样式产出</p>
+
+      <h3>图 3 · <code>_adjustBrightness</code> 分发与三类颜色走向</h3>
+      <pre class="diagram"><code>                       _adjustBrightness(color, el, options)
+                                    │
+        ┌───────────────────┬───────┴────────────┬────────────────────┐
+        ▼                   ▼                    ▼                     ▼
+   isBgColor          isTextColor            isTextShadow         (其它:忽略)
+        │              /isBorderColor              │
+        ▼                   │                      ▼
+ adjustBackground      有背景图? ──是──► 不处理    当背景色处理：
+  Brightness              │(BGIMAGEATTR)            adjustBackground
+   (白反黑/压190/          否                          Brightness
+    提亮到22)              ▼                       （但不回算字体色）
+        │           adjustTextBrightness
+        │            (亮底调暗字/暗底调亮字，
+        │             见 §11 决策树)
+        ▼
+  若无内联 color：用「继承背景 + 原字体色」补算一个合适字体色 (extStyle)</code></pre>
+      <p class="fig-cap">图 3：背景 / 字体 / 边框 / 阴影四类颜色的分发处理</p>
+
+      <h3>图 4 · 背景图延迟队列时序（<code>delayBgJudge = true</code>）</h3>
+      <pre class="diagram"><code>阶段 1：switchToDarkmode(type:'dom')            阶段 2：convertBg(nodes)
+──────────────────────────────────           ──────────────────────────────────
+ 背景图节点 → bgStack.push()                    bgStack.update(nodes)
+   updated = false（暂不判位置）                  └─ 按 className 在新 nodes 里
+   加 class js_darkmode__bg__N                        重新绑定 item.el，updated=true
+                                              tnQueue.update(nodes)  （同上重绑文字节点）
+ 文字节点 → tnQueue.push()                            │
+   updated = false                                    ▼
+   加 class js_darkmode__text__N              switchToDarkmode(type:'bg')
+                                                └─ tnQueue.forEach(text):
+ （此时不做任何矩形相交判断）                          bgStack.contains(text, cb)
+                                                        ├─ 矩形相交 → 命中背景
+                                                        ├─ 输出背景补色 CSS
+                                                        └─ 重置该背景下新老子节点继承属性后重新 convert</code></pre>
+      <p class="fig-cap">图 4：延迟模式下"先入队、后用最终 DOM 重新定位判断"的两阶段时序</p>
+    </section>
+
+    <section id="adjusttext">
+      <h2>十一、<code>adjustTextBrightness</code> 逐行拆解</h2>
+      <p>这是字体/边框颜色的核心，目标：<strong>在深色背景上算出既不刺眼、又对比足够、且尽量保留原色相的字体色</strong>。它通过<strong>「HSL 明度翻转 → 递归再判断 → 感知亮度精调」</strong>的两段式策略实现。</p>
+      <div class="note">
+        <strong>v1.2.3-alpha.4 变更</strong>：该方法已从私有 <code>_adjustTextBrightness</code> <strong>公有化</strong>为 <code>adjustTextBrightness</code>（同时 <code>_adjustBackgroundBrightness</code> → <code>adjustBackgroundBrightness</code>），对外 API <code>getDmFontColor</code> / <code>getDmBgColor</code> 直接复用它们。注意分发入口方法 <code>_adjustBrightness</code> 仍为私有、未改名。
+      </div>
+
+      <h3>关键前提</h3>
+      <ul class="tight">
+        <li><code>_maxLimitOffsetBrightness = max(默认深色字感知亮度 − 默认深色底感知亮度, 0)</code>，即「基准对比亮度差」，用作字体与背景亮度差的<strong>上限</strong>（避免过曝刺眼）。</li>
+        <li>阈值：<code>WHITE_LIKE=250</code>、<code>MIN_LIMIT_OFFSET=65</code>、<code>HIGH_BGCOLOR=100</code>、<code>HIGH_BLACKWHITE_HSL=40</code>。</li>
+        <li><strong><code>opt</code> 参数是「是否处于递归调用」的开关</strong>，决定两处行为（见下表 L2 / L9 / L11）。</li>
+      </ul>
+
+      <pre class="diagram"><code>adjustTextBrightness(textColor, bgColor, opt?) {
+  const textColorAlpha = opt?.alpha || textColor.alpha();                         // L1
+  const textColorMix = opt ? textColor : mixColors([bgColor, textColor]);         // L2
+  if (textColorMix === null) return null;                                         // L3
+  const textColorMixRgb = textColorMix.rgb().array();                             // L4
+  const textColorMixHsl = textColorMix.hsl().array();                             // L5
+  const textPerceivedBrightness = getColorPerceivedBrightness(textColorMixRgb);   // L6
+  const bgColorPerceivedBrightness = opt?.bgColorPerceivedBrightness              // L7
+      || getColorPerceivedBrightness(bgColor.rgb().array());
+  const offset = Math.abs(bgColorPerceivedBrightness - textPerceivedBrightness);  // L8
+
+  if (textPerceivedBrightness >= WHITE_LIKE_COLOR_BRIGHTNESS)                      // L9  分支A
+    return opt ? getFrontColor(textColor, bgColor, textColorAlpha) : textColor;
+
+  if (offset > _maxLimitOffsetBrightness                                          // L10 分支B
+      && bgColorPerceivedBrightness <= _defaultDarkBgColorBrightness + 2)
+    return getFrontColor(
+      adjustBrightnessTo(_maxLimitOffsetBrightness + bgColorPerceivedBrightness, textColorMixRgb),
+      bgColor, textColorAlpha);
+
+  if (offset >= MIN_LIMIT_OFFSET_BRIGHTNESS)                                       // L11 分支C
+    return opt ? getFrontColor(textColor, bgColor, textColorAlpha) : textColor;
+
+  if (bgColorPerceivedBrightness >= HIGH_BGCOLOR_BRIGHTNESS) {                     // L12 分支D 亮底
+    if (textColorMixHsl[2] > 90 - HIGH_BLACKWHITE_HSL_BRIGHTNESS) {                // L13 (L>50)
+      textColorMixHsl[2] = 90 - textColorMixHsl[2];                               // L14 明度翻转↓
+      return adjustTextBrightness(Color.hsl(...textColorMixHsl), bgColor, {...});// L15 递归
+    }
+    return getFrontColor(                                                         // L16
+      adjustBrightnessTo(min(_maxLimitOffsetBrightness, bgBrightness - 65), textColorMixRgb),
+      bgColor, textColorAlpha);
+  } else {                                                                        // L17 分支E 暗底
+    if (textColorMixHsl[2] <= HIGH_BLACKWHITE_HSL_BRIGHTNESS) {                    // L18 (L<=40)
+      textColorMixHsl[2] = 90 - textColorMixHsl[2];                               // L19 明度翻转↑
+      return adjustTextBrightness(Color.hsl(...textColorMixHsl), bgColor, {...});// L20 递归
+    }
+    return getFrontColor(                                                         // L21
+      adjustBrightnessTo(min(_maxLimitOffsetBrightness, bgBrightness + 65), textColorMixRgb),
+      bgColor, textColorAlpha);
+  }
+}</code></pre>
+
+      <h3>逐行含义</h3>
+      <table class="lines">
+        <thead><tr><th>行</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>L1</td><td>取文字透明度。递归时用传入的 <code>alpha</code>（原始文字透明度），保证反推前景色时透明度一致。</td></tr>
+          <tr><td>L2</td><td><strong>opt 开关关键点①</strong>：首次调用（无 opt）需把文字色与背景 <code>mixColors</code>，得到「文字叠加在背景上的真实观感色」（处理半透明）；递归时 <code>textColor</code> 已是纯色 HSL，直接用。</td></tr>
+          <tr><td>L4–L6</td><td>把观感色转 RGB / HSL，算文字<strong>感知亮度</strong>（W3C 公式）。</td></tr>
+          <tr><td>L7</td><td>背景感知亮度：递归时复用首次算好的值（避免重算，也保证判断基准一致）。</td></tr>
+          <tr><td>L8</td><td>文字与背景的感知亮度差绝对值 <code>offset</code>——衡量对比是否足够。</td></tr>
+          <tr><td>L9 <span class="tag-a">分支A</span></td><td><strong>保持高亮</strong>：文字观感亮度 ≥ 250（接近白色），深色下白字本就好看，不动。<strong>opt 开关关键点②</strong>：首次直接返回原 <code>textColor</code>（一点不改）；递归态返回 <code>getFrontColor</code>（把翻转后的观感色反推回带透明度的前景色）。</td></tr>
+          <tr><td>L10 <span class="tag-b">分支B</span></td><td><strong>抑制过高对比</strong>：当背景很暗（≈默认深底，<code>≤ 深底亮度+2</code>）且对比差已超过基准上限，说明是「纯白字 + 纯黑底」这类过曝组合，把文字感知亮度压到 <code>背景亮度 + 基准差</code>，对齐默认深字/深底的舒适对比。</td></tr>
+          <tr><td>L11 <span class="tag-c">分支C</span></td><td><strong>对比已足够</strong>：<code>offset ≥ 65</code> 就不再调整（opt 开关关键点③，同 L9 的返回规则）。</td></tr>
+          <tr><td>L12 <span class="tag-d">分支D</span></td><td><strong>亮背景 → 调暗字</strong>（背景亮度 ≥ 100）。</td></tr>
+          <tr><td>L13–L15</td><td>若文字 HSL 明度 &gt; 50：先<strong>翻转明度</strong> <code>L = 90 − L</code>（把亮字拉暗，保留色相/饱和度），再<strong>递归</strong>重新判断。翻转后 L &lt; 40，递归时若对比够了走 C 返回；否则落到 L16 精调。</td></tr>
+          <tr><td>L16</td><td>用 <code>adjustBrightnessTo</code> 把文字感知亮度精确设为 <code>min(基准上限, 背景亮度 − 65)</code>，即比背景暗 65 且不超过基准，再 <code>getFrontColor</code> 反推带透明度前景色。</td></tr>
+          <tr><td>L17 <span class="tag-d">分支E</span></td><td><strong>暗背景 → 调亮字</strong>（背景亮度 &lt; 100，深色模式主场景）。</td></tr>
+          <tr><td>L18–L20</td><td>若文字 HSL 明度 ≤ 40：翻转 <code>L = 90 − L</code>（把暗字拉亮）后递归。翻转后 L ≥ 50，不会再满足翻转条件。</td></tr>
+          <tr><td>L21</td><td>精调到 <code>min(基准上限, 背景亮度 + 65)</code>，即比背景亮 65。</td></tr>
+        </tbody>
+      </table>
+
+      <h3>递归为什么安全（最多 2 层）</h3>
+      <p>翻转只在「亮底 &amp; L&gt;50」或「暗底 &amp; L≤40」时发生，翻转后明度必然<strong>越过</strong>该阈值（50↔40 两侧），递归再进来时不再满足翻转条件，只会走分支 C 返回或走精调（L16/L21）返回。因此递归深度<strong>最多为 2</strong>，不会死循环。</p>
+      <div class="note">
+        <strong>设计意图</strong>：先用「HSL 明度翻转」做粗调——它保留色相与饱和度，让转换后的字仍带原来的「颜色个性」（如红字翻转后仍是红系）；只有翻转后对比仍不足时，才用感知亮度精调兜底。两段式兼顾了<strong>可读性</strong>与<strong>色彩保真</strong>。
+      </div>
+
+      <h3>决策树速查</h3>
+      <pre class="diagram"><code>文字观感亮度 ≥ 250 ? ───是──► 保持不变（白字）                    [A]
+        │否
+暗底 且 对比 &gt; 基准上限 ? ──是──► 压到「背景亮度+基准差」          [B]
+        │否
+对比差 ≥ 65 ? ──────────是──► 不处理（对比已够）                  [C]
+        │否
+背景亮度 ≥ 100（亮底）? ─是─► L&gt;50 ? ─是─►翻转明度↓后递归        [D]
+        │                          └否─►精调到 背景−65
+        │否（暗底）
+                      L≤40 ? ─是─►翻转明度↑后递归                 [E]
+                            └否─►精调到 背景+65</code></pre>
+    </section>
+
+    <section id="bgstack">
+      <h2>十二、背景图位置判断完整时序（矩形相交 + 延迟队列）</h2>
+      <p>背景图/渐变影响的是它<strong>视觉覆盖区域</strong>内的文字，而这些文字<strong>未必是它的 DOM 子节点</strong>（可能是绝对定位、兄弟层叠等）。因此不能靠 DOM 树关系，只能用<strong>屏幕矩形相交</strong>来判定「哪些文字落在背景区域内」。</p>
+
+      <h3>矩形相交算法（<code>bgStack.contains</code>）</h3>
+      <p>取文字节点 <code>rect</code> 与背景节点 <code>bgRect</code>（均来自 <code>getBoundingClientRect()</code>），用「不相交条件取反」判断相交：</p>
+      <pre class="diagram"><code>相交 = !(
+    rect.top    &gt;= bgRect.bottom   // 文字在背景下方
+ || rect.bottom &lt;= bgRect.top      // 文字在背景上方
+ || rect.left   &gt;= bgRect.right    // 文字在背景右侧
+ || rect.right  &lt;= bgRect.left     // 文字在背景左侧
+);  // 四个「分离」条件都不成立 ⇒ 两矩形重叠 ⇒ 文字落在背景区域内</code></pre>
+      <p>命中的背景项从 <code>_stack</code> 中 <code>splice</code> 移除（一个背景处理过对应文字后即出栈），并执行其回调（给区域内节点标记 <code>COMPLEMENTARY_BGIMAGECOLORATTR</code> 补色、输出背景补色 CSS）。<code>rect</code> 会缓存到 <code>item.rect</code> 避免重复回流。</p>
+
+      <h3>两种时序：立即判断 vs 延迟判断</h3>
+      <table>
+        <thead><tr><th></th><th>立即判断（<code>delayBgJudge = false</code>，默认）</th><th>延迟判断（<code>delayBgJudge = true</code>）</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>入栈/入队时</td>
+            <td>背景图 <code>push</code> 时 <code>updated = true</code>，立即可参与相交判断</td>
+            <td>背景图 <code>push</code>、文字 <code>tnQueue.push</code> 时 <code>updated = false</code>，暂不判断</td>
+          </tr>
+          <tr>
+            <td>文字节点处理</td>
+            <td>convert 末尾直接 <code>bgStack.contains(el, cb)</code>，当场定位</td>
+            <td>convert 末尾 <code>tnQueue.push(el)</code> 入队，推迟</td>
+          </tr>
+          <tr>
+            <td>触发定位</td>
+            <td>随节点遍历同步完成</td>
+            <td>调用方随后调 <code>convertBg(nodes)</code> 统一处理</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>延迟判断为什么需要 <code>update()</code></h3>
+      <p>延迟场景下，「首次处理时的节点对象」与「最终渲染进 DOM 的节点对象」可能<strong>不是同一个引用</strong>（例如内容经过二次渲染 / 富文本被重建）。因此 <code>convertBg</code> 第一步先做重绑定：</p>
+      <pre class="diagram"><code>convertBg(nodes)
+   │
+   ├─ bgStack.update(nodes)
+   │     └─ 遍历栈中 updated=false 的项，用其 className（js_darkmode__bg__N）
+   │        在新传入的 nodes 里 querySelector 匹配，找到就 item.el = 新节点, updated = true
+   │
+   ├─ tnQueue.update(nodes)   （同理：用 js_darkmode__text__N 重绑文字节点）
+   │
+   └─ switchToDarkmode(type:'bg')
+         └─ tnQueue.forEach(text):        // 只遍历已 updated 的
+              bgStack.contains(text, cb)  // 用最终布局的 rect 做相交判断
+                 ├─ 命中 → 输出背景 CSS + 执行回调
+                 └─ 重置该背景下所有「新老」子节点的继承属性(COLORATTR/BGCOLORATTR/…)后重新 convert</code></pre>
+      <p class="muted">要点：只有 <code>updated = true</code> 的项才参与遍历/判断；未能在新 <code>nodes</code> 中重绑的项会被跳过，避免对失效节点误操作。</p>
+    </section>
+
+    <section id="firstpage">
+      <h2>十三、首屏优化执行顺序与闪烁规避原理</h2>
+      <p>问题背景：若逐个节点转换并立即注入样式，用户会看到内容<strong>先以浅色渲染、再一块块变深</strong>的闪烁（FOUC）。首屏优化的目标是<strong>让用户第一眼看到的首屏内容就是最终深色态</strong>。</p>
+
+      <h3>核心手段：先隐藏 → 算好 → 一次性显示</h3>
+      <p>使用方应让首屏节点初始为 <code>visibility: hidden</code>。算法在遍历时对每个节点用 <code>getBoundingClientRect()</code> 判断它相对首屏（<code>PAGE_HEIGHT</code>）的位置，分三类分流：</p>
+      <pre class="diagram"><code>遍历 node，rect = node.getBoundingClientRect()
+
+┌─ top ≤ 0 且 bottom ≤ 0（首屏「上方」，已滚过/不可见）
+│     └─ addCss(convert(node))               → 计入「非首屏样式」（内存累积）
+│
+├─ top∈(0,PAGE_HEIGHT) 或 bottom∈(0,PAGE_HEIGHT)（首屏「内」）
+│     ├─ domUtils.addFirstPageNode(node)     → 记录首屏节点
+│     └─ addCss(convert(node), true)         → 计入「首屏样式」（内存累积）
+│
+└─ 其它（首屏「下方」，理论上整轮最多进入一次）★关键转折点★
+      ├─ config.needJudgeFirstPage = false   → 此后不再判断首屏
+      ├─ cssUtils.writeStyle(true)           → ① 立即注入「首屏样式表」
+      ├─ domUtils.showFirstPageNodes()       → ② 把首屏节点 visibility 置 visible（一次性显示）
+      ├─ config.showFirstPage?.()            → ③ 执行首屏完成回调
+      └─ addCss(convert(node))               → 当前（首屏下方）节点计入非首屏样式</code></pre>
+      <p class="fig-cap">图：遍历过程中首屏前 / 内 / 下方三类节点的分流与「转折点」触发时机</p>
+
+      <h3>遍历结束后的收尾</h3>
+      <pre class="diagram"><code>遍历结束：
+   ├─ if (needJudgeFirstPage || (!needJudgeFirstPage && !domUtils.showFirstPage))
+   │        config.showFirstPage?.()     // 兜底回调：
+   │        // 情况1 needJudgeFirstPage 仍为 true → 正文没超过一屏，从未遇到「转折点」
+   │        // 情况2 不判首屏且没做首屏优化
+   ├─ cssUtils.writeStyle()              // 注入「非首屏样式表」（含首屏样式一并补上）
+   └─ domUtils.emptyFirstPageNodes()     // 清空首屏节点记录</code></pre>
+
+      <h3>闪烁规避的三个关键点</h3>
+      <ol>
+        <li><strong>首屏内容「先隐藏、批量算好、一次性显示」</strong>：越过首屏边界的瞬间才 <code>writeStyle(true)</code> + <code>showFirstPageNodes()</code>，用户一次性看到完整深色首屏，不经历浅色闪现与逐块变色。</li>
+        <li><strong>样式分两批、延迟真正注入</strong>：<code>addCss</code> 只在内存累积字符串，<code>writeStyle</code> 只在「越过首屏边界」和「遍历结束」两个时机真正 <code>insertAdjacentHTML</code> 注入 <code>&lt;style&gt;</code>，减少重排与首屏渲染阻塞。首屏样式优先注入、非首屏样式延后，保证首屏尽快就绪。</li>
+        <li><strong>只判断一次首屏</strong>：一旦遇到首屏下方节点即置 <code>needJudgeFirstPage = false</code>，后续节点全部走「非首屏」路径，避免持续调用昂贵的 <code>getBoundingClientRect()</code>（触发回流）。</li>
+      </ol>
+      <div class="note">
+        <strong>与延迟背景判断的配合</strong>：Light Mode 首次加载会把 <code>needJudgeFirstPage</code> / <code>delayBgJudge</code> 复位，并把节点转入延迟队列（<code>domUtils.delay()</code>）；待系统真正切到深色时再走完整的首屏优化 + 背景定位流程（§12）。
+      </div>
+    </section>
+
+    <section id="domhooks">
+      <h2>十四、DOM 操作抽象层（钩子）<span class="muted"> · config.ts · v1.2.3-alpha.2+（getStyle/getClass 为后续新增）</span></h2>
+      <p>为让算法能运行在<strong>非标准浏览器环境</strong>（如自定义渲染器、虚拟 DOM、SSR、小程序等「类 DOM」对象）上，近期把库内<strong>所有</strong>对 DOM 的读写（内联样式 / class / 节点上挂载的 expando 属性）收敛到一层<strong>可配置钩子</strong>。默认走原生 DOM，使用方可通过配置项整体接管。</p>
+
+      <h3>六个配置钩子（<code>ConfigOption</code>）</h3>
+      <table>
+        <thead><tr><th>配置项</th><th>签名</th><th>作用</th></tr></thead>
+        <tbody>
+          <tr><td><code>setStyle</code></td><td><code>(node, styles: Record&lt;string,string&gt;) =&gt; void</code></td><td>自定义「设置内联样式」</td></tr>
+          <tr><td><code>setClass</code></td><td><code>(node, className: string) =&gt; void</code></td><td>自定义「设置整串 class」</td></tr>
+          <tr><td><code>setAttr</code></td><td><code>(node, attr: string, value: any) =&gt; void</code></td><td>自定义「写属性」（含删除：value 传 <code>null</code>）</td></tr>
+          <tr><td><code>getAttr</code></td><td><code>(node, attr: string) =&gt; any</code></td><td>自定义「读属性」（读 expando）</td></tr>
+          <tr><td><code>getStyle</code></td><td><code>(node, prop: string) =&gt; string</code></td><td><span class="badge">新增</span> 自定义「读内联样式」（含 <code>cssText</code> 整串及单属性）</td></tr>
+          <tr><td><code>getClass</code></td><td><code>(node) =&gt; string</code></td><td><span class="badge">新增</span> 自定义「读 class 整串」</td></tr>
+        </tbody>
+      </table>
+      <p class="muted">默认值均为 <code>null</code>；为 <code>null</code> 时使用下方的原生实现，否则调用使用方传入的函数。全部 6 个钩子在 <code>init()</code> 中通过 <code>config.set('function', opt, ...)</code> 注册。</p>
+
+      <h3><code>config.ts</code> 导出的工具函数（算法内部统一调用它们）</h3>
+      <table>
+        <thead><tr><th>函数</th><th>默认（钩子为 null）</th><th>自定义路径（配置了钩子）</th></tr></thead>
+        <tbody>
+          <tr><td><code>setStyle(node, styles)</code></td><td><code>Object.assign(node.style, styles)</code></td><td><code>config.setStyle(node, styles)</code></td></tr>
+          <tr><td><code>getStyle(node, prop)</code></td><td><code>(node.style as any)[prop]</code></td><td><code>config.getStyle(node, prop)</code></td></tr>
+          <tr><td><code>setClass(node, className)</code></td><td><code>node.setAttribute('class', className)</code></td><td><code>config.setClass(node, trim(className))</code></td></tr>
+          <tr><td><code>addClass(node, className)</code></td><td><code>node.classList.add(className)</code></td><td><code>config.setClass(node, [...filterClass(node,className), className].join(' '))</code></td></tr>
+          <tr><td><code>removeClass(node, className)</code></td><td><code>node.classList.remove(className)</code></td><td><code>config.setClass(node, filterClass(node,className).join(' '))</code></td></tr>
+          <tr><td><code>getClass(node)</code></td><td><code>node.classList.toString()</code></td><td><code>config.getClass(node)</code></td></tr>
+          <tr><td><code>setAttr(node, attr, value)</code></td><td><code>(node as any)[attr] = value</code>（expando 写）</td><td><code>config.setAttr(node, attr, value)</code></td></tr>
+          <tr><td><code>removeAttr(node, attr)</code></td><td><code>delete (node as any)[attr]</code></td><td><code>config.setAttr(node, attr, null)</code></td></tr>
+          <tr><td><code>getAttr(node, attr)</code></td><td><code>(node as any)[attr]</code>（expando 读）</td><td><code>config.getAttr(node, attr)</code></td></tr>
+        </tbody>
+      </table>
+      <p>辅助：<code>trim(str)</code>（去首尾空白，已从 <code>sdk.ts</code> 迁至 <code>config.ts</code> 并导出）、<code>filterClass(node, className)</code>（现经 <code>getClass(node).split(/\s+/)</code> 取现有 class，过滤掉<strong>空串</strong>与指定 class，用于自定义路径下重新拼 class，避免前导/重复空格）。</p>
+
+      <div class="note">
+        <strong>读 / 写配对（重要）</strong>：算法内部对节点的<strong>所有</strong>读写都已收敛到这 9 个工具函数——内联样式读写走 <code>getStyle</code> / <code>setStyle</code>，class 读写走 <code>getClass</code> / <code>setClass</code> / <code>addClass</code> / <code>removeClass</code>，expando 读写删走 <code>getAttr</code> / <code>setAttr</code> / <code>removeAttr</code>。配置自定义钩子时务必<strong>读写成对</strong>提供（如自定义了 <code>setAttr</code> 把中间态存到自管结构，就必须同时自定义 <code>getAttr</code> 从同一结构读），否则会出现「从 A 读、往 B 写」的不一致。</div>
+
+      <div class="note">
+        <strong>自定义钩子契约（必读，否则静默失效）</strong>：
+        <ul class="tight" style="margin:8px 0 0;">
+          <li><strong><code>getStyle(node, prop)</code> 的 <code>prop</code> 取值已在类型 <code>GetStyleProp</code> 约束</strong>：既会传特殊值 <code>'cssText'</code>（读整串内联样式，<code>convert</code> 提取 cssKVList 时用），也会传<strong>驼峰</strong>单属性 <code>'color'</code> / <code>'visibility'</code> / <code>'display'</code> / <code>'backgroundImage'</code> / <code>'webkitBorderImage'</code> / <code>'borderImage'</code>。自定义实现必须同时支持 <code>'cssText'</code> 整串与驼峰单属性，若只按连字符 CSS 属性名处理、或漏了 <code>'cssText'</code>，会导致样式提取不到 → 整段转换静默失效。</li>
+          <li><strong><code>setAttr</code> / <code>getAttr</code> 存取的 value 是对象，不可序列化</strong>：存进去的可能是 <code>Color</code> 实例（带方法）或 <code>true</code> 等，自定义实现必须<strong>按引用原样存取</strong>，不能 JSON 序列化/反序列化，否则对象方法丢失、后续 <code>getContrast</code> / <code>mixColors</code> 出错。</li>
+        </ul>
+      </div>
+
+      <div class="note">
+        <strong>对「颜色继承 expando」的影响</strong>：<a href="#algorithm">§三</a> 提到的 <code>COLORATTR</code> / <code>BGCOLORATTR</code> / <code>ORIGINAL_*</code> / <code>BGIMAGEATTR</code> / <code>BGGRADIENT_MIXCOLORATTR</code> / <code>COMPLEMENTARY_BGIMAGECOLORATTR</code> 的读写删，<strong>现在全部经由 <code>getAttr</code> / <code>setAttr</code> / <code>removeAttr</code></strong>。默认实现仍是把值挂在节点对象上（expando），行为与之前一致；但配置了 <code>setAttr</code> / <code>getAttr</code> 后，这些中间态可被存到使用方自管的结构里（不污染真实节点）。
+      </div>
+
+      <h3>钩子未覆盖的已知边界</h3>
+      <ul class="tight">
+        <li><strong><code>&lt;html&gt;</code> 根元素刻意不走钩子</strong>：强制模式下给 <code>&lt;html&gt;</code> 加/删 <code>data_color_scheme_dark</code>（<code>darkmode.ts</code> 的 <code>init</code> 与 <code>reset</code>）直接用 <code>document.getElementsByTagName('html')[0].classList.add/remove</code>，<strong>不经过 <code>setClass</code> / <code>removeClass</code></strong>。因为根节点恒为真实 document 元素，无需被自定义渲染环境接管，<strong>属有意为之</strong>。</li>
+        <li><strong>真实 HTML 属性读取不走 <code>getAttr</code></strong>：<code>el.getAttribute('color'/'bgcolor')</code>、<code>el.hasAttribute(...)</code>、<code>dataset.ignoreDm</code> 读的是真实 HTML attribute，与读 expando 的 <code>getAttr</code> 语义不同，<strong>刻意不混用</strong>。</li>
+        <li><strong>样式表注入不属节点级钩子</strong>：<code>cssUtils.ts</code> 的 <code>document.head.insertAdjacentHTML</code>（注入 <code>&lt;style&gt;</code>）、<code>getElementById</code> / <code>removeChild</code> 操作的是 <code>&lt;head&gt;</code> 的样式表节点，不在这套节点读写钩子的职责内。</li>
+        <li><strong>节点遍历 / 几何 / 文本等读操作暂不提供钩子</strong>（<span class="badge">明确不支持</span>）：<code>getChildrenAndIt</code> 的 <code>querySelectorAll</code>、<code>getBoundingClientRect</code>（首屏判断、背景矩形相交）、<code>textContent</code>（<code>hasTextNode</code>）、<code>createTreeWalker</code>（校验遍历）等读操作<strong>目前有意不抽象为钩子</strong>。因此本库要求运行环境对传入节点至少支持这些标准 DOM 读 API；纯「类 DOM」对象若缺少这些能力，需自行适配，库层暂不覆盖。</li>
+        <li><strong>判空与取值已同源（<span class="badge">2026-10-20 修复</span>）</strong>：早期「是否有 class」的判空用原生 <code>node.classList?.length</code>、取值却用 <code>getClass</code>，二者数据源不一致——自定义 <code>getClass</code> 把 class 存自管结构时会被误判为无 class 而整段跳过。现已统一改为基于 <code>getClass(node)</code> 判空（<code>darkmode.ts</code> 清理旧 class 处、<code>sdk.ts</code> 提取 dmClassName 处），<code>getClass</code> 默认实现加 <code>node.classList?.toString() || ''</code> 防护以兼容无 <code>classList</code> 的节点。</li>
+      </ul>
+
+      <h3>SVG className 兼容（<code>a3e09ee</code>）</h3>
+      <p>SVG 元素的 <code>className</code> 是 <code>SVGAnimatedString</code> 对象而非字符串，旧代码 <code>typeof node.className === 'string'</code> 会漏判且 <code>node.className.replace(...)</code> 会报错。修复后统一改为：</p>
+      <ul class="tight">
+        <li>判空：基于 <code>getClass(node)</code> 是否为空串（早期用 <code>node.classList?.length</code>，后统一为与取值同源，见上「已知边界」）。</li>
+        <li>取值：<code>getClass(node)</code>（默认实现 <code>classList.toString()</code>，替代直接读 <code>node.className</code>），再做正则匹配 / 替换。</li>
+        <li>涉及 <code>darkmode.ts</code> 清理旧 dark class 处、<code>sdk.ts</code> 提取 <code>dmClassName</code> / <code>dmBgClassName</code> 处。</li>
+      </ul>
+      <p class="muted">设置 class 的默认实现也由 <code>node.className = ...</code> 改为 <code>node.setAttribute('class', ...)</code>，对 SVG 同样安全。</p>
+    </section>
+
+    <section id="changelog">
+      <h2>十五、近期变更记录</h2>
+      <p class="muted">以下为本知识库首次生成（<code>8723ecd</code>, 2026-09-21）之后的源码改动，已并入上文对应章节。</p>
+      <table>
+        <thead><tr><th>提交 / 版本</th><th>日期</th><th>改动摘要</th><th>影响章节</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>e43d7c2</code><br><span class="badge">alpha.2</span></td>
+            <td>2026-09-22</td>
+            <td>新增 DOM 操作钩子 <code>setStyle</code> / <code>setClass</code> / <code>setAttr</code> / <code>getAttr</code>，算法内所有样式 / class / expando 读写改走 <code>config.ts</code> 的 <code>setStyle</code> / <code>addClass</code> / <code>setClass</code> / <code>removeClass</code> / <code>setAttr</code> / <code>removeAttr</code> / <code>getAttr</code></td>
+            <td>§三、§十四</td>
+          </tr>
+          <tr>
+            <td><code>970e493</code></td>
+            <td>2026-09-22</td>
+            <td><code>filterClass</code> 过滤空串、重拼 class 去掉前导空格</td>
+            <td>§十四</td>
+          </tr>
+          <tr>
+            <td><code>a3e09ee</code><br><span class="badge">alpha.3</span></td>
+            <td>2026-09-24</td>
+            <td>修复 SVG <code>className</code> 为对象的问题：改用 <code>classList?.length</code> 判空、<code>classList.toString()</code> 取值；<code>setClass</code> 默认实现改用 <code>setAttribute('class', ...)</code>；<code>trim</code> 迁入 <code>config.ts</code></td>
+            <td>§十四</td>
+          </tr>
+          <tr>
+            <td><code>a40e10b</code><br><span class="badge">alpha.4</span></td>
+            <td>2026-10-19</td>
+            <td>新增对外 API <code>getDmBgColor</code> / <code>getDmFontColor</code>；将私有 <code>_adjustBackgroundBrightness</code> / <code>_adjustTextBrightness</code> 公有化为 <code>adjustBackgroundBrightness</code> / <code>adjustTextBrightness</code>（后者第二参数语义为「已有深色底」<code>bgColorExist</code>）供新 API 复用</td>
+            <td>§二、§三、§十一</td>
+          </tr>
+          <tr>
+            <td><span class="badge">工作区</span></td>
+            <td>2026-10-20</td>
+            <td>修复 <code>convertBg</code> 重置继承属性处 expando 读写不对称（<code>darkmode.ts</code> L182/L184 改走 <code>removeAttr</code> / <code>setAttr</code>）；新增 <code>getStyle</code> / <code>getClass</code> 两个读钩子，把库内所有读内联样式（<code>cssText</code> / 单属性）、读 class（<code>toString</code> / <code>contains</code> 判断）统一收敛走钩子，补齐读写配对；<code>filterClass</code> 改用 <code>getClass</code></td>
+            <td>§三、§十四</td>
+          </tr>
+          <tr>
+            <td><span class="badge">工作区</span></td>
+            <td>2026-10-20</td>
+            <td>CR 隐患修复批次：①<code>getDmBgColor</code>/<code>getDmFontColor</code> 增加初始化前置校验——未 <code>init</code> 时 <code>console.warn</code> 并返回 <code>null</code>（不自动兜底，强制业务方先 <code>init</code>/<code>run</code>），复用 <code>config.hasInit</code> 判断；②钩子一致性：<code>hasTableClass</code> 改走 <code>getClass</code>，<code>darkmode.ts</code>/<code>sdk.ts</code> 判空由原生 <code>classList?.length</code> 改为与取值同源的 <code>getClass</code>，<code>getClass</code> 默认实现加 <code>classList?.</code> 防护；③修复 <code>config</code> 浅拷贝污染：默认配置改为工厂函数 <code>getDefaultConfig()</code>，初始化与 <code>reset</code> 均取全新对象，杜绝 <code>whitelist</code> 被 <code>init</code> 的 <code>push</code> 污染并跨 <code>run/reset</code> 累积</td>
+            <td>§二、§十四</td>
+          </tr>
+          <tr>
+            <td><span class="badge">工作区</span></td>
+            <td>2026-10-20</td>
+            <td>CR 隐患修复批次二：①<strong>契约</strong>：新增 <code>GetStyleProp</code> 类型约束 <code>getStyle</code> 的 <code>prop</code>（<code>'cssText'</code> 整串 + 驼峰单属性），文档补「自定义钩子契约」note（<code>getStyle</code> prop 取值 + <code>setAttr</code>/<code>getAttr</code> 存对象不可序列化）；②<strong>健壮性</strong>：<code>adjustBrightnessTo</code> 入口加 <code>target = Math.max(target, 0)</code> 防御，避免负 target 反算出非法颜色；③<strong>类型</strong>：<code>adjustBackgroundBrightness</code> 与 <code>adjustTextBrightness</code> 两个公有方法的入参均由 <code>ColorInstance</code> 改为更诚实的 <code>ColorParam</code>，内部统一用 <code>ColorParser</code> 解析（解析失败返回 <code>null</code>）后再安全取 <code>alpha()</code> 等实例方法；④<strong>边界</strong>：文档明确「节点遍历/几何/文本等读操作暂不提供钩子」</td>
+            <td>§十一、§十四</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer>
+      本文档由 AI 基于源码梳理生成，随代码演进可能需要更新。相关原始文档见 <code>doc/cn/</code>（principle / bestPractices / API / plugins / develop）。
+    </footer>
+  </main>
+</div>
+</body>
+</html>

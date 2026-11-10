@@ -20,7 +20,7 @@ npm i mp-darkmode
 
 ### 2. Import
 
-(1) Under non-AMD/CMD rule, insert mp-darkmode into `<head>`.
+(1) In a non-AMD/CMD environment, insert mp-darkmode into `<head>`.
 
 ```html
 <script src="path/to/darkmode.min.js"></script>
@@ -30,7 +30,7 @@ npm i mp-darkmode
 </script>
 ```
 
-(2) Under AMD/CMD rule, use `require()` to import mp-darkmode.
+(2) In an AMD/CMD environment, use `require()` to import mp-darkmode.
 
 ```javascript
 var Darkmode = require('path/to/darkmode.min.js');
@@ -39,18 +39,35 @@ var Darkmode = require('path/to/darkmode.min.js');
 Darkmode.run(document.body.querySelectorAll('*')); // process all DOM nodes under body
 ```
 
+### 3. TypeScript
+
+The package ships its own type declarations (`dist/darkmode.d.ts`), so no `@types` package is needed:
+
+```typescript
+import Darkmode, { run, type ConfigOption } from 'mp-darkmode';
+// without esModuleInterop, use `import * as Darkmode from 'mp-darkmode'` instead
+
+const opt: ConfigOption = { mode: 'dark' };
+Darkmode.run([], opt);
+run([]);
+```
+
+> The bundle is UMD without the `__esModule` marker. If `esModuleInterop`/`allowSyntheticDefaultImports` are off,
+> use `import * as Darkmode` or named imports.
+
 ## Usage
 
-### `Darkmode.run(nodes[, options])`
+### `Darkmode.run(nodes[, options, container])`
 
-- `nodes` &lt;DOM Object Array&gt; The DOM to be converted.
+- `nodes` &lt;HTMLElement[]&gt; The DOM to be converted.
 - `options` &lt;Object&gt; Configuration.
   - `options.error` &lt;Function&gt; Callback triggered when an error occurs.
     - `err` &lt;Error&gt; Error object.
-  - `options.mode` &lt;string&gt; The specified color mode (dark | light), if specified, the system color will not be monitored.
+  - `options.mode` &lt;string&gt; The color mode to force (`dark` or `light`). If set, the system color scheme is not monitored.
   - ...
   - ...
   - ...
+- `container` &lt;HTMLElement&gt; Optional. The container of the newly added nodes; when provided, style inheritance is rebuilt from its ancestor chain.
 
 Run Dark Mode conversion algorithm.
 
@@ -61,21 +78,33 @@ Darkmode.run(document.body.querySelectorAll('*'), {
 });
 ```
 
-More detailed usage can refer to [API](./doc/en/API.md).
+See the [API documentation](./doc/en/API.md) for more details.
 
 ## Plugins
 
-Plugins are supported since `v1.1.0`. Custom actions can be performed during transformation, such as filtering DOM attributes. How to use the plugin is as follows:
+Plugins are supported since `v1.1.0`. They let you run custom actions during the conversion, for example filtering DOM attributes:
 
 ```javascript
 Darkmode.extend([pluginA, pluginB, pluginC]);
 ```
 
-If you want to write your own Dark Mode plugin, you can refer to [here](./doc/en/plugins.md)。
+If you want to write your own Dark Mode plugin, see the [plugin guide](./doc/en/plugins.md).
+
+## Principles
+
+See [Dark Mode Principles](./doc/en/principle.md).
+
+## Best Practices
+
+See [Dark Mode Best Practices](./doc/en/bestPractices.md).
+
+## Upgrading to 2.0.0
+
+Upgrading from `1.x`? Read the [upgrade guide](./doc/en/upgrade-to-v2.md) first — it lists the breaking changes and how to adapt.
 
 ## Contribution
 
-The algorithm is constantly updated and optimized. If you have a good idea, you can fork and submit your code. For specific development, please refer to [Development Guide](./doc/en/develop.md).
+The algorithm is constantly updated and optimized. If you have an idea, feel free to fork the repo and open a pull request. For specific development, please refer to [Development Guide](./doc/en/develop.md).
 
 [npm-url]: https://www.npmjs.com/package/mp-darkmode
 [npm-image]: https://img.shields.io/npm/v/mp-darkmode.svg

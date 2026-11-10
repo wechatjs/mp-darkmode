@@ -39,18 +39,35 @@ var Darkmode = require('path/to/darkmode.min.js');
 Darkmode.run(document.body.querySelectorAll('*')); // 处理body下的所有DOM节点
 ```
 
+### 3. TypeScript 类型
+
+包内自带类型声明（`dist/darkmode.d.ts`），安装后无需额外安装 `@types` 即可获得类型提示：
+
+```typescript
+import Darkmode, { run, type ConfigOption } from 'mp-darkmode';
+// 未开启 esModuleInterop 时改用：`import * as Darkmode from 'mp-darkmode'` 或具名导入
+
+const opt: ConfigOption = { mode: 'dark' };
+Darkmode.run([], opt);
+run([]);
+```
+
+> 产物为 UMD 且不带 `__esModule` 标记，若未开启 `esModuleInterop`（或 `allowSyntheticDefaultImports`），
+> `import Darkmode from 'mp-darkmode'` 在编译期可用、运行期需走 interop，请改用 `import * as Darkmode` 或具名导入。
+
 ## 基本用法
 
-### `Darkmode.run(nodes[, options])`
+### `Darkmode.run(nodes[, options, container])`
 
-- `nodes` &lt;DOM Object Array&gt; 要进行 Dark Mode 转换的 DOM 节点数组。
+- `nodes` &lt;HTMLElement[]&gt; 要进行 Dark Mode 转换的 DOM 节点数组。
 - `options` &lt;Object&gt; Dark Mode 转换算法配置项。
   - `options.error` &lt;Function&gt; 发生 error 时触发的回调。
     - `err` &lt;Error&gt; 错误对象。
-  - `options.mode` &lt;string&gt; 强制指定的颜色模式（ dark | light ），指定了就不监听系统颜色。
+  - `options.mode` &lt;string&gt; 强制指定的颜色模式（`dark` | `light`），指定后不再监听系统颜色。
   - ...
   - ...
   - ...
+- `container` &lt;HTMLElement&gt; 新增节点所属的容器节点，传入时会从该容器的祖先链重建样式继承关系。
 
 运行 Dark Mode 转换算法。
 
@@ -80,6 +97,10 @@ Darkmode.extend([pluginA, pluginB, pluginC]);
 ## 最佳实践
 
 详见[Dark Mode 最佳实践](./doc/cn/bestPractices.md)。
+
+## 升级到 2.0.0
+
+从 `1.x` 升级前请阅读[升级指南](./doc/cn/upgrade-to-v2.md)，其中列出了 breaking changes 与适配方案。
 
 ## 贡献
 

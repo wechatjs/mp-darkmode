@@ -1,0 +1,406 @@
+/**
+ * @name Darkmode主入口
+ *
+ * @function run 初始化Dark Mode配置并运行Dark Mode处理
+ * @param {HTMLElement[]} nodes       要处理的节点列表
+ * @param {ConfigOption}  [opt={}]    Dark Mode配置，详见init配置说明
+ * @param {HTMLElement}   [container] 新增节点所属的容器节点，传入时会从该容器的祖先链重建样式继承关系
+ * @return void
+ *
+ * @function init 初始化Dark Mode配置
+ * @param {ConfigOption} [opt={}] Dark Mode配置
+ * @return void
+ *
+ * @function convertBg 处理背景
+ * @param {HTMLElement[]} nodes 要处理的节点列表
+ * @return void
+ *
+ * @function updateStyle 更新节点Dark Mode样式
+ * @param {HTMLElement}            node   要更新的节点
+ * @param {Record<string, string>} styles 更新的样式键值对对象，如：{ color: '#ddd' }
+ * @return void
+ *
+ * @function getContrast 获取两个颜色的对比度
+ * @param {string} color1 要计算颜色对比度的颜色1，支持css颜色格式
+ * @param {string} color2 要计算颜色对比度的颜色2，支持css颜色格式
+ * @return {number} 颜色对比度，取值范围为`[1, 21]`
+ *
+ * @function getDmBgColor 根据 Light Mode 背景色转换生成 Dark Mode 背景色
+ * @param {string} lmBgColor 要转换的背景颜色，支持css颜色格式
+ * @param {string} [dmBgColorExist=config.defaultDarkBgColor] 已有的背景颜色，支持css颜色格式，不传则用默认底色
+ * @return {string | null} Dark Mode背景颜色，传入值非法则返回null
+ *
+ * @function getDmFontColor 根据 Light Mode 前景色转换生成 Dark Mode 前景色
+ * @param {string} lmFontColor 要转换的字体颜色，支持css颜色格式
+ * @param {string} [dmBgColor=config.defaultDarkFontColor] 背景颜色，支持css颜色格式，不传则用默认底色
+ * @return {string | null} Dark Mode字体颜色，传入值非法则返回null
+ *
+ * @function colorToCssString 把颜色对象转成 css 色值（rgb()/rgba()）
+ * @param {ColorInstance} color 颜色实例
+ * @return {string} css字符串
+ *
+ * @function extend 挂载插件
+ * @param {Array} pluginList 插件列表
+ * @return void
+ *
+ * @function reset 重置
+ * @param {HTMLElement[]} [nodes] 要重置的节点列表
+ * @return void
+ *
+ * @function validate 校验
+ * @param {HTMLElement}    container 要校验的容器节点
+ * @param {ValidateOption} [opt]     校验配置
+ * @param {ValidateFilter} [filter]  过滤器
+ * @return {ValidateResult[]} 校验结果
+ *
+ * @string htmlClass 强制暗黑模式时给 html 添加的 class，供调用方自行控制开关时机（如编辑器场景）
+ *
+ */
+
+// Object.hasOwn polyfill：color-string / colorjs.io 等依赖在模块初始化时即调用 Object.hasOwn，
+// 而该 API 在 iOS 15.4 以下不支持，因此必须作为最顶部、最先执行的 import
+import 'object.hasown/auto';
+
+import type {
+  ConfigOption,
+  ValidateOption,
+  ValidateFilter,
+  ValidateResult,
+  PluginConstructor,
+} from './darkmode.d';
+
+// 常量
+import {
+  MEDIA_QUERY,
+  CLASS_PREFIX,
+  HTML_CLASS,
+
+  COLORATTR,
+  BGCOLORATTR,
+  ORIGINAL_COLORATTR,
+  ORIGINAL_BGCOLORATTR,
+  BGIMAGEATTR,
+  BGGRADIENT_MIXCOLORATTR,
+  COMPLEMENTARY_BGIMAGECOLORATTR,
+
+  PAGE_HEIGHT,
+} from './modules/constant';
+const classReg = new RegExp(`${CLASS_PREFIX}[^ ]+`, 'g');
+
+// Darkmode配置
+import config, {
+  getClass,
+  setClass,
+  addClass,
+  removeClass,
+  getAttr,
+  setAttr,
+  removeAttr,
+} from './modules/config';
+
+import {
+  plugins, // 插件系统
+  tnQueue, // 文本节点队列
+  bgStack, // 需要判断位置的背景节点堆栈
+  cssUtils, // 样式相关操作工具对象
+  domUtils, // 节点相关操作工具对象
+  sdk, // SDK
+  validator, // 校验器
+} from './modules/global';
+
+import {
+  getChildrenAndIt
+} from './modules/domUtils';
+
+// 颜色操作相关API
+import {
+  colorToCssString as toCssString,
+  type ColorInstance,
+} from './modules/color';
+
+interface SwitchToDarkmodeOptions {
+  force?: boolean;
+  type: 'dom' | 'bg';
+}
+
+// Dark Mode切换
+let mql: MediaQueryList | null = null;
+const switchToDarkmode = (mqlObj: MediaQueryList | null, opt: SwitchToDarkmodeOptions = {
+  type: 'dom'
+}) => {
+  opt.force && (cssUtils.isFinish = false); // 如果是强制运行Dark Mode处理逻辑，则重置为未运行
+
+  if (cssUtils.isFinish) return; // 已运行过Dark Mode处理逻辑则不再运行
+
+  try {
+    if (config.mode) {
+      sdk.isDarkmode = config.mode === 'dark';
+    } else {
+      if (!mqlObj) return;
+      sdk.isDarkmode = mqlObj.matches;
+    }
+
+    if (opt.type === 'dom') { // 处理节点
+      sdk.isDarkmode && config.begin?.(domUtils.hasDelay());
+
+      Array.prototype.forEach.call(domUtils.get(), node => {
+        if (sdk.isDarkmode) {
+          const className = getClass(node);
+          if (className) {
+            setClass(node, className.replace(classReg, '')); // 过滤掉原有的Dark Mode class，避免外部复制文章时把文章内的Dark Mode class也复制过去导致新文章在Dark Mode下样式错乱
+          }
+        }
+
+        if (sdk.isDarkmode || plugins.length) {
+          if (!config.needJudgeFirstPage) { // 不需要判断首屏
+            cssUtils.addCss(sdk.convert(node)); // 写入非首屏样式
+          } else { // 判断首屏
+            const rect = node.getBoundingClientRect();
+            const top = rect.top;
+            const bottom = rect.bottom;
+            if (top <= 0 && bottom <= 0) { // 首屏前面
+              cssUtils.addCss(sdk.convert(node)); // 写入非首屏样式
+            } else if ((top > 0 && top < PAGE_HEIGHT) || (bottom > 0 && bottom < PAGE_HEIGHT)) { // 首屏
+              domUtils.addFirstPageNode(node); // 记录首屏节点
+              cssUtils.addCss(sdk.convert(node), true); // 写入首屏样式
+            } else { // 首屏后面，理论上，这里最多只会进来一次
+              config.needJudgeFirstPage = false; // 至此，不需要再判断首屏了
+
+              // 显示首屏
+              cssUtils.writeStyle(true); // 写入首屏样式表
+              domUtils.showFirstPageNodes(); // 显示首屏节点
+              config.showFirstPage?.(); // 执行首屏回调
+
+              cssUtils.addCss(sdk.convert(node)); // 写入非首屏样式
+            }
+          }
+        }
+      });
+
+      plugins.loopTimes++;
+    } else if (opt.type === 'bg') { // 处理背景
+      sdk.isDarkmode && tnQueue.forEach((text: HTMLElement) => bgStack.contains(text, bg => {
+        cssUtils.addCss(cssUtils.genCss(bg.className, bg.cssKV)); // 写入非首屏样式
+        typeof bg.cb === 'function' && bg.cb(bg);
+
+        // 还得处理该背景下的所有新老节点
+        const els = [bg.elOld];
+        bg.elOld !== bg.el && els.push(bg.el);
+        els.forEach(el => {
+          const inheritAttrs = [
+            [COLORATTR, getAttr(el, COLORATTR) ?? null],
+            [BGCOLORATTR, getAttr(el, BGCOLORATTR) ?? null],
+            [ORIGINAL_COLORATTR, getAttr(el, ORIGINAL_COLORATTR) ?? null],
+            [ORIGINAL_BGCOLORATTR, getAttr(el, ORIGINAL_BGCOLORATTR) ?? null],
+            [BGIMAGEATTR, getAttr(el, BGIMAGEATTR) ?? null],
+            [COMPLEMENTARY_BGIMAGECOLORATTR, getAttr(el, COMPLEMENTARY_BGIMAGECOLORATTR) ?? null],
+          ];
+          const children = getChildrenAndIt(el, true);
+          children.forEach(child => { // 重置继承属性
+            inheritAttrs.forEach(([attr, value]) => {
+              if (value === null) {
+                removeAttr(child, attr);
+              } else {
+                setAttr(child, attr, value);
+              }
+            });
+          });
+          children.forEach(child => { // 重新运行Dark Mode处理逻辑
+            cssUtils.addCss(sdk.convert(child, undefined, false, true));
+          });
+        });
+      }));
+    }
+
+    if (config.needJudgeFirstPage || (!config.needJudgeFirstPage && !domUtils.showFirstPage)) {
+      // config.needJudgeFirstPage === ture，表示需要判断首屏但是正文长度没超过一屏
+      // config.needJudgeFirstPage === false && domUtils.showFirstPage === false，表示不需要判断首屏且没有做首屏优化
+      config.showFirstPage?.(); // 执行首屏回调
+    }
+    cssUtils.writeStyle(); // 写入非首屏样式表
+    domUtils.emptyFirstPageNodes(); // 清空记录的首屏节点
+
+    if (!sdk.isDarkmode) { // Light Mode
+      // 首次加载页面时为Light Mode，标记为不需要判断首屏
+      config.needJudgeFirstPage = false;
+
+      // 首次加载页面时为Light Mode，标记为不延迟判断背景
+      config.delayBgJudge = false;
+
+      if (config.container === null && opt.type === 'dom' && domUtils.length) {
+        domUtils.delay(); // 将节点转移到延迟处理队列里
+      }
+    }
+  } catch (e: any) {
+    console.log('An error occurred when running the dark mode conversion algorithm\n', e);
+    config.error?.(e);
+  }
+};
+
+// 初始化Dark Mode配置并运行Dark Mode处理
+// nodes 传空数组时，会从 config.container 动态读取要处理的节点（见 domUtils.get）
+// container 用于粘贴等增量场景：传入时会从该容器的祖先链重建继承上下文（nodes 须已在 container 内）
+export function run(nodes: HTMLElement[], opt: ConfigOption = {}, container?: HTMLElement) {
+  init(opt); // 初始化配置
+
+  domUtils.set(nodes);
+
+  // 粘贴等增量场景：传入 container 时，从祖先链重建继承上下文，使片段节点获得正确的继承色
+  // （须放在 set 之后、switchToDarkmode 之前；不能放 init，因第二次 run 的 init 会被 hasInit 跳过）
+  if (container && nodes.length) {
+    sdk.rebuildAncestorExpando(nodes, container);
+  }
+
+  switchToDarkmode(mql, {
+    force: true,
+    type: 'dom'
+  });
+};
+
+// 初始化Dark Mode配置
+export function init(opt: ConfigOption = {}) {
+  if (config.hasInit) { // 只可设置一次配置
+    console.log('Dark Mode can only be initialized once');
+    return;
+  }
+
+  config.hasInit = true; // 记录为配置已设置
+
+  const tagName = config.whitelist.tagName;
+  const attribute = config.whitelist.attribute;
+  if (opt.whitelist) {
+    opt.whitelist.tagName instanceof Array && opt.whitelist.tagName.forEach(item => {
+      item = item.toUpperCase();
+      tagName.indexOf(item) === -1 && tagName.push(item);
+    });
+    opt.whitelist.attribute instanceof Array && opt.whitelist.attribute.forEach(item => {
+      attribute.indexOf(item) === -1 && attribute.push(item);
+    });
+  }
+
+  if (opt.mode && ['dark', 'light'].indexOf(opt.mode) > -1) {
+    config.set('string', opt, 'mode');
+    opt.mode === 'dark' && addClass(document.getElementsByTagName('html')[0], HTML_CLASS);
+  }
+
+  config.set('function', opt, 'begin');
+  config.set('function', opt, 'showFirstPage');
+  config.set('function', opt, 'error');
+  config.set('boolean', opt, 'needJudgeFirstPage');
+  config.set('boolean', opt, 'delayBgJudge');
+  config.set('boolean', opt, 'noEmit');
+  config.set('dom', opt, 'container');
+  config.set('string', opt, 'cssSelectorsPrefix');
+  config.setDefaultColor(opt);
+  config.set('function', opt, 'getStyle');
+  config.set('function', opt, 'setStyle');
+  config.set('function', opt, 'getClass');
+  config.set('function', opt, 'setClass');
+  config.set('function', opt, 'getAttr');
+  config.set('function', opt, 'setAttr');
+
+  sdk.init();
+
+  if (!config.mode && !mql && window.matchMedia) {
+    // 匹配媒体查询
+    mql = window.matchMedia(MEDIA_QUERY);
+    mql.addListener(switchToDarkmode as any); // 监听
+  }
+};
+
+// 处理背景
+export function convertBg(nodes: HTMLElement[]) {
+  domUtils.set(nodes);
+
+  if (config.container !== null) {
+    bgStack.update(nodes); // 更新背景堆栈
+    tnQueue.update(nodes); // 更新文字队列
+  }
+
+  switchToDarkmode(mql, {
+    force: true,
+    type: 'bg'
+  });
+};
+
+// 更新节点Dark Mode样式
+export function updateStyle(node: HTMLElement, styles: Record<string, string>) {
+  if (!cssUtils.isFinish) return; // 没有运行过Dark Mode处理逻辑则无需运行
+  cssUtils.addCss(sdk.convert(node, styles ? Object.keys(styles).map(key => [key, styles[key]]) : undefined, true));
+  cssUtils.writeStyle();
+};
+
+// 获取两个颜色的对比度
+export function getContrast(color1: string, color2: string): number {
+  return sdk.getContrast(color1, color2);
+};
+
+// 根据 Light Mode 背景色转换生成 Dark Mode 背景色
+export function getDmBgColor(lmBgColor: string, dmBgColorExist: string = config.defaultDarkBgColor): string | null {
+  if (!config.hasInit) { // 未初始化则阈值未预计算，结果会出错，提示业务方先调用 init
+    console.warn('Dark Mode should be initialized by calling `init()` or `run()` before using `getDmBgColor()`');
+    return null;
+  }
+  const dmBgColor = sdk.adjustBackgroundBrightness(lmBgColor, dmBgColorExist);
+
+  return dmBgColor ? toCssString(dmBgColor) : null;
+};
+
+// 根据 Light Mode 前景色转换生成 Dark Mode 前景色
+export function getDmFontColor(lmFontColor: string, dmBgColor: string = config.defaultDarkBgColor): string | null {
+  if (!config.hasInit) { // 未初始化则阈值未预计算，结果会出错，提示业务方先调用 init
+    console.warn('Dark Mode should be initialized by calling `init()` or `run()` before using `getDmFontColor()`');
+    return null;
+  }
+  const dmFontColor = sdk.adjustTextBrightness(lmFontColor, dmBgColor);
+
+  return dmFontColor ? toCssString(dmFontColor) : null;
+};
+
+// 把颜色对象转成 css 色值（rgb()/rgba()）
+// 算法内部的颜色对象（节点上的 data-darkmode-* 属性、插件钩子回调里的 fontColor/bgColor 等）
+// 直接 toString() 可能输出 hsl()/百分比等老 webview 不支持的写法，用这个统一转成 rgb()/rgba()
+export function colorToCssString(color: ColorInstance): string {
+  return toCssString(color);
+}
+
+// 挂载插件
+export function extend(pluginList: PluginConstructor[]) {
+  pluginList.forEach(plugin => plugins.extend(plugin));
+};
+
+// 重置
+export function reset(nodes: HTMLElement[]) {
+  config.reset(); // 内部会重置 config.hasInit = false，使下次可重新 init
+  plugins.reset();
+  tnQueue.reset();
+  bgStack.reset();
+  cssUtils.reset();
+  domUtils.reset();
+  sdk.reset();
+
+  removeClass(document.getElementsByTagName('html')[0], HTML_CLASS);
+
+  if (mql) {
+    mql.removeListener(switchToDarkmode as any); // 取消监听
+    mql = null;
+  }
+
+  nodes?.forEach(node => {
+    removeAttr(node, COLORATTR);
+    removeAttr(node, BGCOLORATTR);
+    removeAttr(node, ORIGINAL_COLORATTR);
+    removeAttr(node, ORIGINAL_BGCOLORATTR);
+    removeAttr(node, BGIMAGEATTR);
+    removeAttr(node, BGGRADIENT_MIXCOLORATTR);
+    removeAttr(node, COMPLEMENTARY_BGIMAGECOLORATTR);
+  });
+};
+
+// 校验
+export function validate(container: HTMLElement, opt?: ValidateOption, filter?: ValidateFilter): ValidateResult[] {
+  return validator.validate(container, opt, filter);
+};
+
+// 对外暴露强制暗黑模式时给 html 添加的 class，供调用方自行控制开关时机（如编辑器场景）
+export { HTML_CLASS as htmlClass };
